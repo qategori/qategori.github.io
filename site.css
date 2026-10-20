@@ -331,6 +331,17 @@ iframe.qhGame{width:100%;border:0;min-height:480px;display:block}
 .qbAv .qbIni{display:flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;background:var(--themeLink);color:#fff;font-size:12px;font-weight:700}
 .qBottom .qbMenu .qbAv svg{width:22px;height:22px}
 
+/* rambu: kategori jadi dropdown */
+#rbapp .chips{display:none!important}
+.qSel{display:block;width:100%;height:44px;margin:0 0 12px;padding:0 38px 0 14px;border:1px solid var(--themeBd-color);border-radius:12px;background:var(--themeBg-alt) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23888' stroke-width='2' stroke-linecap='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E") no-repeat right 12px center/16px;color:inherit;font:inherit;font-size:.95rem;-webkit-appearance:none;appearance:none}
+/* kolom cari HP: seperti mode PC (pil dengan ikon di kanan) */
+@media(max-width:896px){
+ body.qSrh .headS .srh{height:42px;border:1px solid var(--themeBd-color);border-radius:21px;background:var(--themeBg-alt);padding:0 6px 0 16px;box-sizing:border-box;align-items:center}
+ body.qSrh .headS .srh .shI{flex:1;min-width:0;border:0!important;outline:0;background:transparent!important;color:inherit;font:inherit;font-size:14px;height:100%;padding:0;box-shadow:none;-webkit-appearance:none;appearance:none}
+ body.qSrh .headS .srh button{border:0!important;background:transparent!important;color:inherit;width:34px;height:34px;display:grid;place-items:center;padding:0;cursor:pointer;box-shadow:none}
+ body.qSrh .headS .srh button svg{width:20px;height:20px}
+}
+
 .leftF{justify-content:flex-start!important}
 .leftF label{min-width:56px!important;justify-content:flex-start!important;padding-inline:var(--contentPadding,16px)!important}
 .leftF label::before{content:''!important;display:block;width:24px;height:24px;background:currentColor;-webkit-mask:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%221.5%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22M15%2019.9201L8.47997%2013.4001C7.70997%2012.6301%207.70997%2011.3701%208.47997%2010.6001L15%204.08008%22/%3E%3C/svg%3E") center/contain no-repeat;mask:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%221.5%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22M15%2019.9201L8.47997%2013.4001C7.70997%2012.6301%207.70997%2011.3701%208.47997%2010.6001L15%204.08008%22/%3E%3C/svg%3E") center/contain no-repeat}

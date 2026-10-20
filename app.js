@@ -220,7 +220,7 @@ function mount(paneId,key){
 /* game */
 var gameFrame=null,gameTimer=0;
 function isDark(){var t=nB.getAttribute('data-theme');return t==='dark'||(t!=='light'&&matchMedia('(prefers-color-scheme: dark)').matches)}
-function tune(fr){try{var d=fr.contentDocument;if(!d||!d.documentElement)return;var w=isDark()?'dark':'light';if(d.documentElement.getAttribute('data-theme')!==w)d.documentElement.setAttribute('data-theme',w);
+function tune(fr){try{var d=fr.contentDocument;if(!d||!d.documentElement)return;if(fr.__kana)kanaTheme(fr);var w=isDark()?'dark':'light';if(d.documentElement.getAttribute('data-theme')!==w)d.documentElement.setAttribute('data-theme',w);
   var h=d.body?Math.ceil(d.body.getBoundingClientRect().height):0;if(!h)h=d.documentElement.scrollHeight;if(h>120&&Math.abs(fr.offsetHeight-h)>2)fr.style.height=h+'px'}catch(e){}}
 function stopT(){if(gameTimer){clearInterval(gameTimer);gameTimer=0}}
 function startT(){stopT();if(gameFrame)gameTimer=setInterval(function(){tune(gameFrame)},400)}
@@ -234,14 +234,35 @@ function frame(host,file,title,bar,onload){
 var gkey='';
 function showGame(sub){
   var host=panes.game.querySelector('.qhBody'),g=GAMES.filter(function(x){return x.id===sub})[0];
-  if(!g){stopT();gkey='';gameFrame=null;host.innerHTML='<div class="qhGameGrid">'+GAMES.map(function(g){return'<button type="button" class="qhGameCard" data-go="game-'+g.id+'"><svg viewBox="0 0 24 24" aria-hidden="true">'+g.ic+'</svg><b>'+esc(g.t)+'</b><i>'+g.j+' &middot; '+esc(g.r)+'</i><small>'+esc(g.d)+'</small></button>'}).join('')+'</div>';return}
+  if(!g){stopT();gkey='';gameFrame=null;host.innerHTML='<div class="qhGameGrid">'+GAMES.filter(function(x){return x.id!=='kana'}).map(function(g){return'<button type="button" class="qhGameCard" data-go="game-'+g.id+'"><svg viewBox="0 0 24 24" aria-hidden="true">'+g.ic+'</svg><b>'+esc(g.t)+'</b><i>'+g.j+' &middot; '+esc(g.r)+'</i><small>'+esc(g.d)+'</small></button>'}).join('')+'</div>';return}
   if(gkey===g.id&&gameFrame&&host.contains(gameFrame)){startT();return}
   gkey=g.id;gameFrame=null;frame(host,g.f,g.t,'<div class="qhBar"><button type="button" class="qhBtn alt" data-go="game">&larr; Semua game</button></div>');
 }
-function kanaPick(fr,mode){var jp=mode==='katakana'?'カタカナ':'ひらがな',n=0;
-  (function t(){try{var d=fr.contentDocument,els=d?d.querySelectorAll('button,a,label,[role=tab],[role=button],span,div'):[];
-    for(var i=0;i<els.length;i++){var e=els[i];if(!e.children.length&&(e.textContent||'').trim()===jp){var c=e.closest('button,a,label,[role=tab],[role=button]')||e;c.click();return}}}catch(x){}
-    if(++n<12)setTimeout(t,250)})()}
+function kanaPick(fr,mode){var n=0;
+  (function t(){try{var d=fr.contentDocument,b=d&&d.querySelector('[data-sc="'+(mode==='katakana'?'k':'h')+'"]');if(b){if(b.getAttribute('aria-pressed')!=='true')b.click();return}}catch(x){}
+    if(++n<20)setTimeout(t,200)})()}
+var KANA_CSS='header,.grp[aria-label="Pilih aksara"]{display:none!important}.ctl{gap:0}'+
+'select.qkSel{width:100%;height:44px;padding:0 38px 0 14px;border:1px solid var(--line);border-radius:12px;background:var(--surface) url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'%23888\' stroke-width=\'2\' stroke-linecap=\'round\'%3E%3Cpath d=\'M6 9l6 6 6-6\'/%3E%3C/svg%3E") no-repeat right 12px center/16px;color:var(--ink);font:inherit;font-size:.95rem;font-weight:700;-webkit-appearance:none;appearance:none}'+
+'.grp[aria-label="Pilih set huruf"]{flex-wrap:nowrap;align-items:center;gap:10px}.grp[aria-label="Pilih set huruf"]>.chip{display:none}.grp[aria-label="Pilih set huruf"] select{flex:1;min-width:0}';
+function kanaInit(fr,sub){
+  try{var d=fr.contentDocument,st=d.createElement('style');st.textContent=KANA_CSS;d.head.appendChild(st);fr.__kana=1;
+    var g=d.querySelector('.grp[aria-label="Pilih set huruf"]');
+    if(g&&!g.querySelector('select')){var chips=[].slice.call(g.querySelectorAll('[data-set]'));
+      var sel=d.createElement('select');sel.className='qkSel';sel.setAttribute('aria-label','Pilih set huruf');
+      var opts=chips.map(function(c){return[c.getAttribute('data-set'),c.textContent]});opts.push(['semua','Semua set']);
+      sel.innerHTML=opts.map(function(o){return'<option value="'+o[0]+'">'+o[1]+'</option>'}).join('');
+      var cur=function(){var on=chips.filter(function(c){return c.getAttribute('aria-pressed')==='true'}).map(function(c){return c.getAttribute('data-set')});
+        sel.value=on.length===1?on[0]:'semua'};
+      sel.addEventListener('change',function(){[true,false].forEach(function(on){chips.forEach(function(c){var want=sel.value==='semua'||c.getAttribute('data-set')===sel.value;if(want===on&&(c.getAttribute('aria-pressed')==='true')!==want)c.click()})});setTimeout(cur,50)});
+      g.appendChild(sel);cur()}
+    kanaTheme(fr)}catch(e){}
+  kanaPick(fr,sub)}
+function kanaTheme(fr){try{var d=fr.contentDocument.documentElement,cs=getComputedStyle(nB),g=function(k){return cs.getPropertyValue(k).trim()},s=d.style;
+  var link=g('--themeLink'),c=g('--themeC');if(!link||!c)return;
+  s.setProperty('--bg',g('--themeBg-alt')||g('--themeBg'));s.setProperty('--surface',g('--themeBg'));s.setProperty('--ink',c);
+  s.setProperty('--muted','color-mix(in srgb,'+c+' 62%,transparent)');s.setProperty('--line',g('--themeBd-color'));
+  s.setProperty('--accent',link);s.setProperty('--accent-ink',g('--buttonC')||'#fff');s.setProperty('--tint','color-mix(in srgb,'+link+' 14%,transparent)');
+  var b=fr.contentDocument.body;if(b&&!b.__t){b.__t=1;b.style.background='transparent'}}catch(e){}}
 function kanaRow(sub){var T=[['hiragana','Hiragana','あ'],['katakana','Katakana','ア']];
   return'<div class="qhRow" role="tablist" id="qkRow">'+T.map(function(t){return'<button type="button" role="tab" data-qhd="1" data-go="kana-'+t[0]+'" aria-selected="'+(sub===t[0])+'"><svg viewBox="0 0 24 24" aria-hidden="true"><text x="12" y="18" text-anchor="middle" font-size="17" font-weight="700" fill="currentColor" stroke="none">'+t[2]+'</text></svg><span>'+t[1]+'</span></button>'}).join('')+'</div>'}
 function showKana(sub){var host=panes.kana.querySelector('.qhBody');
@@ -250,7 +271,7 @@ function showKana(sub){var host=panes.kana.querySelector('.qhBody');
     Array.prototype.forEach.call(host.querySelectorAll('#qkRow button'),function(b){b.setAttribute('aria-selected',String(b.getAttribute('data-go')==='kana-'+sub))});
     kanaPick(gameFrame,sub);startT();return}
   gkey='kana';gameFrame=null;
-  frame(host,'kana.html','Hapalan Kana',kanaRow(sub),function(fr){kanaPick(fr,sub)})}
+  frame(host,'kana.html','Hapalan Kana',kanaRow(sub),function(fr){kanaInit(fr,sub)})}
 /* berita */
 var posts=null,lab='',shown=20,qs0=root.querySelector('#qList');
 var listEl=qs0;
@@ -656,6 +677,17 @@ document.addEventListener('click',function(e){
 window.qhGo=go;
 window.addEventListener('hashchange',function(){closeAll();show()});
 
+/* rambu: chip kategori -> dropdown */
+function rbSel(){var pn=panes.rambu;if(!pn)return;
+  [].slice.call(pn.querySelectorAll('#rbapp .chips')).forEach(function(c){
+    var sel=c.nextElementSibling&&c.nextElementSibling.classList.contains('qSel')?c.nextElementSibling:null;
+    if(!sel){sel=document.createElement('select');sel.className='qSel';sel.setAttribute('aria-label','Pilih kategori');c.parentNode.insertBefore(sel,c.nextSibling);
+      sel.addEventListener('change',function(){var ch=c.querySelectorAll('.chip')[sel.selectedIndex];if(ch)ch.click()})}
+    var ch=[].slice.call(c.querySelectorAll('.chip')),on=0;ch.forEach(function(x,i){if(x.classList.contains('on'))on=i});
+    var sig=ch.map(function(x){return x.textContent}).join('|')+'#'+on;
+    if(sel.__sig!==sig){sel.__sig=sig;sel.innerHTML=ch.map(function(x){var o=document.createElement('option');o.textContent=x.textContent;return o.outerHTML}).join('');sel.selectedIndex=on}
+  })}
+if(panes.rambu){var rbT;new MutationObserver(function(){clearTimeout(rbT);rbT=setTimeout(rbSel,60)}).observe(panes.rambu,{childList:true,subtree:true,attributes:true,attributeFilter:['class']})}
 show();
 })();
 
