@@ -95,3 +95,5 @@ iframe.qhGame{width:100%;border:0;min-height:480px;display:block}
 .qFoot p{order:-1;margin:0;font-size:inherit}
 .qFoot .qFootR{margin:0}
 @media(min-width:900px){.qFoot{padding-bottom:20px}}
+/* iklan anchor hanya di HP (seperti tema lama); desktop pakai iklan sidebar */
+@media(min-width:897px){#anchor-ad{display:none!important}}
