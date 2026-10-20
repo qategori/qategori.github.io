@@ -171,6 +171,12 @@ iframe.qhGame{width:100%;border:0;min-height:480px;display:block}
 
 .qPi .qPh{width:100%!important;max-width:none!important;flex:none!important;height:auto!important}
 
+.qBar{position:absolute;top:6px;right:42px;display:flex;flex-direction:row-reverse;gap:5px;z-index:2;font-size:12px}
+.qBar>*{display:inline-flex;align-items:center;justify-content:center;gap:3px;height:30px;padding:0 8px;border-radius:12px;color:#0e2045;background:#fffdfc;box-shadow:5px 5px 15px rgba(0,0,0,.18);font-weight:600}
+.qBar .qDisc{background:#fff6bf}
+.qBar .qTag{padding:0 7px}
+.qBar svg{fill:none!important;stroke:currentColor!important;width:15px;height:15px}.qBar svg path,.qBar svg circle{fill:none!important}
+
 /* tombol tutup popup: tanda panah kembali, seperti popup penanda */
 .popUp .popH .c{justify-content:flex-start!important;min-width:44px}
 .popUp .popH .c:not(.r){right:auto!important;left:var(--contentPadding)}

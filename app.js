@@ -378,9 +378,12 @@ var listEl=qs0;
 
 var MON=['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'];
 function fdt(s){var m=/^(\d{4})-(\d\d)-(\d\d)/.exec(s||'');return m?(+m[3])+' '+MON[+m[2]-1]+', '+m[1]:(s||'')}
+var HID=/^(Product|Discount[1-9]0)$/,TAGS='<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4.17 15.3l4.53 4.53a4.5 4.5 0 0 0 6.75 0l4.39-4.39a4.5 4.5 0 0 0 0-6.75L15.3 4.17A4.5 4.5 0 0 0 11.7 2.78l-5 .24a3.7 3.7 0 0 0-3.69 3.67l-.24 5a4.5 4.5 0 0 0 1.4 3.61z"/><circle cx="9.5" cy="9.5" r="2.5"/></svg>';
+function vl(a){return a.filter(function(x){return!HID.test(x)})}
+function bar(d){if(d.l.indexOf('Product')<0)return'';var p=d.l.filter(function(x){return/^Discount[1-9]0$/.test(x)})[0];return'<div class="qBar"><span class="qTag">'+TAGS+'</span>'+(p?'<span class="qDisc">-'+p.slice(8)+'%</span>':'')+'</div>'}
 function labA(l){return l?'<a class="qLb" href="/search/label/'+encodeURIComponent(l)+'/"># '+esc(l)+'</a>':''}
 function cardHtml(d,feat){var th=d.th?'<img src="'+esc(d.th)+'" alt="" loading="lazy">':'<span class="qNoImg"></span>';
-  return'<article class="qG'+(feat?' qFeat':'')+'"><div class="qGt"><a class="qThumb" href="'+d.p+'" tabindex="-1">'+th+'</a>'+(window.qBmBtn?window.qBmBtn(d.p,d.t,d.th):'')+'</div>'+labA(d.l[0])+'<h3><a href="'+d.p+'">'+esc(d.t)+'</a></h3><p>'+esc(d.d)+'</p><small>'+fdt(d.dt)+'</small></article>'}
+  return'<article class="qG'+(feat?' qFeat':'')+'"><div class="qGt"><a class="qThumb" href="'+d.p+'" tabindex="-1">'+th+'</a>'+(window.qBmBtn?window.qBmBtn(d.p,d.t,d.th):'')+bar(d)+'</div>'+labA(vl(d.l)[0])+'<h3><a href="'+d.p+'">'+esc(d.t)+'</a></h3><p>'+esc(d.d)+'</p><small>'+fdt(d.dt)+'</small></article>'}
 var curL='',readKey='',extraEl=document.getElementById('qExtra'),showAllL=false;
 function postRows(){return posts.filter(function(d){return d.ty==='POST'})}
 function renderList(){
@@ -395,8 +398,8 @@ function renderList(){
 function renderExtra(rows,feat){
   var yr=(rows[0]&&rows[0].dt||'').slice(0,4),pop=rows.filter(function(d){return d!==feat&&d.th&&d.dt.slice(0,4)===yr}).map(function(d){var h=0,k=d.p;for(var i=0;i<k.length;i++)h=(h*31+k.charCodeAt(i))>>>0;return[h,d]}).sort(function(a,b){return a[0]-b[0]}).slice(0,5).map(function(x){return x[1]});
   var h='<h2 class="qhH">Postingan Populer</h2><div class="qPop">'+pop.map(function(d,i){
-    return'<article class="qPi">'+(i===0?'<a class="qThumb qPh" href="'+d.p+'" tabindex="-1">'+(d.th?'<img src="'+esc(d.th)+'" alt="" loading="lazy">':'')+'</a>':'')+'<div class="qPr"><b class="qPn">0'+(i+1)+'</b><div><div class="qPm">'+fdt(d.dt)+(d.l[0]?' &middot; '+esc(d.l[0]):'')+'</div><h3><a href="'+d.p+'">'+esc(d.t)+'</a></h3><p>'+esc(d.d)+'</p></div></div></article>'}).join('')+'</div>';
-  var c={};rows.forEach(function(d){d.l.forEach(function(l){c[l]=(c[l]||0)+1})});
+    return'<article class="qPi">'+(i===0?'<a class="qThumb qPh" href="'+d.p+'" tabindex="-1">'+(d.th?'<img src="'+esc(d.th)+'" alt="" loading="lazy">':'')+'</a>':'')+'<div class="qPr"><b class="qPn">0'+(i+1)+'</b><div><div class="qPm">'+fdt(d.dt)+(vl(d.l)[0]?' &middot; '+esc(vl(d.l)[0]):'')+'</div><h3><a href="'+d.p+'">'+esc(d.t)+'</a></h3><p>'+esc(d.d)+'</p></div></div></article>'}).join('')+'</div>';
+  var c={};rows.forEach(function(d){vl(d.l).forEach(function(l){c[l]=(c[l]||0)+1})});
   var ks=Object.keys(c).sort(function(a,b){return a.localeCompare(b)}),lim=8,vis=showAllL?ks:ks.slice(0,lim);
   h+='<h2 class="qhH">Label</h2><div class="qLabs">'+vis.map(function(l){return'<a class="qLbx" href="/search/label/'+encodeURIComponent(l)+'/"><span>'+esc(l)+'</span><i>'+c[l]+'</i></a>'}).join('')+'</div>'+(ks.length>lim&&!showAllL?'<button type="button" class="qAll" id="qAll">Tunjukkan semua <small>(+'+(ks.length-lim)+')</small></button>':'');
   extraEl.innerHTML=h;
