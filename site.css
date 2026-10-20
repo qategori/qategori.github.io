@@ -203,6 +203,61 @@ iframe.qhGame{width:100%;border:0;min-height:480px;display:block}
 .qhTocC a{display:block;padding:9px 0;color:inherit;text-decoration:none}
 .nB:has(#forNav:checked) .qhTocB,.nB:has(#forProfil:checked) .qhTocB{display:none}
 
+/* ===== Beranda ===== */
+.qBer #qcat{display:none!important}
+.qbHero{border:1px solid var(--themeBd-color);border-radius:16px;background:linear-gradient(160deg,var(--themeBg-alt),var(--themeBg));padding:8px 10px;margin:0 0 6px;overflow:hidden}
+.qbStage{position:relative;height:158px}
+.mochi{position:absolute;left:8px;bottom:0;width:112px;height:130px;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:left 1.8s linear;outline:0}
+.mochi svg{width:100%;height:100%;overflow:visible;display:block}
+.mochi svg *{transform-box:view-box}
+.mochi:focus-visible{outline:2px solid var(--themeLink);border-radius:12px}
+.qbBubble{position:absolute;left:132px;right:6px;top:10px;padding:10px 12px;border:1px solid var(--themeBd-color);border-radius:14px;background:var(--themeBg);font-size:13px;line-height:1.35;opacity:0;transform:translateY(4px);transition:opacity .3s,transform .3s}
+.qbBubble.on{opacity:1;transform:none}
+.qbBubble::before{content:"";position:absolute;left:-7px;top:22px;width:12px;height:12px;background:inherit;border-left:1px solid var(--themeBd-color);border-bottom:1px solid var(--themeBd-color);transform:rotate(45deg)}
+.qbBubble b{font-size:1.05rem;color:var(--themeLink)}.qbBubble small{opacity:.65}.qbBubble p{margin:4px 0 0}
+.mochi .mAll{animation:mBob 2.4s ease-in-out infinite}
+.mochi .mTail{transform-origin:78px 108px;animation:mTail 2.6s ease-in-out infinite}
+.mochi .mHead{transform-origin:60px 68px;animation:mHead 5s ease-in-out infinite}
+.mochi .mEyes{transform-origin:60px 50px;animation:mBlink 4.6s infinite}
+.mochi .mArmL{transform-origin:41px 80px}.mochi .mArmR{transform-origin:79px 80px}
+.mochi .mLegL{transform-origin:52px 104px}.mochi .mLegR{transform-origin:68px 104px}
+.mochi.wave .mArmR{animation:mWave .55s ease-in-out infinite alternate}
+.mochi.wave .mHead{animation:mHead 1.2s ease-in-out infinite}
+.mochi.run .mAll{animation:mRunBob .3s ease-in-out infinite}
+.mochi.run .mLegL{animation:mLegA .3s ease-in-out infinite alternate}.mochi.run .mLegR{animation:mLegB .3s ease-in-out infinite alternate}
+.mochi.run .mArmL{animation:mLegB .3s ease-in-out infinite alternate}.mochi.run .mArmR{animation:mLegA .3s ease-in-out infinite alternate}
+.mochi.run .mTail{animation:mTailRun .3s ease-in-out infinite alternate}
+.mochi.run svg{transform:scaleX(var(--dir,1))}
+.mochi.sit .mAll{animation:none;transform:translateY(7px)}
+.mochi.sit .mLegL{transform:rotate(72deg)}.mochi.sit .mLegR{transform:rotate(-72deg)}
+.mochi.sit .mArmL{transform:rotate(8deg)}.mochi.sit .mArmR{transform:rotate(-8deg)}
+.mochi.stand .mArmL{animation:mSway 2.2s ease-in-out infinite alternate}.mochi.stand .mArmR{animation:mSway 2.2s ease-in-out .4s infinite alternate-reverse}
+@keyframes mBob{0%,100%{transform:translateY(0)}50%{transform:translateY(-2px)}}
+@keyframes mTail{0%,100%{transform:rotate(0)}50%{transform:rotate(14deg)}}
+@keyframes mTailRun{from{transform:rotate(-18deg)}to{transform:rotate(18deg)}}
+@keyframes mHead{0%,86%,100%{transform:rotate(0)}91%{transform:rotate(-4deg)}96%{transform:rotate(3deg)}}
+@keyframes mBlink{0%,92%,100%{transform:scaleY(1)}95%{transform:scaleY(.1)}}
+@keyframes mWave{from{transform:rotate(-125deg)}to{transform:rotate(-165deg)}}
+@keyframes mRunBob{from{transform:translateY(0)}to{transform:translateY(-6px)}}
+@keyframes mLegA{from{transform:rotate(-38deg)}to{transform:rotate(38deg)}}
+@keyframes mLegB{from{transform:rotate(38deg)}to{transform:rotate(-38deg)}}
+@keyframes mSway{from{transform:rotate(-6deg)}to{transform:rotate(6deg)}}
+@media(prefers-reduced-motion:reduce){.mochi *{animation:none!important}}
+.qbStats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.qbSt{border:1px solid var(--themeBd-color);border-radius:12px;background:var(--themeBg-alt);padding:10px;display:flex;flex-direction:column;gap:2px;min-width:0}
+.qbSt small{font-size:11px;opacity:.65}.qbSt b{font-size:1.15rem}.qbSt span{font-size:11.5px;opacity:.75}
+.qbSt .qtBar,.qbLv .qtBar{display:block;height:5px;border-radius:4px;background:var(--themeBd-color);overflow:hidden;margin-top:4px}
+.qbSt .qtBar u,.qbLv .qtBar u{display:block;height:100%;background:var(--themeLink);text-decoration:none}
+.qbAct{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}
+.qbRiw{border:1px solid var(--themeBd-color);border-radius:12px;background:var(--themeBg-alt);padding:10px 12px}
+.qbLv{display:grid;grid-template-columns:34px 1fr;gap:2px 10px;align-items:center;padding:5px 0}
+.qbLv b{font-size:13px}.qbLv span{grid-column:2;font-size:11.5px;opacity:.7}
+.qbLv .qtBar{margin:0}
+.qbLast{margin:8px 0 0;font-size:12.5px;opacity:.85}
+.qbNews{grid-template-columns:repeat(2,minmax(0,1fr))}
+@media(min-width:900px){.qbNews{grid-template-columns:repeat(4,minmax(0,1fr))}}
+.qbBubble{min-height:0}
+
 .leftF{justify-content:flex-start!important}
 .leftF label{min-width:56px!important;justify-content:flex-start!important;padding-inline:var(--contentPadding,16px)!important}
 .leftF label::before{content:''!important;display:block;width:24px;height:24px;background:currentColor;-webkit-mask:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%221.5%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22M15%2019.9201L8.47997%2013.4001C7.70997%2012.6301%207.70997%2011.3701%208.47997%2010.6001L15%204.08008%22/%3E%3C/svg%3E") center/contain no-repeat;mask:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%221.5%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22M15%2019.9201L8.47997%2013.4001C7.70997%2012.6301%207.70997%2011.3701%208.47997%2010.6001L15%204.08008%22/%3E%3C/svg%3E") center/contain no-repeat}
