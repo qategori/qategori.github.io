@@ -214,7 +214,7 @@ function mount(paneId,key){
     return runScripts(host,scripts).then(function(){var f=panes[paneId].__after;if(f){panes[paneId].__after=null;setTimeout(f,60)}});
   }).catch(function(err){
     if(my!==token[paneId])return;mounted[paneId]=null;
-    host.innerHTML='<div class="qhErr"><p>Materi belum bisa dimuat ('+esc(err&&err.message)+').</p><button type="button" class="qhBtn" data-retry="'+key+'">Coba lagi</button> <a class="qhBtn alt" href="'+URL_OF[key]+'">Buka halaman</a></div>';
+    host.innerHTML='<div class="qhErr"><p>Materi belum bisa dimuat ('+esc(err&&err.message)+').</p><p style="font-size:.75rem;opacity:.7;word-break:break-all">'+esc(location.origin+(URL_OF[key]||''))+' · '+(navigator.onLine?'online':'offline')+'</p><button type="button" class="qhBtn" data-retry="'+key+'">Coba lagi</button> <a class="qhBtn alt" href="'+URL_OF[key]+'">Buka halaman</a></div>';
   });
 }
 /* game */
