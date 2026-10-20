@@ -1547,5 +1547,16 @@
   });
   var mo=new MutationObserver(function(){clearTimeout(mo.t);mo.t=setTimeout(sync,80)});
   mo.observe(document.body,{childList:true,subtree:true});
+  /* tutup popup tema/penanda kalau tap di luar */
+  document.addEventListener('click',function(ev){
+    var t=ev.target;if(!t.closest)return;
+    if(t.closest('.settB')||t.closest('.headB')||t.closest('.bm-delete'))return;
+    ['forDark','forBook'].forEach(function(id){var c=document.getElementById(id);if(c&&c.checked)c.checked=false});
+  });
+  /* hanya satu popup terbuka */
+  document.addEventListener('change',function(ev){
+    var t=ev.target;if(t.id==='forDark'&&t.checked){var b=document.getElementById('forBook');if(b)b.checked=false}
+    if(t.id==='forBook'&&t.checked){var d=document.getElementById('forDark');if(d)d.checked=false}
+  });
   render();
 })();

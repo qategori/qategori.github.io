@@ -97,3 +97,20 @@ iframe.qhGame{width:100%;border:0;min-height:480px;display:block}
 @media(min-width:900px){.qFoot{padding-bottom:20px}}
 /* iklan anchor hanya di HP (seperti tema lama); desktop pakai iklan sidebar */
 @media(min-width:897px){#anchor-ad{display:none!important}}
+
+/* popup tema/penanda: tombol kembali terlihat */
+.iTheme .h svg,.iBook .h svg{display:block}
+.iTheme .h,.iBook .h{cursor:pointer}
+
+/* cari: bar atas (HP) + hasil di tab Berita */
+@media(max-width:896px){body.qSrh .headS{display:block;position:fixed;left:0;right:0;top:64px;z-index:75;padding:8px 14px;background:var(--themeBg,#fff);border-bottom:1px solid var(--themeBd-color);box-shadow:0 8px 20px rgba(0,0,0,.12)}
+ body.qSrh .headS .srh{display:flex;width:100%;max-width:none}}
+.qhH{font-size:1.1rem;margin:4px 0 12px}
+.qhHits{margin:0 0 14px;padding:10px 12px;border:1px solid var(--contentBd-color,var(--themeBd-color));border-radius:12px;background:var(--contentBg-alt)}
+.qhHits h4{margin:6px 0;font-size:.78em;letter-spacing:.05em;text-transform:uppercase;opacity:.65;font-weight:600}
+.qhHL{display:flex;flex-direction:column}
+.qhHit{display:flex;align-items:baseline;gap:10px;padding:7px 0;border-bottom:1px solid var(--themeBd-color);color:inherit;text-decoration:none}
+.qhHit:last-child{border-bottom:0}.qhHit b{font-size:1.15em;min-width:1.6em}.qhHit span{font-size:.85em;opacity:.8;line-height:1.4}
+.qhBar{margin:0 0 12px}
+.qhArt .qPost>header h1,.qhArt .qPT{font-size:1.4rem;line-height:1.3;margin:0 0 8px}
+.qMore[hidden],.qhRead[hidden],.qhList[hidden]{display:none!important}

@@ -37,10 +37,7 @@ if(res){
 /* ---- beranda bertab ---- */
 var root=document.getElementById('qHome');
 var P='/p/';
-if(!root){
-  /* halaman lain: tautan materi dibawa ke beranda tidak perlu; semua halaman berdiri sendiri */
-  return;
-}
+var isHome=!!root;
 var DATA_BASE='https://bshantoz.github.io/nihongo/';
 function loadScript(src){return new Promise(function(res){var x=document.createElement('script');x.src=src;x.onload=x.onerror=function(){res()};document.head.appendChild(x)})}
 var BEL=['jlpt','tg2','jawa','sunda','bali','kana','rambu'];
@@ -53,6 +50,33 @@ var URL_OF={jlpt:P+'level-materi-jlpt.html',rambu:P+'rambu-jepang.html',podcast:
  'tg2-semua':P+'materi-dan-soal-tg2-jlpt.html','tg2-kontruksi':P+'kontruksi.html','tg2-makanan':P+'pelayanan-dan-pabrik-makanan.html','tg2-manufaktur':P+'manufaktur.html',
  'tg2-pertanian':P+'pertanian.html','tg2-perhotelan':P+'perhotelan.html','tg2-perikanan':P+'perikanan.html','tg2-mobil':P+'jidosha-seibi.html','tg2-cleaning':P+'building-cleaning.html','tg2-karir':P+'bisnis-karir.html'};
 var PATH_TO_ROUTE={};Object.keys(URL_OF).forEach(function(k){PATH_TO_ROUTE[URL_OF[k]]=k});
+var ART_RE=/^\/(\d{4}\/\d{2}|p)\/[^\/]+\.html$/;
+function sameSite(u){return u.hostname.replace(/^www\./,'')===location.hostname.replace(/^www\./,'')}
+/* semua tautan internal -> rute # di beranda (agar aman di browser bawaan TikTok) */
+function routeFor(u){var p=u.pathname;
+  if(PATH_TO_ROUTE[p])return PATH_TO_ROUTE[p]+(u.search?'?'+u.search.slice(1):'');
+  if(/^\/search\/label\//.test(p))return 'berita?l='+encodeURIComponent(p);
+  if(/^\/search\/?$/.test(p)){var sq=u.searchParams.get('q');return sq?'berita?l='+encodeURIComponent('/search?q='+sq):'berita'}
+  if(ART_RE.test(p))return 'berita?u='+encodeURIComponent(p);
+  if(p==='/'||p==='/index.html')return u.hash&&u.hash.length>1?u.hash.slice(1):'';
+  return''}
+function searchTo(q){var r='berita?l='+encodeURIComponent('/search?q='+q);closeAll();chk('forSearch',false);document.body.classList.remove('qSrh');if(isHome){go(r);window.scrollTo(0,0)}else location.href='/#'+r}
+document.addEventListener('submit',function(e){var f=e.target;if(!f||!f.matches||!f.matches('form.srh'))return;
+  var i=f.querySelector('input[name="q"],input[type="search"]'),q=i?i.value.trim():'';if(!q)return;e.preventDefault();searchTo(q)},true);
+document.addEventListener('click',function(e){
+  var s=e.target.closest&&e.target.closest('.headB a.sc');
+  if(s){e.preventDefault();var on=document.body.classList.toggle('qSrh');if(on){var h=document.querySelector('.headS .shI');if(h)setTimeout(function(){h.focus()},50)}return}
+  if(e.defaultPrevented||e.button||e.metaKey||e.ctrlKey||e.shiftKey||e.altKey)return;
+  var l=e.target.closest&&e.target.closest('a[href]');if(!l||l.target==='_blank'||l.hasAttribute('download'))return;
+  if(l.hasAttribute('data-tab')||l.classList.contains('qLogo'))return;
+  var u;try{u=new URL(l.getAttribute('href'),location.href)}catch(x){return}
+  if(!sameSite(u))return;
+  if(u.hash&&u.pathname===location.pathname&&u.search===location.search)return;
+  var rt=routeFor(u);if(!rt)return;
+  e.preventDefault();closeAll();document.body.classList.remove('qSrh');
+  if(isHome){go(rt);window.scrollTo(0,0)}else location.href='/#'+rt;
+},true);
+if(!isHome)return;
 var GAME_BASE='https://bshantoz.github.io/nihongo/game/';
 var GAMES=[
     {id: 'tts', f: 'tts.html', t: 'Teka-Teki Silang', j: '\u30af\u30ed\u30b9\u30ef\u30fc\u30c9', r: 'kurosuwado', d: 'Isi kotak kana dari petunjuk, level N5 sampai N1.',
@@ -185,7 +209,7 @@ function mount(paneId,key){
       var c=document.importNode(n,true);host.appendChild(c);
       if(c.nodeType===1)Array.prototype.slice.call(c.querySelectorAll('script')).forEach(function(sc){scripts.push(sc);sc.parentNode.removeChild(sc)});
     });
-    return runScripts(host,scripts);
+    return runScripts(host,scripts).then(function(){var f=panes[paneId].__after;if(f){panes[paneId].__after=null;setTimeout(f,60)}});
   }).catch(function(err){
     if(my!==token[paneId])return;mounted[paneId]=null;
     host.innerHTML='<div class="qhErr"><p>Materi belum bisa dimuat ('+esc(err&&err.message)+').</p><button type="button" class="qhBtn" data-retry="'+key+'">Coba lagi</button> <a class="qhBtn alt" href="'+URL_OF[key]+'">Buka halaman</a></div>';
@@ -352,12 +376,78 @@ var listEl=qs0;
   }
   function wkey(w){ return w.kanji + '|' + w.kana; }
 
+function cardHtml(d){var th=d.th?'<img src="'+esc(d.th)+'" alt="" loading="lazy">':'<span class="qNoImg"></span>';
+  return'<article class="qCard"><a class="qThumb" href="'+d.p+'">'+th+'</a><div><h3><a href="'+d.p+'">'+esc(d.t)+'</a></h3><p>'+esc(d.d)+'</p><small>'+esc(d.dt)+(d.l[0]?' &middot; '+esc(d.l[0]):'')+'</small></div>'+(window.qBmBtn?window.qBmBtn(d.p,d.t,d.th):'')+'</article>'}
+var curL='',readKey='';
 function renderList(){
-  if(!posts)return;
+  if(!posts||curL)return;
   var rows=posts.filter(function(d){return d.ty==='POST'&&(!lab||d.l.indexOf(lab)>=0)});
-  qs0.innerHTML=rows.slice(0,shown).map(function(d){var th=d.th?'<img src="'+esc(d.th)+'" alt="" loading="lazy">':'<span class="qNoImg"></span>';
-    return'<article class="qCard"><a class="qThumb" href="'+d.p+'">'+th+'</a><div><h3><a href="'+d.p+'">'+esc(d.t)+'</a></h3><p>'+esc(d.d)+'</p><small>'+esc(d.dt)+(d.l[0]?' &middot; '+esc(d.l[0]):'')+'</small></div>'+(window.qBmBtn?window.qBmBtn(d.p,d.t,d.th):'')+'</article>'}).join('');
+  qs0.innerHTML=rows.slice(0,shown).map(cardHtml).join('');
   var m=document.getElementById('qMore');m.hidden=rows.length<=shown;
+}
+var readEl=document.createElement('div');readEl.className='qhRead';readEl.hidden=true;panes.berita.appendChild(readEl);
+function scoreSearch(q){
+  var ws=q.toLowerCase().split(/\s+/).filter(Boolean);
+  return posts.map(function(d){var sc=0,t=d.t.toLowerCase();
+    ws.forEach(function(w){if(t.indexOf(w)>=0)sc+=5;if(d.l.join(' ').toLowerCase().indexOf(w)>=0)sc+=2;if(d.tx.indexOf(w)>=0)sc+=1;else sc-=100});
+    return[sc,d]}).filter(function(x){return ws.length&&x[0]>0}).sort(function(a,b){return b[0]-a[0]}).slice(0,60).map(function(x){return x[1]});
+}
+var dataP=null;
+function ensureData(){if(dataP)return dataP;var jobs=[];
+  if(!window.KBQ_DATA)jobs.push(loadScript(DATA_BASE+'kanji/kanji-data.js?v=2'));
+  ['n5','n4','n3','n2','n1'].forEach(function(n){if(!window[n.toUpperCase()+'_KOTOBA'])jobs.push(loadScript(DATA_BASE+n+'/'+n+'-kotoba.js'))});
+  dataP=Promise.all(jobs);return dataP}
+function addHits(q,into){
+  var ql=q.toLowerCase(),box=document.createElement('div');box.className='qhHits';
+  box.innerHTML='<p class="qhLoad">Mencari di Bushu &amp; JLPT...</p>';into.insertBefore(box,into.firstChild);
+  ensureData().then(function(){
+    var has=function(v){return v&&String(v).toLowerCase().indexOf(ql)>=0},kj=[],kt=[],K=(window.KBQ_DATA&&window.KBQ_DATA.KANJI)||[];
+    for(var i=0;i<K.length&&kj.length<14;i++){var r=K[i];if(has(r[1])||has(r[2])||has(r[3])||has(r[4])||has(r[7]))kj.push(r)}
+    ['n5','n4','n3','n2','n1'].forEach(function(n){var L=window[n.toUpperCase()+'_KOTOBA']||[];
+      for(var j=0;j<L.length&&kt.length<16;j++){var w=L[j];if(has(w.kanji)||has(w.kana)||has(w.romaji)||has(w.arti))kt.push([n,w])}});
+    var h='';
+    if(kj.length)h+='<h4>Kanji Bushu</h4><div class="qhHL">'+kj.map(function(r){return'<a class="qhHit" href="'+P+'materi-dan-kuis-kanji-metode-bushu.html?q='+encodeURIComponent(r[1])+'&tab=asal"><b>'+esc(r[1])+'</b><span>'+esc(r[0])+' '+esc(r[2])+' - '+esc(r[4])+'</span></a>'}).join('')+'</div>';
+    if(kt.length)h+='<h4>Kotoba JLPT</h4><div class="qhHL">'+kt.map(function(p){var w=p[1];return'<a class="qhHit" href="'+P+'materi-jlpt-'+p[0]+'.html"><b>'+esc(w.kanji||w.kana)+'</b><span>'+esc(p[0].toUpperCase())+' '+esc(w.kana)+' ('+esc(w.romaji)+') - '+esc(w.arti)+'</span></a>'}).join('')+'</div>';
+    if(!h){if(box.parentNode)box.parentNode.removeChild(box);return}
+    box.innerHTML=h});
+}
+function renderQuery(l){
+  var u;try{u=new URL(l,location.origin)}catch(x){return}
+  var m=/^\/search\/label\/([^\/]+)/.exec(u.pathname);
+  if(m){var lb=decodeURIComponent(m[1]);var rows=posts.filter(function(d){return d.ty==='POST'&&d.l.indexOf(lb)>=0});
+    qs0.innerHTML='<h2 class="qhH">Label: '+esc(lb)+'</h2>'+rows.map(cardHtml).join('');return}
+  var q=(u.searchParams.get('q')||'').trim();
+  var rs=q?scoreSearch(q):[];
+  qs0.innerHTML='<h2 class="qhH">Hasil untuk &ldquo;'+esc(q)+'&rdquo;</h2>'+(rs.length?rs.map(cardHtml).join(''):'<p class="qhLoad">Tidak ada artikel yang cocok.</p>');
+  if(q)addHits(q,qs0);
+}
+function showBerita(qs){
+  var q=new URLSearchParams(qs),u=q.get('u'),l=q.get('l'),more=document.getElementById('qMore');
+  if(u&&ART_RE.test(u)){
+    listEl.hidden=true;more.hidden=true;readEl.hidden=false;todayEl.hidden=true;
+    if(readKey!==u){readKey=u;
+      readEl.innerHTML='<div class="qhBar"><button type="button" class="qhBtn alt" data-go="berita'+(curL?'?l='+encodeURIComponent(curL):'')+'">&larr; Kembali</button></div><div class="qhArt pE postBody"><p class="qhLoad">Memuat...</p></div>';
+      var body=readEl.querySelector('.qhArt'),my=u;
+      fetchHtml(u).then(function(html){if(readKey!==my)return;
+        var d=new DOMParser().parseFromString(html,'text/html'),art=d.querySelector('main article')||d.querySelector('article');
+        if(!art)throw new Error('isi halaman tidak ditemukan');
+        if(d.title)document.title=d.title;
+        body.innerHTML='';var scripts=[];
+        Array.prototype.slice.call(art.childNodes).forEach(function(n){
+          if(n.nodeType===1&&n.tagName==='SCRIPT'){scripts.push(n);return}
+          var c=document.importNode(n,true);body.appendChild(c);
+          if(c.nodeType===1)Array.prototype.slice.call(c.querySelectorAll('script')).forEach(function(sc){scripts.push(sc);sc.parentNode.removeChild(sc)});
+        });
+        window.scrollTo(0,0);return runScripts(body,scripts);
+      }).catch(function(err){if(readKey!==my)return;readKey='';body.innerHTML='<div class="qhErr"><p>Halaman belum bisa dimuat ('+esc(err&&err.message)+').</p><button type="button" class="qhBtn" data-go="berita">Ke daftar berita</button></div>'});
+    }
+    return;
+  }
+  readKey='';readEl.hidden=true;readEl.innerHTML='';listEl.hidden=false;document.title='Berita | Qategori';
+  loadPosts(function(){
+    if(l&&l.charAt(0)==='/'&&l.charAt(1)!=='/'){todayEl.hidden=true;more.hidden=true;if(curL!==l){curL=l;renderQuery(l)}}
+    else{todayEl.hidden=false;refreshToday();if(curL){curL='';lab=''}renderList()}
+  });
 }
 function loadPosts(cb){if(posts)return cb();fetch('/search.json').then(function(r){return r.json()}).then(function(j){posts=j;cb()}).catch(function(){})}
 root.addEventListener('click',function(e){
@@ -379,22 +469,20 @@ function show(){
   document.title=(T[r.tab]||'')+' | Qategori';
   if(r.tab==='game')showGame(r.sub);
   else if(r.tab==='kana')showKana();
-  else if(r.tab==='berita'){loadPosts(renderList);refreshToday()}
+  else if(r.tab==='berita'){showBerita(r.qs)}
   else mount(r.tab,r.sub?r.tab+'-'+r.sub:r.tab);
+  if(r.tab!=='berita'&&readKey){readKey='';document.title=document.title}
+  if(r.tab==='bushu'){var bq=new URLSearchParams(r.qs);if(bq.get('q')||bq.get('tab')){var ap=function(){if(window.kbqOpen)window.kbqOpen(bq.get('q')||'',bq.get('tab')||'asal')};if(mounted.bushu&&document.getElementById('kuis-kanji'))setTimeout(ap,50);else panes.bushu.__after=ap}}
   first=false;
 }
 /* navigasi atas/bawah */
 document.addEventListener('click',function(e){
   var a=e.target.closest&&e.target.closest('a[data-tab],.qLogo');
   if(a&&!e.defaultPrevented&&!e.button&&!e.metaKey&&!e.ctrlKey){e.preventDefault();go(a.classList.contains('qLogo')?'bushu':a.getAttribute('data-tab'));window.scrollTo(0,0);return}
-  var l=e.target.closest&&e.target.closest('#qHome a[href],.leftNav a[href],.shared a[href]');if(!l||e.defaultPrevented||e.button||e.metaKey||e.ctrlKey||l.target==='_blank')return;
-  var u;try{u=new URL(l.getAttribute('href'),location.href)}catch(x){return}
-  if(u.origin!==location.origin)return;
-  var rt=PATH_TO_ROUTE[u.pathname];
-  if(rt){e.preventDefault();closeAll();go(rt+(u.search?'?'+u.search.slice(1):''));window.scrollTo(0,0)}
 });
 window.qhGo=go;
 window.addEventListener('hashchange',function(){closeAll();show()});
 
 show();
 })();
+
