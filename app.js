@@ -170,7 +170,7 @@ function runScripts(host,list){
     if(old.src){s.async=false;s.onload=s.onerror=function(){res()};s.src=old.src;host.appendChild(s)}else{s.textContent=old.textContent;host.appendChild(s);res()}})})});
   return c;
 }
-function fetchHtml(u){if(cache[u])return Promise.resolve(cache[u]);return fetch(u).then(function(r){if(!r.ok)throw new Error('HTTP '+r.status);return r.text()}).then(function(t){cache[u]=t;return t})}
+function fetchHtml(u){if(cache[u])return Promise.resolve(cache[u]);var go=function(){return fetch(u,{cache:'no-cache'}).then(function(r){if(!r.ok)throw new Error('HTTP '+r.status);return r.text()})};return go().catch(function(){return new Promise(function(r){setTimeout(r,700)}).then(go)}).then(function(t){cache[u]=t;return t})}
 function mount(paneId,key){
   var host=panes[paneId].querySelector('.qhBody');if(mounted[paneId]===key)return;
   var my=(token[paneId]=(token[paneId]||0)+1);mounted[paneId]=key;
