@@ -1551,6 +1551,8 @@
   document.addEventListener('click',function(ev){
     var t=ev.target;if(!t.closest)return;
     if(t.closest('.settB')||t.closest('.headB')||t.closest('.bm-delete'))return;
+    var cp=t.closest('[data-copy]');if(cp){var inp=document.getElementById('getLink');if(inp){try{navigator.clipboard.writeText(inp.value)}catch(e){inp.select();try{document.execCommand('copy')}catch(e2){}}cp.textContent='Tersalin';setTimeout(function(){cp.textContent='Salin'},1500)}return}
+    var sh=document.getElementById('forShare');if(sh&&sh.checked&&t.id!=='forShare'&&!t.closest('.shareB .popIn')&&!t.closest('.qShare')){sh.checked=false}
     ['forDark','forBook'].forEach(function(id){var c=document.getElementById(id);if(c&&c.checked)c.checked=false});
   });
   /* hanya satu popup terbuka */

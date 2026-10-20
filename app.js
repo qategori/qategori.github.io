@@ -440,6 +440,29 @@ function renderQuery(l){
   qs0.innerHTML='<h2 class="qhH">Hasil untuk &ldquo;'+esc(q)+'&rdquo;</h2>'+(rs.length?'<div class="qGrid">'+rs.map(function(d){return cardHtml(d)}).join('')+'</div>':'<p class="qhLoad">Tidak ada artikel yang cocok.</p>');
   if(q)addHits(q,qs0);
 }
+function qhToc(body){
+  Array.prototype.forEach.call(readEl.querySelectorAll('.qhTocB,.qhTocP'),function(n){n.parentNode.removeChild(n)});
+  var hs=Array.prototype.slice.call(body.querySelectorAll('.postBody h1,.postBody h2,.postBody h3,.postBody h4,.postBody h5,.postBody h6'));
+  if(hs.length<2)hs=Array.prototype.slice.call(body.querySelectorAll('h1,h2,h3,h4,h5,h6'));
+  if(hs.length<2)return;
+  var min=6,links='';
+  hs.forEach(function(h){min=Math.min(min,parseInt(h.tagName.charAt(1),10))});
+  hs.forEach(function(h,i){
+    var slug=(h.textContent||'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'').slice(0,40);
+    h.id='qk'+(i+1)+(slug?'-'+slug:'');h.style.scrollMarginTop='84px';
+    links+='<a href="#'+h.id+'" style="padding-left:'+((parseInt(h.tagName.charAt(1),10)-min)*14)+'px">'+esc((h.textContent||'').trim())+'</a>'});
+  var btn=document.createElement('button');btn.type='button';btn.className='qhTocB';btn.setAttribute('aria-label','Buka daftar isi');
+  btn.innerHTML='<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h10"/></svg>';
+  var pan=document.createElement('div');pan.className='qhTocP';pan.hidden=true;
+  pan.innerHTML='<button type="button" class="qhTocX">&lsaquo; Konten</button><div class="qhTocC">'+links+'</div>';
+  btn.addEventListener('click',function(){pan.hidden=!pan.hidden});
+  pan.addEventListener('click',function(e){
+    if(e.target.closest('.qhTocX')){pan.hidden=true;return}
+    var a=e.target.closest('a[href^="#"]');if(!a)return;
+    e.preventDefault();e.stopPropagation();pan.hidden=true;
+    var t=document.getElementById(a.getAttribute('href').slice(1));if(t)window.scrollTo({top:t.getBoundingClientRect().top+window.pageYOffset-84,behavior:'smooth'})});
+  readEl.appendChild(btn);readEl.appendChild(pan);
+}
 function showBerita(qs){
   var q=new URLSearchParams(qs),u=q.get('u'),l=q.get('l'),more=document.getElementById('qMore');
   if(u&&ART_RE.test(u)){
@@ -457,7 +480,7 @@ function showBerita(qs){
           var c=document.importNode(n,true);body.appendChild(c);
           if(c.nodeType===1)Array.prototype.slice.call(c.querySelectorAll('script')).forEach(function(sc){scripts.push(sc);sc.parentNode.removeChild(sc)});
         });
-        window.scrollTo(0,0);return runScripts(body,scripts);
+        window.scrollTo(0,0);try{qhToc(body)}catch(e){}return runScripts(body,scripts);
       }).catch(function(err){if(readKey!==my)return;readKey='';body.innerHTML='<div class="qhErr"><p>Halaman belum bisa dimuat ('+esc(err&&err.message)+').</p><button type="button" class="qhBtn" data-go="berita">Ke daftar berita</button></div>'});
     }
     return;

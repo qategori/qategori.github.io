@@ -115,7 +115,7 @@ iframe.qhGame{width:100%;border:0;min-height:480px;display:block}
 .qMore[hidden],.qhRead[hidden],.qhList[hidden]{display:none!important}
 /* popup: tinggi mengikuti layar yang terlihat (bar browser dinamis), tombol tutup selalu terlihat */
 :root{--vHeight:100vh}
-@supports(height:100dvh){:root{--vHeight:100dvh}.popUp{height:100dvh!important}}
+@supports(height:100dvh){:root,.nB{--vHeight:100dvh}.popUp{height:100dvh!important}}
 .popUp .popIn{max-height:calc(100dvh - 16px)!important}
 .nB:has(#forProfil:checked) .qBottom,.nB:has(#forBook:checked) .qBottom{display:none}
 .nB:has(#forNav:checked) #anchor-ad,.nB:has(#forJepang:checked) #anchor-ad,.nB:has(#forProfil:checked) #anchor-ad{display:none!important}
@@ -176,6 +176,36 @@ iframe.qhGame{width:100%;border:0;min-height:480px;display:block}
 .qBar .qDisc{background:#fff6bf}
 .qBar .qTag{padding:0 7px}
 .qBar svg{fill:none!important;stroke:currentColor!important;width:15px;height:15px}.qBar svg path,.qBar svg circle{fill:none!important}
+
+/* sidebar: isi bisa digulir, profil + tombol tutup selalu kelihatan */
+@media(max-width:896px){
+ .leftN{display:flex;flex-direction:column;overflow:hidden}
+ .leftM{flex:1 1 auto;min-height:0;overflow-y:auto;overscroll-behavior:contain;padding-bottom:12px}
+ .leftP{bottom:var(--closeHeight-phone,56px)!important}
+ .leftN{padding-bottom:calc(var(--closeHeight-phone,56px) + 74px)!important}
+}
+/* artikel: tanggal kiri, simpan + bagikan kanan */
+.qRow{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:6px 0 4px}
+.qAct{display:flex;align-items:center;gap:6px;margin-inline-start:auto}
+.qAct .ignielBookmarkPost,.qAct .qShare{display:flex;align-items:center;justify-content:center;width:34px;height:34px;padding:0;margin:0}
+.qAct label{display:flex;align-items:center;justify-content:center;cursor:pointer}
+.qAct svg{width:20px;height:20px}
+.qLabs2{margin:4px 0 8px}
+.nB:has(#forShare:checked) .qBottom{display:none}
+.nB:has(#forShare:checked) #anchor-ad{display:none!important}
+
+/* daftar isi artikel (tombol melayang di kanan) */
+.qhTocB{position:fixed;right:0;top:calc(var(--headerHeight,65px) + 40px);width:45px;height:40px;border:0;border-radius:20px 0 0 20px;background:var(--themeBg-alt,#fffdfc);color:var(--themeC,#0e2045);box-shadow:0 5px 20px rgba(0,0,0,.18);display:flex;align-items:center;justify-content:center;z-index:30;cursor:pointer}
+.qhTocP{position:fixed;right:0;top:var(--headerHeight,65px);bottom:0;width:min(86vw,320px);background:var(--themeBg-alt,#fffdfc);color:var(--themeC,#0e2045);box-shadow:-6px 0 30px rgba(0,0,0,.25);z-index:40;display:flex;flex-direction:column}
+.qhTocP[hidden],.qhRead[hidden] .qhTocB{display:none}
+.qhTocX{flex:none;height:56px;padding:0 20px;border:0;background:none;color:inherit;font:inherit;font-size:16px;text-align:left;cursor:pointer}
+.qhTocC{flex:1;overflow-y:auto;padding:0 20px 24px;line-height:1.3}
+.qhTocC a{display:block;padding:9px 0;color:inherit;text-decoration:none}
+.nB:has(#forNav:checked) .qhTocB,.nB:has(#forProfil:checked) .qhTocB{display:none}
+
+.leftF{justify-content:flex-start!important}
+.leftF label{min-width:56px!important;justify-content:flex-start!important;padding-inline:var(--contentPadding,16px)!important}
+.leftF label::before{content:''!important;display:block;width:24px;height:24px;background:currentColor;-webkit-mask:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%221.5%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22M15%2019.9201L8.47997%2013.4001C7.70997%2012.6301%207.70997%2011.3701%208.47997%2010.6001L15%204.08008%22/%3E%3C/svg%3E") center/contain no-repeat;mask:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%221.5%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22M15%2019.9201L8.47997%2013.4001C7.70997%2012.6301%207.70997%2011.3701%208.47997%2010.6001L15%204.08008%22/%3E%3C/svg%3E") center/contain no-repeat}
 
 /* tombol tutup popup: tanda panah kembali, seperti popup penanda */
 .popUp .popH .c{justify-content:flex-start!important;min-width:44px}
