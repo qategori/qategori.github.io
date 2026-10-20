@@ -129,6 +129,48 @@ iframe.qhGame{width:100%;border:0;min-height:480px;display:block}
 .popUp .popC{padding-block-end:76px!important}
 .popUp .popC:has(#qpBody){min-height:min(60dvh,440px)}
 
+/* ===== Berita: tampilan kartu seperti versi lama ===== */
+.qhH{display:flex;align-items:center;gap:8px;font-size:1rem;font-weight:700;margin:18px 0 12px}
+.qhH::after{content:"";flex:1;height:1px;background:var(--themeBd-color);opacity:.7}
+.qGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px 12px}
+@media(min-width:700px){.qGrid{grid-template-columns:repeat(3,minmax(0,1fr));gap:22px 16px}}
+@media(min-width:1100px){.qGrid{grid-template-columns:repeat(4,minmax(0,1fr))}}
+.qG{position:relative;display:block;min-width:0}
+.qGt{position:relative;border-radius:10px;overflow:hidden;background:var(--themeBg-alt);aspect-ratio:16/9;margin-bottom:8px}
+.qG .qThumb{display:block;width:100%;height:100%}
+.qG .qThumb img{width:100%;height:100%;object-fit:cover;display:block}
+.qG .qNoImg{display:block;width:100%;height:100%}
+.qG .qGt>.ignielBookmarkPost{position:absolute;top:6px;right:6px;margin:0;padding:0;z-index:2}
+.qG .qGt>.ignielBookmarkPost label{width:30px;height:30px;border-radius:8px;background:rgba(0,0,0,.55);color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;backdrop-filter:blur(3px)}
+.qG .qGt>.ignielBookmarkPost svg{width:18px;height:18px}
+.qLb{display:block;font-size:12px;font-weight:600;color:var(--themeLink);text-decoration:none;margin:2px 0 3px}
+.qG h3{margin:0 0 4px;font-size:.95rem;line-height:1.3;font-weight:700;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.qG h3 a{color:var(--themeC);text-decoration:none}
+.qG p{margin:0 0 4px;font-size:12.5px;line-height:1.4;opacity:.8;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.qG small{opacity:.65;font-size:11.5px}
+.qFeat .qGt{aspect-ratio:16/9}
+.qFeat h3{font-size:1.1rem;-webkit-line-clamp:3}.qFeat p{font-size:13.5px}
+@media(min-width:700px){.qFeat{display:grid;grid-template-columns:1.4fr 1fr;gap:0 18px;align-items:start}.qFeat .qGt{grid-row:1/6;margin:0}}
+.qMore{background:var(--themeLink)!important;color:#fff!important;border-color:transparent!important;margin:20px auto!important}
+.qPop{display:grid;gap:14px}
+.qPi .qPh{display:block;border-radius:10px;overflow:hidden;aspect-ratio:16/9;margin-bottom:10px;background:var(--themeBg-alt)}
+.qPi .qPh img{width:100%;height:100%;object-fit:cover;display:block}
+.qPr{display:flex;gap:10px;align-items:flex-start}
+.qPn{font-size:12px;opacity:.6;font-weight:600;min-width:20px;padding-top:2px}
+.qPm{font-size:12px;opacity:.65;margin-bottom:2px}
+.qPr h3{margin:0 0 4px;font-size:.95rem;line-height:1.3;font-weight:700}.qPr h3 a{color:var(--themeC);text-decoration:none}
+.qPr p{margin:0;font-size:12.5px;opacity:.8;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+@media(min-width:700px){.qPop{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.qLabs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+@media(min-width:700px){.qLabs{grid-template-columns:repeat(4,minmax(0,1fr))}}
+.qLbx{display:flex;justify-content:space-between;align-items:center;padding:10px 12px;border:1px solid var(--themeBd-color);border-radius:8px;color:var(--themeC);text-decoration:none;font-size:14px}
+.qLbx i{font-style:normal;font-size:12px;opacity:.7}
+.qAll{display:block;margin:14px 0 6px;background:none;border:0;color:var(--themeLink);font:inherit;cursor:pointer;padding:0}
+.qAll small{opacity:.7}
+#qExtra[hidden]{display:none!important}
+
+.qPi .qPh{width:100%!important;max-width:none!important;flex:none!important;height:auto!important}
+
 /* tombol tutup popup: tanda panah kembali, seperti popup penanda */
 .popUp .popH .c{justify-content:flex-start!important;min-width:44px}
 .popUp .popH .c:not(.r){right:auto!important;left:var(--contentPadding)}

@@ -376,14 +376,30 @@ var listEl=qs0;
   }
   function wkey(w){ return w.kanji + '|' + w.kana; }
 
-function cardHtml(d){var th=d.th?'<img src="'+esc(d.th)+'" alt="" loading="lazy">':'<span class="qNoImg"></span>';
-  return'<article class="qCard"><a class="qThumb" href="'+d.p+'">'+th+'</a><div><h3><a href="'+d.p+'">'+esc(d.t)+'</a></h3><p>'+esc(d.d)+'</p><small>'+esc(d.dt)+(d.l[0]?' &middot; '+esc(d.l[0]):'')+'</small></div>'+(window.qBmBtn?window.qBmBtn(d.p,d.t,d.th):'')+'</article>'}
-var curL='',readKey='';
+var MON=['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'];
+function fdt(s){var m=/^(\d{4})-(\d\d)-(\d\d)/.exec(s||'');return m?(+m[3])+' '+MON[+m[2]-1]+', '+m[1]:(s||'')}
+function labA(l){return l?'<a class="qLb" href="/search/label/'+encodeURIComponent(l)+'/"># '+esc(l)+'</a>':''}
+function cardHtml(d,feat){var th=d.th?'<img src="'+esc(d.th)+'" alt="" loading="lazy">':'<span class="qNoImg"></span>';
+  return'<article class="qG'+(feat?' qFeat':'')+'"><div class="qGt"><a class="qThumb" href="'+d.p+'" tabindex="-1">'+th+'</a>'+(window.qBmBtn?window.qBmBtn(d.p,d.t,d.th):'')+'</div>'+labA(d.l[0])+'<h3><a href="'+d.p+'">'+esc(d.t)+'</a></h3><p>'+esc(d.d)+'</p><small>'+fdt(d.dt)+'</small></article>'}
+var curL='',readKey='',extraEl=document.getElementById('qExtra'),showAllL=false;
+function postRows(){return posts.filter(function(d){return d.ty==='POST'})}
 function renderList(){
   if(!posts||curL)return;
-  var rows=posts.filter(function(d){return d.ty==='POST'&&(!lab||d.l.indexOf(lab)>=0)});
-  qs0.innerHTML=rows.slice(0,shown).map(cardHtml).join('');
-  var m=document.getElementById('qMore');m.hidden=rows.length<=shown;
+  var rows=postRows(),feat=null;
+  for(var i=0;i<rows.length;i++){if(rows[i].th){feat=rows[i];break}}
+  var rest=rows.filter(function(d){return d!==feat});
+  qs0.innerHTML=(feat?'<h2 class="qhH">Sorotan</h2>'+cardHtml(feat,true):'')+'<h2 class="qhH">Semua Postingan</h2><div class="qGrid">'+rest.slice(0,shown).map(function(d){return cardHtml(d)}).join('')+'</div>';
+  var m=document.getElementById('qMore');m.hidden=rest.length<=shown;
+  renderExtra(rows,feat);extraEl.hidden=false;
+}
+function renderExtra(rows,feat){
+  var yr=(rows[0]&&rows[0].dt||'').slice(0,4),pop=rows.filter(function(d){return d!==feat&&d.th&&d.dt.slice(0,4)===yr}).map(function(d){var h=0,k=d.p;for(var i=0;i<k.length;i++)h=(h*31+k.charCodeAt(i))>>>0;return[h,d]}).sort(function(a,b){return a[0]-b[0]}).slice(0,5).map(function(x){return x[1]});
+  var h='<h2 class="qhH">Postingan Populer</h2><div class="qPop">'+pop.map(function(d,i){
+    return'<article class="qPi">'+(i===0?'<a class="qThumb qPh" href="'+d.p+'" tabindex="-1">'+(d.th?'<img src="'+esc(d.th)+'" alt="" loading="lazy">':'')+'</a>':'')+'<div class="qPr"><b class="qPn">0'+(i+1)+'</b><div><div class="qPm">'+fdt(d.dt)+(d.l[0]?' &middot; '+esc(d.l[0]):'')+'</div><h3><a href="'+d.p+'">'+esc(d.t)+'</a></h3><p>'+esc(d.d)+'</p></div></div></article>'}).join('')+'</div>';
+  var c={};rows.forEach(function(d){d.l.forEach(function(l){c[l]=(c[l]||0)+1})});
+  var ks=Object.keys(c).sort(function(a,b){return a.localeCompare(b)}),lim=8,vis=showAllL?ks:ks.slice(0,lim);
+  h+='<h2 class="qhH">Label</h2><div class="qLabs">'+vis.map(function(l){return'<a class="qLbx" href="/search/label/'+encodeURIComponent(l)+'/"><span>'+esc(l)+'</span><i>'+c[l]+'</i></a>'}).join('')+'</div>'+(ks.length>lim&&!showAllL?'<button type="button" class="qAll" id="qAll">Tunjukkan semua <small>(+'+(ks.length-lim)+')</small></button>':'');
+  extraEl.innerHTML=h;
 }
 var readEl=document.createElement('div');readEl.className='qhRead';readEl.hidden=true;panes.berita.appendChild(readEl);
 function scoreSearch(q){
@@ -415,16 +431,16 @@ function renderQuery(l){
   var u;try{u=new URL(l,location.origin)}catch(x){return}
   var m=/^\/search\/label\/([^\/]+)/.exec(u.pathname);
   if(m){var lb=decodeURIComponent(m[1]);var rows=posts.filter(function(d){return d.ty==='POST'&&d.l.indexOf(lb)>=0});
-    qs0.innerHTML='<h2 class="qhH">Label: '+esc(lb)+'</h2>'+rows.map(cardHtml).join('');return}
+    qs0.innerHTML='<h2 class="qhH"># '+esc(lb)+'</h2><div class="qGrid">'+rows.map(function(d){return cardHtml(d)}).join('')+'</div>';return}
   var q=(u.searchParams.get('q')||'').trim();
   var rs=q?scoreSearch(q):[];
-  qs0.innerHTML='<h2 class="qhH">Hasil untuk &ldquo;'+esc(q)+'&rdquo;</h2>'+(rs.length?rs.map(cardHtml).join(''):'<p class="qhLoad">Tidak ada artikel yang cocok.</p>');
+  qs0.innerHTML='<h2 class="qhH">Hasil untuk &ldquo;'+esc(q)+'&rdquo;</h2>'+(rs.length?'<div class="qGrid">'+rs.map(function(d){return cardHtml(d)}).join('')+'</div>':'<p class="qhLoad">Tidak ada artikel yang cocok.</p>');
   if(q)addHits(q,qs0);
 }
 function showBerita(qs){
   var q=new URLSearchParams(qs),u=q.get('u'),l=q.get('l'),more=document.getElementById('qMore');
   if(u&&ART_RE.test(u)){
-    listEl.hidden=true;more.hidden=true;readEl.hidden=false;todayEl.hidden=true;
+    listEl.hidden=true;more.hidden=true;extraEl.hidden=true;readEl.hidden=false;todayEl.hidden=true;
     if(readKey!==u){readKey=u;
       readEl.innerHTML='<div class="qhBar"><button type="button" class="qhBtn alt" data-go="berita'+(curL?'?l='+encodeURIComponent(curL):'')+'">&larr; Kembali</button></div><div class="qhArt pE postBody"><p class="qhLoad">Memuat...</p></div>';
       var body=readEl.querySelector('.qhArt'),my=u;
@@ -445,7 +461,7 @@ function showBerita(qs){
   }
   readKey='';readEl.hidden=true;readEl.innerHTML='';listEl.hidden=false;document.title='Berita | Qategori';
   loadPosts(function(){
-    if(l&&l.charAt(0)==='/'&&l.charAt(1)!=='/'){todayEl.hidden=true;more.hidden=true;if(curL!==l){curL=l;renderQuery(l)}}
+    if(l&&l.charAt(0)==='/'&&l.charAt(1)!=='/'){todayEl.hidden=true;more.hidden=true;extraEl.hidden=true;if(curL!==l){curL=l;renderQuery(l)}}
     else{todayEl.hidden=false;refreshToday();if(curL){curL='';lab=''}renderList()}
   });
 }
@@ -453,6 +469,7 @@ function loadPosts(cb){if(posts)return cb();fetch('/search.json').then(function(
 root.addEventListener('click',function(e){
   var c=e.target.closest&&e.target.closest('.qChip');
   if(c){lab=c.getAttribute('data-lab');shown=20;root.querySelectorAll('.qChip').forEach(function(x){x.classList.toggle('on',x===c)});loadPosts(renderList);return}
+  if(e.target.id==='qAll'||e.target.closest&&e.target.closest('#qAll')){showAllL=true;loadPosts(renderList);return}
   if(e.target.id==='qMore'){shown+=20;loadPosts(renderList);return}
   var g=e.target.closest&&e.target.closest('[data-go]');if(g){e.preventDefault();go(g.getAttribute('data-go'));window.scrollTo(0,0);return}
   var r=e.target.closest&&e.target.closest('[data-retry]');if(r){mounted[PANES.filter(function(p){return panes[p].contains(r)})[0]]=null;show();}
