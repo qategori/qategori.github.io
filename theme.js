@@ -998,3 +998,554 @@
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', run); else run();
   setTimeout(run, 1500);
 })();
+(function(){
+  'use strict';
+  var CFG = {apiKey:'AIzaSyA1WrsQJfTo7dj_WfTh3j_E6Ecoko7rYX4', authDomain:'qategori.firebaseapp.com', projectId:'qategori', appId:'1:323434645943:web:5c0449e902b0f32655c032'};
+  var G = 'https://www.gstatic.com/firebasejs/10.14.1/';
+  var BIDANG = {kensetsu:'Konstruksi (kensetsu)', manufaktur:'Manufaktur (seizou)', jidousha:'Perawatan Mobil (jidousha seibi)', bisniskaria:'Bisnis Karir (bijinesu kyaria)'};
+  /* Koleksi skor kuis. Tambah baris di sini kalau ada halaman kuis lain. */
+  var RESULT_COLS = [
+    {c:'results_bisniskaria_planning', n:'Bisnis Karir - Planning'},
+    {c:'results_bisniskaria_operations', n:'Bisnis Karir - Operations'}
+  ];
+  var KEEP = /_prefs$|_archived_v1$|_fav_v1$|^kbq_theme_v1$|^qProgress/;
+  var TG2 = '/p/materi-dan-soal-tg2-jlpt.html';
+
+  var chk = document.getElementById('forProfil');
+  var body = document.getElementById('qpBody');
+  if (!chk || !body) return;
+
+  var F = null, auth = null, db = null, booting = null;
+  var user = null, checked = false, info = null, msg = '', busy = false, dip = null;
+  var mode = 'choice', ev = '', pv = '';   // login email: choice | signin | signup
+  window.qpUser = function(){ return user; };
+  var LV = ['n5','n4','n3','n2','n1'];
+  var LVN = {n5:'N5 Pemula', n4:'N4 Dasar', n3:'N3 Menengah', n2:'N2 Lanjut', n1:'N1 Mahir'};
+  var syncing = false, syncErr = '', lastSig = null;
+  var niho = [], nihoErr = '', flushing = false;
+
+  function esc(s){ return String(s == null ? '' : s).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+  function lsGet(k){ try { return localStorage.getItem(k); } catch(e){ return null; } }
+  function lsSet(k, v){ try { localStorage.setItem(k, v); } catch(e){} }
+  function el(id){ return document.getElementById(id); }
+  function fmt(ts){ try { return ts && ts.toDate ? ts.toDate().toLocaleDateString('id-ID', {day:'numeric', month:'short', year:'numeric'}) : ''; } catch(e){ return ''; } }
+  var standalone = (window.matchMedia && matchMedia('(display-mode: standalone)').matches) || window.navigator.standalone === true;
+  var isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+
+  window.addEventListener('beforeinstallprompt', function(e){ e.preventDefault(); dip = e; if (chk.checked) render(); });
+  window.addEventListener('appinstalled', function(){ dip = null; standalone = true; if (chk.checked) render(); });
+
+  /* ---------- Firebase (dimuat hanya saat dibutuhkan) ---------- */
+  function boot(){
+    if (booting) return booting;
+    booting = Promise.all([import(G + 'firebase-app.js'), import(G + 'firebase-auth.js'), import(G + 'firebase-firestore.js')]).then(function(m){
+      F = {app:m[0], auth:m[1], fs:m[2]};
+      var a = F.app.getApps().length ? F.app.getApp() : F.app.initializeApp(CFG);
+      auth = F.auth.getAuth(a); db = F.fs.getFirestore(a);
+      F.auth.onAuthStateChanged(auth, onUser);
+    }).catch(function(){ booting = null; msg = 'Gagal memuat layanan login. Periksa koneksi internet lalu buka lagi.'; render(); });
+    return booting;
+  }
+
+  function onUser(u){
+    user = u; checked = true; info = null;
+    try { window.dispatchEvent(new Event('qp-user')); } catch(e){}
+    lsSet('qpHint', u ? '1' : '0');
+    paintSlot();
+    lastSig = null; niho = []; nihoErr = '';
+    if (u) { loadInfo(u); sync(); flushLog(); }
+    render();
+  }
+
+  function loadInfo(u){
+    var fs = F.fs, email = (u.email || '').toLowerCase();
+    var mine = info = {role:null, bidang:null, results:[], loading:true, err:false};
+    var p = fs.getDoc(fs.doc(db, 'admins', email)).then(function(a){
+      if (a.exists()) { mine.role = 'admin'; return; }
+      return fs.getDoc(fs.doc(db, 'members', email)).then(function(m){
+        if (m.exists()) { mine.role = 'member'; var b = m.data().bidang; mine.bidang = Array.isArray(b) ? b : null; }
+      });
+    }).catch(function(){ mine.err = true; });
+    var rs = RESULT_COLS.map(function(c){
+      return fs.getDocs(fs.query(fs.collection(db, c.c), fs.where('uid', '==', u.uid))).then(function(s){
+        if (!s.size) return;
+        var rows = s.docs.map(function(d){ return d.data(); }).sort(function(a, b){ return ((b.at && b.at.seconds) || 0) - ((a.at && a.at.seconds) || 0); });
+        var best = 0; rows.forEach(function(r){ if (r.total) best = Math.max(best, Math.round(100 * r.skor / r.total)); });
+        mine.results.push({n:c.n, count:rows.length, last:rows[0], best:best});
+      }).catch(function(){});
+    });
+    Promise.all([p].concat(rs)).then(function(){ mine.loading = false; if (info === mine) render(); });
+  }
+
+  /* ---------- Tampilan slot (rel kiri / menu) ---------- */
+  var ICON0 = el('qpAv') ? el('qpAv').innerHTML : '';
+  function paintSlot(){
+    var av = el('qpAv'), nm = el('qpName'), mn = el('qpMenuName'), lb = av && av.closest ? av.closest('label') : null;
+    var name = user ? (user.displayName || user.email || '') : '';
+    var first = name.split(' ')[0];
+    document.documentElement.classList.toggle('qp-in', !!user);
+    if (av) {
+      if (user && user.photoURL) av.innerHTML = '<img alt="" referrerpolicy="no-referrer" src="' + esc(user.photoURL) + '"/>';
+      else if (user && first) av.innerHTML = '<b class="qpIni">' + esc(first.charAt(0).toUpperCase()) + '</b>';
+      else av.innerHTML = ICON0;
+    }
+    if (nm) nm.textContent = 'Masuk';
+    if (lb) { lb.setAttribute('aria-label', user ? 'Profil ' + name : 'Masuk dan lihat profil'); lb.setAttribute('title', user ? name : 'Masuk'); }
+    if (mn) mn.textContent = user ? 'Profil saya (' + first + ')' : 'Profil saya';
+  }
+
+  /* ---------- Progres kotoba (kunci dibuat oleh halaman materi JLPT) ---------- */
+  function kkey(l){ return l + '_kotoba_archived_v1'; }
+  function readArr(raw){ try { var a = JSON.parse(raw); return Array.isArray(a) ? a.filter(function(x){ return typeof x === 'string'; }) : []; } catch(e){ return []; } }
+  function readList(l){ return readArr(lsGet(kkey(l))); }
+  function readSnap(l){ return readArr(lsGet('qSnap_' + l)); }
+  function fkey(l){ return l + '_kotoba_fav_v1'; }
+  function readFav(l){ return readArr(lsGet(fkey(l))); }
+  function readSnapF(l){ return readArr(lsGet('qSnapF_' + l)); }
+  function kk(l, t){ return l + '_kanji_' + t + '_v1'; }
+  var KINDS = [
+    {f:'kotoba', key:kkey, snap:'qSnap_'},
+    {f:'fav', key:fkey, snap:'qSnapF_'},
+    {f:'kanji', key:function(l){ return kk(l, 'archived'); }, snap:'qSnapK_'},
+    {f:'kfav', key:function(l){ return kk(l, 'fav'); }, snap:'qSnapKF_'}
+  ];
+  function sig(){ return LV.map(function(l){ return KINDS.map(function(k){ return lsGet(k.key(l)) || ''; }).join('|'); }).join('#'); }
+  function sameSet(a, b){ if (a.length !== b.length) return false; var m = {}; a.forEach(function(x){ m[x] = 1; }); return b.every(function(x){ return m[x]; }); }
+  function totals(){
+    var t = {}; try { t = JSON.parse(lsGet('qProgressTotals') || '{}') || {}; } catch(e){}
+    var ch = false;
+    LV.forEach(function(l){ var w = window[l.toUpperCase() + '_KOTOBA']; if (Array.isArray(w) && w.length && t[l] !== w.length) { t[l] = w.length; ch = true; } });
+    if (ch) lsSet('qProgressTotals', JSON.stringify(t));
+    return t;
+  }
+  /* Gabung tiga arah: yang ditambah di salah satu sisi ikut, yang dibuang di salah satu sisi ikut dibuang. */
+  function merge3(base, L, R){
+    var inB = {}, inL = {}, inR = {}; base.forEach(function(x){ inB[x] = 1; }); L.forEach(function(x){ inL[x] = 1; }); R.forEach(function(x){ inR[x] = 1; });
+    var out = [], seen = {};
+    L.concat(R).forEach(function(x){
+      if (seen[x]) return; seen[x] = 1;
+      var removed = inB[x] && (!inL[x] || !inR[x]);
+      if (!removed) out.push(x);
+    });
+    return out;
+  }
+  function sync(){
+    if (!user || !F || syncing) return;
+    syncing = true; syncErr = ''; if (chk.checked) render();
+    var fs = F.fs, ref = fs.doc(db, 'progress', user.uid), u = user;
+    fs.getDoc(ref).then(function(snap){
+      if (u !== user) return;
+      var d0 = snap.exists() ? snap.data() : {};
+      var payload = {}, push = !snap.exists();
+      KINDS.forEach(function(k){
+        var remote = d0[k.f] || {}, out = {};
+        LV.forEach(function(l){
+          var L = readArr(lsGet(k.key(l))), R = Array.isArray(remote[l]) ? remote[l] : [], B = readArr(lsGet(k.snap + l));
+          var M = merge3(B, L, R);
+          if (!sameSet(M, L)) lsSet(k.key(l), JSON.stringify(M));
+          if (!sameSet(M, R)) push = true;
+          lsSet(k.snap + l, JSON.stringify(M));
+          out[l] = M;
+        });
+        payload[k.f] = out;
+      });
+      lastSig = sig();
+      if (!push) return;
+      payload.updatedAt = fs.serverTimestamp();
+      return fs.setDoc(ref, payload, {merge:true});
+    }).then(function(){ lsSet('qSyncAt', String(Date.now())); }).catch(function(e){
+      syncErr = (e && e.code === 'permission-denied') ? 'Aturan Firestore belum mengizinkan koleksi "progress".' : 'Sinkron gagal. Coba lagi nanti.';
+    }).then(function(){ syncing = false; if (chk.checked) render(); });
+  }
+  function watch(){
+    if (user && F && !syncing && sig() !== lastSig) sync();
+  }
+  setInterval(watch, 20000);
+  document.addEventListener('visibilitychange', function(){ if (document.visibilityState === 'hidden') watch(); });
+  setTimeout(totals, 4000);
+
+  function dailySec(){
+    var d = window.qDaily ? window.qDaily.get() : null; if (!d) return '';
+    var pct = Math.min(100, Math.round(100 * d.n / d.goal));
+    return '<div class="qpSec"><h4>Target hari ini</h4><div class="qpGoal"><span>' + (d.met ? 'Tercapai! すごい (sugoi)' : 'Kartu dihapal hari ini') + '</span><b>' + d.n + ' / ' + d.goal + '</b><i class="qpBar"><u style="width:' + pct + '%"></u></i></div>' +
+      '<p class="qpStreak">Streak: <b>' + d.streak + ' hari</b>' + (d.best > 1 ? ' &middot; terbaik ' + d.best + ' hari' : '') + '</p>' +
+      '<p class="qpStreak"><button type="button" class="qpBtn sm" data-qp="goal">Ganti target (' + d.goal + ')</button></p></div>';
+  }
+
+  /* Pilihan level (chip menyamping) untuk kotoba dan kanji; level lain ditambah cukup lewat array LV. */
+  var selLv = {kotoba:null, kanji:null};
+  function pickLv(kind, rows){
+    var cur = selLv[kind];
+    if (!cur || LV.indexOf(cur) < 0) {
+      cur = 'n5';
+      for (var i = 0; i < rows.length; i++) { if (!rows[i].tot || rows[i].n < rows[i].tot) { cur = rows[i].l; break; } }
+      selLv[kind] = cur;
+    }
+    return cur;
+  }
+  function lvBlock(kind, rows, favFn){
+    var cur = pickLv(kind, rows), sel = null, sumN = 0, sumT = 0;
+    rows.forEach(function(r){ sumN += r.n; sumT += r.tot; if (r.l === cur) sel = r; });
+    var chips = '<div class="qpPick" role="tablist">' + rows.map(function(r){
+      var pct = r.tot ? Math.min(100, Math.round(100 * r.n / r.tot)) : 0;
+      return '<button type="button" role="tab" class="qpPk' + (r.l === cur ? ' on' : '') + '" aria-selected="' + (r.l === cur) + '" data-qp="lv:' + kind + ':' + r.l + '"><b>' + r.l.toUpperCase() + '</b><small>' + pct + '%</small></button>';
+    }).join('') + '</div>';
+    var pc = sel.tot ? Math.min(100, Math.round(100 * sel.n / sel.tot)) : 0;
+    var one = '<div class="qpLv"><span>' + LVN[cur] + '</span><b>' + sel.n + (sel.tot ? ' / ' + sel.tot : '') + '</b><i class="qpBar"><u style="width:' + pc + '%"></u></i></div>';
+    var fv = favFn(cur);
+    var favRow = '<div class="qpFavs"><span>Favorit ' + cur.toUpperCase() + '</span>' + (fv ? '<i>' + fv + '</i>' : '<small>belum ada</small>') + '</div>';
+    return chips + one + favRow + '<p class="qpNote">Semua level: ' + sumN + (sumT ? ' / ' + sumT : '') + ' dihapal.</p>';
+  }
+
+  function kotobaSec(){
+    var t = totals(), any = false;
+    var rows = LV.map(function(l){ var n = readList(l).length; if (n) any = true; return {l:l, n:n, tot:t[l] || 0}; });
+    var st;
+    if (!user) st = 'Belum masuk: progres hanya tersimpan di browser ini.';
+    else if (syncing) st = 'Menyinkronkan ke akun...';
+    else if (syncErr) st = syncErr;
+    else { var at = +lsGet('qSyncAt'); st = at ? 'Tersinkron ke akunmu pukul ' + new Date(at).toLocaleTimeString('id-ID', {hour:'2-digit', minute:'2-digit'}) + '.' : 'Belum disinkronkan.'; }
+    return '<div class="qpSec"><h4>Kotoba dihapal (単語, tango)</h4>' +
+      lvBlock('kotoba', rows, function(l){ var n = readFav(l).length; return n ? n + ' kartu' : ''; }) +
+      '<p class="qpNote">' + (any ? '' : 'Belum ada kotoba yang ditandai hafal. Tandai lewat kartu hapalan di halaman materi JLPT. ') + esc(st) +
+      (user && !syncing ? ' <a href="#" data-qp="sync">Sinkronkan sekarang</a>' : '') + '</p></div>';
+  }
+
+  function kanjiSec(){
+    var t = {}; try { t = JSON.parse(lsGet('qProgressTotalsK') || '{}') || {}; } catch(e){}
+    var any = false;
+    var rows = LV.map(function(l){ var n = readArr(lsGet(kk(l, 'archived'))).length; if (n) any = true; return {l:l, n:n, tot:t[l] || 0}; });
+    return '<div class="qpSec"><h4>Kanji dihapal (漢字, kanji)</h4>' +
+      lvBlock('kanji', rows, function(l){ var n = readArr(lsGet(kk(l, 'fav'))).length; return n ? n + ' kartu' : ''; }) +
+      '<p class="qpNote">' + (any ? '' : 'Belum ada kanji yang ditandai hapal. Tandai lewat Kartu hapalan di halaman Kuis Bushu.') + '</p></div>';
+  }
+
+  /* ---------- Skor kuis Nihongo (JLPT dan Bushu) ---------- */
+  var LOGK = 'qProgressLog';
+  var TIPE = {campuran:'Campuran', kanji_yomi:'Kanji yomi (baca kanji)', hyouki:'Hyouki (tulis kanji)', bunmyaku:'Bunmyaku (konteks)', bunpou:'Bunpou (tata bahasa)', kumitate:'Kumitate (susun kalimat)'};
+  function readLog(){
+    try { var a = JSON.parse(lsGet(LOGK) || '[]'); return Array.isArray(a) ? a.filter(function(x){ return x && typeof x.k === 'string' && isFinite(x.s) && isFinite(x.t) && isFinite(x.at); }) : []; } catch(e){ return []; }
+  }
+  function writeLog(a){
+    while (a.length > 100) { var i = 0; for (var j = 0; j < a.length; j++) { if (a[j].u) { i = j; break; } } a.splice(i, 1); }
+    lsSet(LOGK, JSON.stringify(a));
+  }
+  var lastRec = {};
+  function record(k, n, s, t){
+    s = +s; t = +t;
+    if (!k || !isFinite(s) || !isFinite(t) || t <= 0 || s < 0 || s > t) return;
+    var key = k + '|' + s + '|' + t, now = Date.now();
+    if (lastRec[key] && now - lastRec[key] < 2500) return;
+    lastRec[key] = now;
+    var a = readLog(); a.push({k:k, n:n, s:s, t:t, at:now, u:0}); writeLog(a);
+    if (user && F) flushLog(); else if (chk.checked) render();
+  }
+  window.qRecord = record;
+  function loadNiho(u){
+    if (!user || !F || u !== user) return Promise.resolve();
+    var fs = F.fs;
+    return fs.getDocs(fs.query(fs.collection(db, 'results_nihongo'), fs.where('uid', '==', u.uid))).then(function(s){
+      if (u !== user) return;
+      niho = s.docs.map(function(d){ var x = d.data(); return {k:x.k, n:x.n, s:x.skor, t:x.total, at:+x.ts || ((x.at && x.at.seconds) || 0) * 1000}; });
+    }).catch(function(e){
+      if (!nihoErr) nihoErr = (e && e.code === 'permission-denied') ? 'Aturan Firestore belum mengizinkan koleksi "results_nihongo".' : '';
+    }).then(function(){ if (chk.checked) render(); });
+  }
+  function flushLog(){
+    if (!user || !F || flushing) return Promise.resolve();
+    flushing = true; nihoErr = '';
+    var u = user, fs = F.fs, chain = Promise.resolve();
+    readLog().filter(function(x){ return !x.u; }).forEach(function(x){
+      chain = chain.then(function(){
+        return fs.addDoc(fs.collection(db, 'results_nihongo'), {uid:u.uid, email:(u.email || '').toLowerCase(), nama:u.displayName || '', k:x.k, n:x.n, skor:x.s, total:x.t, ts:x.at, at:fs.serverTimestamp()}).then(function(){
+          var a = readLog(); a.forEach(function(y){ if (y.at === x.at && y.k === x.k && !y.u) y.u = 1; }); writeLog(a);
+        });
+      });
+    });
+    return chain.catch(function(e){
+      nihoErr = (e && e.code === 'permission-denied') ? 'Aturan Firestore belum mengizinkan koleksi "results_nihongo".' : 'Skor belum terkirim, akan dicoba lagi.';
+    }).then(function(){ flushing = false; return loadNiho(u); });
+  }
+  function nihoSec(){
+    var local = readLog(), rows = user ? niho.concat(local.filter(function(x){ return !x.u; })) : local, g = {};
+    rows.forEach(function(r){
+      var o = g[r.k] || (g[r.k] = {n:r.n || r.k, c:0, last:null, best:0});
+      o.c++; if (!o.last || r.at > o.last.at) o.last = r;
+      if (r.t) o.best = Math.max(o.best, Math.round(100 * r.s / r.t));
+    });
+    var list = Object.keys(g).map(function(k){ return g[k]; }).sort(function(a, b){ return b.last.at - a.last.at; }).slice(0, 8);
+    var h = '<div class="qpSec"><h4>Skor kuis Nihongo</h4>';
+    if (!list.length) h += '<p class="qpNote">Belum ada skor. Selesaikan kuis di halaman materi JLPT atau kuis Bushu.</p>';
+    else h += list.map(function(o){
+      var d = new Date(o.last.at).toLocaleDateString('id-ID', {day:'numeric', month:'short'});
+      return '<div class="qpRow"><span>' + esc(o.n) + '<small>' + o.c + ' kali &middot; terakhir ' + esc(d) + '</small></span><b>' + o.last.s + '/' + o.last.t + '<small>terbaik ' + o.best + '%</small></b></div>';
+    }).join('');
+    if (nihoErr) h += '<p class="qpNote">' + esc(nihoErr) + '</p>';
+    else if (!user && list.length) h += '<p class="qpNote">Masuk agar skor tersimpan di akunmu.</p>';
+    return h + '</div>';
+  }
+
+  /* Halaman materi JLPT: baca hasil dari teks "Skor kamu: X / Y" tanpa mengubah file halaman */
+  function hookJlpt(){
+    var out = el('quizScoreText');
+    if (!out) return false;
+    if (out.__qp) return true;
+    out.__qp = 1;
+    new MutationObserver(function(){
+      var m = /Skor kamu:\s*(\d+)\s*\/\s*(\d+)/.exec(out.textContent || ''); if (!m) return;
+      var lv = null; ['5','4','3','2','1'].forEach(function(x){ if (!lv && window['N' + x + '_QUIZ']) lv = x; });
+      if (!lv) { var p = /jlpt-n([1-5])/i.exec(location.pathname); lv = p && p[1]; }
+      if (!lv) return;
+      var r = document.querySelector('input[name=quizType]:checked'), ty = r ? r.value : 'campuran';
+      record('jlpt-n' + lv + '-' + ty, 'JLPT N' + lv + ' · ' + (TIPE[ty] || ty), m[1], m[2]);
+    }).observe(out, {childList:true, characterData:true, subtree:true});
+    return true;
+  }
+  /* Halaman kuis Bushu: berjalan langsung di halaman Blogger (#kuis-kanji). Hasil dibaca dari layar "Hasil kuis Nx". */
+  function hookBushu(){
+    var app = el('kbq-app');
+    if (!app) return false;
+    if (app.__qp) return true;
+    app.__qp = 1;
+    var inRes = false;
+    new MutationObserver(function(){
+      var sc = app.querySelector('.kbq-score');
+      if (!sc) { inRes = false; return; }
+      if (inRes) return;
+      var m = /(\d+)\s*\/\s*(\d+)/.exec(sc.textContent || ''), h = app.querySelector('h2'), lv = /Hasil kuis (N[1-5])/.exec(h ? h.textContent : '');
+      if (!m || !lv) return;
+      inRes = true;
+      record('bushu-' + lv[1].toLowerCase(), 'Kanji Bushu ' + lv[1] + ' (\u90E8\u9996, bushu)', m[1], m[2]);
+    }).observe(app, {childList:true, subtree:true});
+    return true;
+  }
+  window.qpHook = function(){ hookJlpt(); hookBushu(); };
+  var hookTries = 0, hookIv = setInterval(function(){ var a = hookJlpt(), b = hookBushu(); if (a || b || ++hookTries > 20) clearInterval(hookIv); }, 1000);
+
+  /* Kuis Bushu (iframe GitHub Pages) mengirim hasilnya lewat postMessage */
+  window.addEventListener('message', function(e){
+    if (e.origin !== 'https://bshantoz.github.io') return;
+    var d = e.data && e.data.qScore;
+    if (!d || d.quiz !== 'bushu' || !/^N[1-5]$/.test(d.level)) return;
+    record('bushu-' + d.level.toLowerCase(), 'Kanji Bushu ' + d.level + ' (部首, bushu)', d.skor, d.total);
+  });
+
+  /* ---------- Isi popup ---------- */
+  var ICON_USER = '<svg class="line" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4.5 20c.8-3.6 3.8-5.5 7.5-5.5s6.7 1.9 7.5 5.5"/></svg>';
+  function tools(){
+    var h = '<div class="qpSec"><h4>Alat</h4><div class="qpTools">' +
+      '<button class="qpBtn" type="button" data-qp="backup">Cadangkan</button>' +
+      '<button class="qpBtn" type="button" data-qp="restore">Pulihkan</button>';
+    var ua = navigator.userAgent, inApp = /QategoriApp/.test(ua), apk = 'https://github.com/bshantoz/qategori/releases/download/terbaru/QategoriKartu.apk';
+    if (!inApp) {
+      if (/android/i.test(ua)) {
+        h += '<a class="qpBtn wide" href="' + apk + '" style="text-decoration:none;display:block">Unduh aplikasi Android</a>';
+        if (/TikTok|musical_ly|Bytedance|Instagram|FBAN|FBAV|Line\//i.test(ua)) h += '<p class="qpMsg" style="grid-column:1/-1">Kalau tidak terunduh, buka situs ini lewat Chrome lalu coba lagi.</p>';
+      } else if (!standalone) h += '<button class="qpBtn wide" type="button" data-qp="install">Pasang aplikasi di layar utama</button>';
+    }
+    h += '</div>' + (msg ? '<p class="qpMsg">' + esc(msg) + '</p>' : '') + '</div>';
+    return h;
+  }
+  function loginBlock(){
+    var dis = busy ? ' disabled' : '';
+    var inApp = /QategoriApp/.test(navigator.userAgent);
+    var gBtn = inApp ? '<p class="qpNote">Di aplikasi, masuk lewat Email. Google tidak mengizinkan login di dalam aplikasi. Kalau akunmu dulu daftar dengan Google, pilih Masuk dengan Email lalu &quot;Lupa kata sandi?&quot; dengan email Google yang sama untuk membuat kata sandi.</p>' : '<p class="qpOr">atau</p><button class="qpBtn" type="button" data-qp="google"' + dis + '>Masuk dengan Google</button>';
+    if (mode === 'choice') {
+      return '<button class="qpBtn pr" type="button" data-qp="emailmode"' + dis + '>Masuk dengan Email</button>' +
+        gBtn +
+        (msg ? '<p class="qpMsg">' + esc(msg) + '</p>' : '');
+    }
+    var up = mode === 'signup';
+    return '<div class="qpForm"><input class="qpIn" type="email" id="qpEmail" placeholder="Email" autocomplete="email" value="' + esc(ev) + '">' +
+      '<input class="qpIn" type="password" id="qpPass" placeholder="Kata sandi" autocomplete="' + (up ? 'new-password' : 'current-password') + '" value="' + esc(pv) + '">' +
+      '<button class="qpBtn pr" type="button" data-qp="emailgo"' + dis + '>' + (up ? 'Daftar dengan Email' : 'Masuk dengan Email') + '</button>' +
+      '<button class="qpLink" type="button" data-qp="emailswitch">' + (up ? 'Sudah punya akun? Masuk' : 'Belum punya akun? Daftar') + '</button>' +
+      '<button class="qpLink" type="button" data-qp="emailreset">Lupa kata sandi?</button>' +
+      (msg ? '<p class="qpMsg">' + esc(msg) + '</p>' : '') +
+      (inApp ? '' : '<p class="qpOr">atau</p><button class="qpBtn" type="button" data-qp="google"' + dis + '>Masuk dengan Google</button>') +
+      '<button class="qpLink" type="button" data-qp="emailback">&larr; Kembali</button></div>';
+  }
+  function render(){
+    var h = '';
+    if (!checked) {
+      h = '<p class="qpNote">' + (booting ? 'Memeriksa status login...' : 'Memuat...') + '</p>' + (msg ? '<p class="qpMsg">' + esc(msg) + '</p>' : '');
+    } else if (!user) {
+      h = '<div class="qpHero"><span class="qpHAv">' + ICON_USER + '</span><div><b>Belum masuk</b><small>Masuk untuk membuka kuis dan menyimpan progres belajarmu.</small></div></div>' +
+        loginBlock() +
+        '<p class="qpNote">Anggota terdaftar: masuk dengan email yang didaftarkan admin untuk membuka kuis TG2.</p>' + dailySec() + kotobaSec() + kanjiSec() + nihoSec() + tools();
+    } else {
+      var name = user.displayName || user.email;
+      var img = user.photoURL ? '<img alt="" referrerpolicy="no-referrer" src="' + esc(user.photoURL) + '"/>' : esc((name || '?').charAt(0).toUpperCase());
+      var role = info && info.role === 'admin' ? 'Admin' : (info && info.role === 'member' ? 'Anggota' : '');
+      h = '<div class="qpHero"><span class="qpHAv">' + img + '</span><div><b>' + esc(name) + (role ? ' <i class="qpBadge">' + role + '</i>' : '') + '</b><small>' + esc(user.email || '') + '</small></div></div>';
+      if (!user.emailVerified) h += '<p class="qpMsg">Email belum diverifikasi. <a href="' + TG2 + '">Selesaikan di halaman TG2</a>.</p>';
+      h += '<div class="qpSec"><h4>Akses kuis</h4>';
+      if (!info || info.loading) h += '<p class="qpNote">Memeriksa akses...</p>';
+      else if (info.err) h += '<p class="qpNote">Tidak bisa memeriksa akses sekarang. Coba lagi nanti.</p>';
+      else if (info.role === 'admin') h += '<p class="qpNote">Admin: semua bidang terbuka.</p>';
+      else if (info.role === 'member') {
+        if (!info.bidang) h += '<p class="qpNote">Anggota: semua bidang terbuka.</p>';
+        else h += '<div class="qpChips">' + (info.bidang.length ? info.bidang.map(function(b){ return '<span>' + esc(BIDANG[b] || b) + '</span>'; }).join('') : '<span>Belum ada bidang</span>') + '</div>';
+      } else h += '<p class="qpNote">Akunmu belum terdaftar sebagai anggota. <a href="' + TG2 + '">Lihat cara mendaftar</a>.</p>';
+      h += '</div>';
+      if (info && !info.loading) {
+        h += '<div class="qpSec"><h4>Skor kuis</h4>';
+        if (!info.results.length) h += '<p class="qpNote">Belum ada skor. Selesaikan satu kuis dulu.</p>';
+        else h += info.results.map(function(r){
+          var l = r.last || {};
+          return '<div class="qpRow"><span>' + esc(r.n) + '<small>' + r.count + ' kali kuis' + (fmt(l.at) ? ' &middot; terakhir ' + esc(fmt(l.at)) : '') + '</small></span><b>' + esc(l.skor) + '/' + esc(l.total) + '<small>terbaik ' + r.best + '%</small></b></div>';
+        }).join('');
+        h += '</div>';
+      }
+      h += dailySec() + kotobaSec() + kanjiSec() + nihoSec() + tools() + '<button class="qpBtn out" type="button" data-qp="out">Keluar</button>';
+    }
+    body.innerHTML = h;
+  }
+
+  /* ---------- Aksi ---------- */
+  var ERR = {'auth/popup-closed-by-user':'Jendela login ditutup.', 'auth/cancelled-popup-request':'Jendela login ditutup.', 'auth/popup-blocked':'Popup diblokir browser. Izinkan popup lalu coba lagi.', 'auth/unauthorized-domain':'Domain ini belum diizinkan di Firebase.', 'auth/network-request-failed':'Koneksi bermasalah. Coba lagi.', 'auth/invalid-credential':'Email atau kata sandi salah.', 'auth/wrong-password':'Email atau kata sandi salah.', 'auth/user-not-found':'Email belum terdaftar. Pakai Daftar dulu.', 'auth/email-already-in-use':'Email ini sudah terdaftar. Pakai Masuk.', 'auth/weak-password':'Kata sandi minimal 6 karakter.', 'auth/invalid-email':'Format email belum benar.', 'auth/missing-password':'Isi kata sandinya.', 'auth/too-many-requests':'Terlalu banyak percobaan. Tunggu sebentar.'};
+  function collect(){
+    var o = {};
+    try { for (var i = 0; i < localStorage.length; i++) { var k = localStorage.key(i); if (KEEP.test(k)) o[k] = localStorage.getItem(k); } } catch(e){}
+    return o;
+  }
+  function backup(){
+    var data = {app:'qategori', v:1, at:new Date().toISOString(), email:user ? user.email : null, local:collect(), skor:info ? info.results : []};
+    var blob = new Blob([JSON.stringify(data, null, 1)], {type:'application/json'});
+    var a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+    a.download = 'qategori-cadangan-' + new Date().toISOString().slice(0, 10) + '.json';
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(function(){ URL.revokeObjectURL(a.href); }, 4000);
+    msg = 'Cadangan diunduh. Simpan filenya di tempat aman.';
+    render();
+  }
+  function restore(file){
+    var r = new FileReader();
+    r.onload = function(){
+      try {
+        var d = JSON.parse(r.result);
+        if (!d || d.app !== 'qategori' || !d.local || typeof d.local !== 'object') throw 0;
+        var n = 0;
+        Object.keys(d.local).forEach(function(k){
+          if (!KEEP.test(k) || typeof d.local[k] !== 'string') return;
+          var cur = lsGet(k), next = d.local[k];
+          try {
+            var a = JSON.parse(next), b = cur ? JSON.parse(cur) : null;
+            if (Array.isArray(a) && Array.isArray(b)) { var seen = {}; b.forEach(function(x){ seen[JSON.stringify(x)] = 1; }); next = JSON.stringify(b.concat(a.filter(function(x){ return !seen[JSON.stringify(x)]; }))); }
+            else if (cur) return;
+          } catch(e){ if (cur) return; }
+          lsSet(k, next); n++;
+        });
+        msg = n ? 'Pulihkan berhasil: ' + n + ' data digabung.' : 'Tidak ada data baru yang perlu dipulihkan.';
+        lastSig = null; setTimeout(watch, 300);
+      } catch(e){ msg = 'File tidak dikenali. Pakai file cadangan dari Qategori.'; }
+      render();
+    };
+    r.readAsText(file);
+  }
+  function install(){
+    if (dip) { dip.prompt(); dip.userChoice.then(function(){ dip = null; render(); }); return; }
+    msg = isIOS ? 'Di Safari: ketuk tombol Bagikan, lalu pilih "Tambah ke Layar Utama".' : 'Di Chrome: buka menu (tiga titik), lalu pilih "Instal aplikasi" atau "Tambahkan ke layar utama".';
+    render();
+  }
+
+  body.addEventListener('click', function(e){
+    var b = e.target.closest ? e.target.closest('[data-qp]') : null;
+    if (!b) return;
+    var a = b.getAttribute('data-qp');
+    msg = '';
+    var ei = el('qpEmail'), pi = el('qpPass'); if (ei) ev = ei.value.trim(); if (pi) pv = pi.value;
+    if (a === 'emailmode') { mode = 'signin'; render(); return; }
+    else if (a === 'emailback') { mode = 'choice'; render(); return; }
+    else if (a === 'emailswitch') { mode = mode === 'signup' ? 'signin' : 'signup'; render(); return; }
+    else if (a === 'emailgo' || a === 'emailreset') {
+      if (!F) return;
+      if (!ev) { msg = 'Isi emailnya dulu.'; render(); return; }
+      if (a === 'emailgo' && !pv) { msg = 'Isi kata sandinya.'; render(); return; }
+      busy = true; render();
+      var A = F.auth, pr;
+      if (a === 'emailreset') pr = A.sendPasswordResetEmail(auth, ev).then(function(){ msg = 'Tautan atur ulang kata sandi sudah dikirim. Cek folder spam juga.'; });
+      else if (mode === 'signup') pr = A.createUserWithEmailAndPassword(auth, ev, pv).then(function(c){ pv = ''; return A.sendEmailVerification(c.user).then(function(){ msg = 'Akun dibuat. Link verifikasi dikirim ke emailmu; buka link itu lalu muat ulang halaman.'; }); });
+      else pr = A.signInWithEmailAndPassword(auth, ev, pv).then(function(){ pv = ''; mode = 'choice'; });
+      pr.catch(function(err){ msg = ERR[err && err.code] || 'Gagal. Coba lagi.'; }).then(function(){ busy = false; render(); });
+      return;
+    }
+    if (a === 'google') {
+      if (!F) return;
+      busy = true; render();
+      F.auth.signInWithPopup(auth, new F.auth.GoogleAuthProvider()).catch(function(err){ msg = ERR[err && err.code] || 'Gagal masuk. Coba lagi.'; }).then(function(){ busy = false; render(); });
+    } else if (a === 'out') { if (F) F.auth.signOut(auth); }
+    else if (a === 'backup') backup();
+    else if (a === 'restore') { var f = el('qpFile'); if (f) f.click(); }
+    else if (a === 'install') install();
+    else if (a === 'sync') { e.preventDefault(); sync(); return; }
+    else if (a && a.indexOf('lv:') === 0) { var pp = a.split(':'); if (selLv.hasOwnProperty(pp[1]) && LV.indexOf(pp[2]) >= 0) { selLv[pp[1]] = pp[2]; render(); } return; }
+    else if (a === 'goal') { if (window.qDaily) window.qDaily.nextGoal(); render(); return; }
+  });
+  var file = el('qpFile');
+  if (file) file.addEventListener('change', function(){ if (file.files && file.files[0]) restore(file.files[0]); file.value = ''; });
+
+  window.addEventListener('qdaily', function(){ var ae = document.activeElement; if (chk.checked && !(ae && /^(INPUT|TEXTAREA)$/.test(ae.tagName))) render(); });
+  chk.addEventListener('change', function(){ if (chk.checked) { render(); boot().then(watch); } });
+  window.addEventListener('pageshow', function(){ chk.checked = false; });
+  render();
+
+  /* Pengguna yang pernah masuk: muat login di waktu senggang supaya foto muncul di slot. */
+  if (lsGet('qpHint') === '1') {
+    var go = function(){ boot(); };
+    if (window.requestIdleCallback) requestIdleCallback(go, {timeout:3000}); else setTimeout(go, 1500);
+  }
+})();
+/* tema + penanda (bookmark), versi statis */
+(function(){
+  var nB=document.body;
+  function ls(k,v){try{if(v===undefined)return localStorage.getItem(k);localStorage.setItem(k,v)}catch(e){return null}}
+  window.setTheme=function(m){
+    var v=(m==='dark'||m==='light')?m:'default';
+    ls('q_theme',v);nB.setAttribute('data-theme',v);
+    if(v==='default')document.documentElement.removeAttribute('data-q');else document.documentElement.setAttribute('data-q',v);
+    var c=document.getElementById('forDark');if(c)c.checked=false;
+  };
+  var DEL="<svg class=\"line\" viewBox=\"0 0 24 24\"><path d=\"M21 5.97998C17.67 5.64998 14.32 5.47998 10.98 5.47998C9 5.47998 7.02 5.57998 5.04 5.77998L3 5.97998\"/><path d=\"M8.5 4.97L8.72 3.66C8.88 2.71 9 2 10.69 2H13.31C15 2 15.13 2.75 15.28 3.67L15.5 4.97\"/><path d=\"M18.85 9.14001L18.2 19.21C18.09 20.78 18 22 15.21 22H8.79002C6.00002 22 5.91002 20.78 5.80002 19.21L5.15002 9.14001\"/><!--<path d=\"M10.33 16.5H13.66\"/><path d=\"M9.5 12.5H14.5\"/>--></svg>";
+  function load(){try{return JSON.parse(ls('ignielBookmark'))||[]}catch(e){return[]}}
+  function save(a){ls('ignielBookmark',JSON.stringify(a))}
+  function esc(s){return String(s).replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})}
+  function bid(p){return String(p).replace(/\W/g,'').slice(-24)}
+  var ICONS="<svg class='line' viewBox='0 0 24 24'><path d='M14.5 10.6499H9.5' stroke-miterlimit='10'/><path d='M12 8.20996V13.21' stroke-miterlimit='10'/><path d='M16.8199 2H7.17995C5.04995 2 3.31995 3.74 3.31995 5.86V19.95C3.31995 21.75 4.60995 22.51 6.18995 21.64L11.0699 18.93C11.5899 18.64 12.4299 18.64 12.9399 18.93L17.8199 21.64C19.3999 22.52 20.6899 21.76 20.6899 19.95V5.86C20.6799 3.74 18.9499 2 16.8199 2Z'/></svg><svg viewBox='0 0 24 24'><path d='M16.8203 1.91016H7.18031C5.06031 1.91016 3.32031 3.65016 3.32031 5.77016V19.8602C3.32031 21.6602 4.61031 22.4202 6.19031 21.5502L11.0703 18.8402C11.5903 18.5502 12.4303 18.5502 12.9403 18.8402L17.8203 21.5502C19.4003 22.4302 20.6903 21.6702 20.6903 19.8602V5.77016C20.6803 3.65016 18.9503 1.91016 16.8203 1.91016ZM15.6203 9.03016L11.6203 13.0302C11.4703 13.1802 11.2803 13.2502 11.0903 13.2502C10.9003 13.2502 10.7103 13.1802 10.5603 13.0302L9.06031 11.5302C8.77031 11.2402 8.77031 10.7602 9.06031 10.4702C9.35031 10.1802 9.83031 10.1802 10.1203 10.4702L11.0903 11.4402L14.5603 7.97016C14.8503 7.68016 15.3303 7.68016 15.6203 7.97016C15.9103 8.26016 15.9103 8.74016 15.6203 9.03016Z'/></svg>";
+  window.qBmBtn=function(path,title,img){
+        var id=bid(path);
+    return '<div class="ignielBookmarkPost tag addl"><input class="hidden addb" id="bm-'+id+'" name="bookmark" type="checkbox"><label aria-label="Tambah penanda" class="flex center op i16" data-img="'+esc(img||'')+'" data-title="'+esc(title)+'" data-url="'+esc(path)+'" for="bm-'+id+'">'+ICONS+'</label></div>';
+  };
+  function render(){
+    var a=load(),inner=document.querySelector('.bookmark-inner'),bc=document.querySelector('.ignielBookmark label.bc');
+    if(bc)bc.setAttribute('data-text',a.length);
+    var all=document.querySelector('.ignielBookmarks'),page=location.pathname==='/p/bookmark.html'||!!all;
+    var max=page?100:5,h=a.slice(0,max).map(function(e){
+      return '<div class="flex" data-id="'+esc(e.id)+'"><div class="bm-thumb shrink"><a href="'+esc(e.url)+'"><img class="bm-im" loading="lazy" alt="'+esc(e.title)+'" src="'+esc(e.img||'')+'"></a></div><div class="bm-title grow"><a class="clamp" href="'+esc(e.url)+'" title="'+esc(e.title)+'">'+esc(e.title)+'</a></div><div class="bm-delete flex center shrink op i18" role="button">'+DEL+'</div></div>'}).join('');
+    var empty='<span class="fontM">Belum ada penanda</span>';
+    if(inner){
+      if(!a.length)inner.innerHTML=empty;
+      else if(page)inner.innerHTML='<span class="fontM">Anda sedang di laman Daftar Bacaan</span>';
+      else inner.innerHTML='<div class="book flex column">'+h+'</div>'+(a.length>max?'<div class="more fontS"><a href="/p/bookmark.html"><span>Tampilkan</span><span class="fontSm opacity">(+'+(a.length-max)+')</span></a></div>':'');
+    }
+    if(all)all.innerHTML=a.length?'<div class="book all flex wrap">'+h+'</div>':empty;
+    sync();
+  }
+  function sync(){
+    var ids={};load().forEach(function(e){ids[e.id]=1});
+    document.querySelectorAll('.ignielBookmarkPost input').forEach(function(i){i.checked=!!ids[i.id.replace('bm-','')]});
+  }
+  document.addEventListener('change',function(ev){
+    var i=ev.target;if(!i.matches||!i.matches('.ignielBookmarkPost input'))return;
+    var id=i.id.replace('bm-',''),l=i.parentNode.querySelector('label'),a=load(),k=a.findIndex(function(e){return e.id===id});
+    if(k>=0)a.splice(k,1);else a.push({id:id,img:l.getAttribute('data-img'),title:l.getAttribute('data-title'),url:l.getAttribute('data-url')});
+    save(a);render();
+  });
+  document.addEventListener('click',function(ev){
+    var d=ev.target.closest&&ev.target.closest('.bm-delete');if(!d)return;
+    var id=d.parentNode.getAttribute('data-id');save(load().filter(function(e){return e.id!==id}));render();
+  });
+  var mo=new MutationObserver(function(){clearTimeout(mo.t);mo.t=setTimeout(sync,80)});
+  mo.observe(document.body,{childList:true,subtree:true});
+  render();
+})();

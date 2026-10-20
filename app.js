@@ -31,7 +31,7 @@ if(res){
       ws.forEach(function(w){if(t.indexOf(w)>=0)sc+=5;if(d.l.join(' ').toLowerCase().indexOf(w)>=0)sc+=2;if(d.tx.indexOf(w)>=0)sc+=1;else sc-=100});
       return[sc,d]}).filter(function(x){return ws.length&&x[0]>0}).sort(function(a,b){return b[0]-a[0]}).slice(0,60);
     res.innerHTML=!ws.length?'<p>Ketik kata kunci di kolom cari.</p>':!out.length?'<p>Tidak ada hasil untuk &ldquo;'+esc(q)+'&rdquo;.</p>':
-      out.map(function(x){var d=x[1];return'<article class="qCard"><div><h3><a href="'+d.p+'">'+esc(d.t)+'</a></h3><p>'+esc(d.d)+'</p><small>'+esc(d.dt)+'</small></div></article>'}).join('');
+      out.map(function(x){var d=x[1];return'<article class="qCard"><div><h3><a href="'+d.p+'">'+esc(d.t)+'</a></h3><p>'+esc(d.d)+'</p><small>'+esc(d.dt)+'</small></div>'+(window.qBmBtn?window.qBmBtn(d.p,d.t,d.th):'')+'</article>'}).join('');
   }).catch(function(){res.innerHTML='<p>Pencarian belum bisa dimuat.</p>'});
 }
 /* ---- beranda bertab ---- */
@@ -356,7 +356,7 @@ function renderList(){
   if(!posts)return;
   var rows=posts.filter(function(d){return d.ty==='POST'&&(!lab||d.l.indexOf(lab)>=0)});
   qs0.innerHTML=rows.slice(0,shown).map(function(d){var th=d.th?'<img src="'+esc(d.th)+'" alt="" loading="lazy">':'<span class="qNoImg"></span>';
-    return'<article class="qCard"><a class="qThumb" href="'+d.p+'">'+th+'</a><div><h3><a href="'+d.p+'">'+esc(d.t)+'</a></h3><p>'+esc(d.d)+'</p><small>'+esc(d.dt)+(d.l[0]?' &middot; '+esc(d.l[0]):'')+'</small></div></article>'}).join('');
+    return'<article class="qCard"><a class="qThumb" href="'+d.p+'">'+th+'</a><div><h3><a href="'+d.p+'">'+esc(d.t)+'</a></h3><p>'+esc(d.d)+'</p><small>'+esc(d.dt)+(d.l[0]?' &middot; '+esc(d.l[0]):'')+'</small></div>'+(window.qBmBtn?window.qBmBtn(d.p,d.t,d.th):'')+'</article>'}).join('');
   var m=document.getElementById('qMore');m.hidden=rows.length<=shown;
 }
 function loadPosts(cb){if(posts)return cb();fetch('/search.json').then(function(r){return r.json()}).then(function(j){posts=j;cb()}).catch(function(){})}
