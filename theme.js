@@ -911,7 +911,7 @@
         if (si && si.focus) { try { si.scrollIntoView({block: 'center'}); } catch(x){} si.focus(); }
       } else if (k === 'menu') {
         e.preventDefault(); close();
-        if (window.qOpenDrawer) window.qOpenDrawer();
+        var nv = document.getElementById('forNav'); if (nv) nv.checked = !nv.checked;
       } else if (k === 'belajar') {
         var jp = document.getElementById('forJepang'); /* popup ada di beranda dan halaman biasa; di artikel pakai tautan ke tab Belajar */
         if (jp) { e.preventDefault(); jp.checked = true; }
@@ -940,4 +940,61 @@
     lift();
   }
   if (document.body) init(); else document.addEventListener('DOMContentLoaded', init);
+})();
+(function(){
+  var SEL = ['.stickC','#HTML91','#HTML92','#HTML93','#HTML95','#HTML99'].map(function(x){ return x + ' iframe'; }).join(',');
+  function idOf(f){
+    var u = f.getAttribute('src') || f.getAttribute('data-src') || f.getAttribute('data-lazy-src') || '';
+    var m = /(?:youtube(?:-nocookie)?\.com\/embed\/|youtu\.be\/)([\w-]{11})/.exec(u);
+    return m ? m[1] : '';
+  }
+  /* Iklan (anchor HP dan sticky PC): daftar ID di atribut data-videos pada iframe widget; satu video acak per sesi, sama untuk kedua widget. Tanpa data-videos, dipakai ID di src */
+  function pickAd(f){
+    var list = (f.getAttribute('data-videos') || '').split(',').map(function(x){ return x.trim(); })
+      .filter(function(x){ return /^[\w-]{11}$/.test(x); });
+    if (!list.length) return '';
+    var v = '';
+    try { v = sessionStorage.getItem('qAdVid') || ''; } catch(e){}
+    if (list.indexOf(v) < 0) {
+      v = list[Math.floor(Math.random() * list.length)];
+      try { sessionStorage.setItem('qAdVid', v); } catch(e){}
+    }
+    return v;
+  }
+  /* Pengunjung sudah menyentuh halaman? Kalau ya, autoplay boleh berbunyi */
+  var touched = false;
+  ['pointerdown','touchstart','keydown','click'].forEach(function(t){
+    window.addEventListener(t, function(){ touched = true; }, {capture:true, passive:true, once:true});
+  });
+  function active(){ try { if (navigator.userActivation) return navigator.userActivation.hasBeenActive; } catch(e){} return touched; }
+  function make(f){
+    if (f.getAttribute('data-lz')) return;
+    var id = idOf(f); if (!id) return;
+    id = pickAd(f) || id;
+    f.setAttribute('data-lz', '1');
+    var b = document.createElement('button');
+    b.type = 'button'; b.className = 'ytLz'; b.setAttribute('aria-label', 'Putar video');
+    b.style.backgroundImage = 'url(https://i.ytimg.com/vi/' + id + '/hqdefault.jpg)';
+    b.innerHTML = '<span class="ytLzP"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13l11-6.5z"/></svg></span>';
+    var play = function(mute){
+      var n = document.createElement('iframe');
+      n.src = 'https://www.youtube.com/embed/' + id + '?autoplay=1&rel=0&playsinline=1&origin=' + encodeURIComponent(location.origin) + (mute === true ? '&mute=1' : '');
+      n.setAttribute('referrerpolicy', 'strict-origin-when-cross-origin');
+      n.title = f.getAttribute('title') || 'YouTube video';
+      n.setAttribute('allow', 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share');
+      n.setAttribute('allowfullscreen', ''); n.setAttribute('data-lz', '1'); n.className = 'ytLzF';
+      if (b.parentNode) b.parentNode.replaceChild(n, b);
+    };
+    b.addEventListener('click', function(){ play(false); });
+    b.__auto = function(){ play(!active()); };
+    if (f.parentNode) f.parentNode.replaceChild(b, f);
+  }
+  function run(){ try { Array.prototype.forEach.call(document.querySelectorAll(SEL), make); } catch(e){} }
+  /* Iklan anchor mobile (HTML99): setelah tampil (jeda 10 dtk) video diputar otomatis. Berbunyi bila pengunjung sudah menyentuh halaman, kalau belum tanpa suara. Desktop tetap menunggu klik. */
+  document.addEventListener('animationstart', function(e){
+    if (e.animationName !== 'qAdIn') return;
+    try { if (!e.target.closest('#HTML99')) return; var b = e.target.querySelector('.ytLz'); if (b && b.__auto) b.__auto(); } catch(x){}
+  }, true);
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', run); else run();
+  setTimeout(run, 1500);
 })();
