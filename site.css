@@ -87,3 +87,11 @@ iframe.qhGame{width:100%;border:0;min-height:480px;display:block}
 .book{--thumbSize:80px;--thumbnailRatio-box:100%}.book.all{--thumbSize:60px}
 .qFootR{align-items:center;justify-content:space-between;gap:12px;margin-bottom:10px}
 .qCard{position:relative}.qCard>.ignielBookmarkPost{margin-inline-start:auto;align-self:flex-start;padding:2px}
+
+/* iklan tertutup: tab di pojok kanan bawah (di atas nav), terbuka: di atas nav */
+@media(max-width:896px){details.stickAd:not([open]){bottom:env(safe-area-inset-bottom,0px)!important}}
+/* footer seperti versi lama */
+.qFoot{display:flex;align-items:center;justify-content:space-between;text-align:start;padding:14px 16px 76px;opacity:1;gap:12px}
+.qFoot p{order:-1;margin:0;font-size:inherit}
+.qFoot .qFootR{margin:0}
+@media(min-width:900px){.qFoot{padding-bottom:20px}}
