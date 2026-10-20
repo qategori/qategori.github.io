@@ -258,6 +258,79 @@ iframe.qhGame{width:100%;border:0;min-height:480px;display:block}
 @media(min-width:900px){.qbNews{grid-template-columns:repeat(4,minmax(0,1fr))}}
 .qbBubble{min-height:0}
 
+/* ===== Beranda v2: panggung Mochi ===== */
+.qbHero{padding:0;border:0;background:none;margin:0 0 6px}
+.qbStage{position:relative;height:214px;border-radius:18px;overflow:hidden;border:1px solid var(--themeBd-color);isolation:isolate}
+.qbStage.day{background:linear-gradient(#a9d8ff,#e6f4ff 62%,#fff4de)}
+.qbStage.dusk{background:linear-gradient(#5b4b8a,#e0856b 70%,#ffc58a)}
+.qbStage.night{background:linear-gradient(#0c1233,#1d2658 70%,#2f3774)}
+.qbSky{position:absolute;inset:0;z-index:0}
+.qbSky i{position:absolute;width:2px;height:2px;border-radius:50%;background:#fff;opacity:.85;animation:qbTw 2.8s ease-in-out infinite}
+.qbSun{position:absolute;right:16%;top:16px;width:34px;height:34px;border-radius:50%;background:#ffe27a;box-shadow:0 0 22px 6px rgba(255,226,122,.55)}
+.dusk .qbSun{top:70px;background:#ffb25e;box-shadow:0 0 30px 10px rgba(255,150,80,.55)}
+.night .qbSun{background:#f3f0da;box-shadow:0 0 18px 4px rgba(255,255,230,.35);-webkit-mask:radial-gradient(circle at 70% 35%,transparent 38%,#000 40%);mask:radial-gradient(circle at 70% 35%,transparent 38%,#000 40%)}
+.qbCloud{position:absolute;width:64px;height:20px;border-radius:20px;background:#fff;opacity:.9;box-shadow:18px -8px 0 -2px #fff,38px -2px 0 -4px #fff;animation:qbDrift 38s linear infinite}
+.qbCloud.c1{top:26px;left:-80px}.qbCloud.c2{top:56px;left:-80px;animation-duration:55s;animation-delay:-20s;transform:scale(.7)}
+.night .qbCloud{opacity:.12}.dusk .qbCloud{opacity:.55}
+.qbHill{position:absolute;left:-10%;right:-10%;bottom:30px;height:60px;z-index:1;background:radial-gradient(ellipse 45% 100% at 25% 100%,#9bd48a 98%,transparent 100%),radial-gradient(ellipse 50% 90% at 75% 100%,#86c97a 98%,transparent 100%)}
+.dusk .qbHill{filter:saturate(.7) brightness(.8)}.night .qbHill{filter:brightness(.34) saturate(.8)}
+.qbGround{position:absolute;left:0;right:0;bottom:0;height:34px;z-index:2;background:linear-gradient(#7cc46b 0 52%,#4b4d58 52%);border-top:1px solid rgba(0,0,0,.12)}
+.qbGround::after{content:"";position:absolute;left:0;right:0;bottom:6px;height:2px;background:repeating-linear-gradient(90deg,#f5e8a8 0 18px,transparent 18px 34px);opacity:.8}
+.dusk .qbGround{filter:brightness(.8)}.night .qbGround{filter:brightness(.4)}
+.qbStage .mochi{z-index:6;bottom:15px;width:104px;height:121px}
+.qbBall{position:absolute;z-index:5;bottom:17px;width:26px;height:26px;cursor:pointer;left:150px}
+.qbBall svg{width:100%;height:100%;display:block}
+.qbBall .bSp{transform-origin:15px 15px}
+.qbBall.fly svg{animation:qbBounce 1.1s ease-out}.qbBall.fly .bSp{animation:qbSpin 1.1s linear}
+.qbCar{position:absolute;z-index:4;bottom:1px;width:76px;height:37px;left:-96px;cursor:pointer}
+.qbCar svg{width:100%;height:100%;display:block}
+.qbCar.go .cW{animation:qbSpin .45s linear infinite}.qbCar.go svg{animation:qbJig .3s ease-in-out infinite alternate}
+.qbBubble{z-index:8;top:10px;left:auto;right:8px;width:min(62%,250px);pointer-events:none}
+.qbBubble::before{display:none}
+.qbHint{position:absolute;left:0;right:0;bottom:36px;z-index:3;text-align:center;font-size:10.5px;color:#fff;opacity:.0}
+.mochi.kick .mLegR{animation:qbKick .35s ease-in forwards}
+.mochi .mShadow{transition:none}.mochi.run .mShadow{animation:qbSh .3s ease-in-out infinite alternate}
+@keyframes qbTw{0%,100%{opacity:.25}50%{opacity:1}}
+@keyframes qbDrift{to{transform:translateX(560px)}}
+@keyframes qbBounce{0%{transform:translateY(0)}18%{transform:translateY(-70px)}42%{transform:translateY(0)}58%{transform:translateY(-28px)}74%{transform:translateY(0)}86%{transform:translateY(-9px)}100%{transform:translateY(0)}}
+@keyframes qbSpin{to{transform:rotate(720deg)}}
+@keyframes qbJig{from{transform:translateY(0)}to{transform:translateY(-1.5px)}}
+@keyframes qbKick{0%{transform:rotate(0)}60%{transform:rotate(-70deg)}100%{transform:rotate(-55deg)}}
+@keyframes qbSh{from{transform:scaleX(1)}to{transform:scaleX(.7)}}
+
+/* nav bawah: pemandangan seperti header */
+.qBottom{overflow:visible}
+.qsBot{position:absolute;inset:0;overflow:hidden;pointer-events:none;z-index:0;opacity:.85}
+.qsBot .qsBs{position:absolute;inset:0;width:100%;height:100%}
+.qsBot .qsGr{position:absolute;left:0;right:0;bottom:0;height:22px;background-repeat:repeat-x;background-size:60px 40px;background-position:left bottom -14px;opacity:.9}
+.qBottom>a,.qBottom>label,.qBottom>.qbMenu{position:relative;z-index:1}
+
+/* Game: 2 kolom di HP, 3 kolom di layar lebar */
+.qhGameGrid{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:10px}
+@media(min-width:760px){.qhGameGrid{grid-template-columns:repeat(3,minmax(0,1fr))!important}}
+.qhGameCard{padding:12px!important;gap:2px!important}
+.qhGameCard svg{width:24px;height:24px;margin-bottom:4px}
+.qhGameCard b{font-size:.95rem;line-height:1.25}
+.qhGameCard i{font-size:11px!important}
+.qhGameCard small{font-size:11.5px!important;line-height:1.35;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+/* Kana: kartu pilih aksara, gaya sama seperti bidang TG2 */
+.qkH{font-size:1.5rem;margin:4px 0 4px}.qkS{opacity:.75;margin:0 0 18px;font-size:.92rem}
+.qkGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px}
+.qkCard{position:relative;display:block;overflow:hidden;border:0;border-radius:16px;padding:24px 22px;min-height:150px;text-align:left;font:inherit;color:#fff;cursor:pointer;isolation:isolate;box-shadow:0 2px 8px rgba(0,0,0,.08);transition:transform .15s,box-shadow .15s}
+.qkCard:hover{transform:translateY(-3px);box-shadow:0 10px 24px rgba(0,0,0,.18)}
+.qkCard::before{content:'';position:absolute;inset:0;z-index:-1;background:var(--qk)}
+.qkCard::after{content:'';position:absolute;right:-30px;bottom:-30px;width:150px;height:150px;border-radius:50%;background:rgba(255,255,255,.12);z-index:-1}
+.qk-hira{--qk:linear-gradient(135deg,#c2546f,#8a3350)}.qk-kata{--qk:linear-gradient(135deg,#2f6fb0,#1f4673)}
+.qkIc{display:block;font-size:2.4rem;line-height:1;margin:0 0 10px;font-weight:700}
+.qkT{font-size:1.25rem;font-weight:700;margin:0 0 6px}.qkD{font-size:.92rem;opacity:.92;margin:0 0 12px}
+.qkTags{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 14px}.qkTags span{font-size:.75rem;padding:3px 10px;border-radius:99px;background:rgba(255,255,255,.2);font-weight:600}
+.qkCta{display:inline-flex;align-items:center;gap:6px;font-size:.92rem;font-weight:700}
+
+.qbAv{display:flex;align-items:center;justify-content:center;width:22px;height:22px}
+.qbAv img{width:22px;height:22px;border-radius:50%;object-fit:cover;display:block;border:1.5px solid var(--themeLink)}
+.qbAv .qbIni{display:flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;background:var(--themeLink);color:#fff;font-size:12px;font-weight:700}
+.qBottom .qbMenu .qbAv svg{width:22px;height:22px}
+
 .leftF{justify-content:flex-start!important}
 .leftF label{min-width:56px!important;justify-content:flex-start!important;padding-inline:var(--contentPadding,16px)!important}
 .leftF label::before{content:''!important;display:block;width:24px;height:24px;background:currentColor;-webkit-mask:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%221.5%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22M15%2019.9201L8.47997%2013.4001C7.70997%2012.6301%207.70997%2011.3701%208.47997%2010.6001L15%204.08008%22/%3E%3C/svg%3E") center/contain no-repeat;mask:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%221.5%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22M15%2019.9201L8.47997%2013.4001C7.70997%2012.6301%207.70997%2011.3701%208.47997%2010.6001L15%204.08008%22/%3E%3C/svg%3E") center/contain no-repeat}

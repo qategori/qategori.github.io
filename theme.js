@@ -494,11 +494,13 @@
   }
 
   /* ---------- Rakit ---------- */
-  var hdrEl, ftrEl, bodyEl, fl = [], fr = [];
+  var hdrEl, ftrEl, botEl, bodyEl, fl = [], fr = [];
   function ensure(){
     var h = document.querySelector('header.mainH'), f = document.querySelector('footer.mainF');
     if (h && !hdrEl) { hdrEl = document.createElement('div'); hdrEl.className = 'qsH'; hdrEl.setAttribute('aria-hidden', 'true'); h.insertBefore(hdrEl, h.firstChild); }
     if (f && !ftrEl) { ftrEl = document.createElement('div'); ftrEl.className = 'qsF'; ftrEl.setAttribute('aria-hidden', 'true'); f.insertBefore(ftrEl, f.firstChild); }
+    var bn = document.querySelector('.qBottom');
+    if (bn && !botEl) { botEl = document.createElement('div'); botEl.className = 'qsBot'; botEl.setAttribute('aria-hidden', 'true'); bn.insertBefore(botEl, bn.firstChild); }
     if (!bodyEl) {
       bodyEl = document.createElement('div'); bodyEl.className = 'qsB'; bodyEl.setAttribute('aria-hidden', 'true');
       bodyEl.innerHTML = '<div class="qsBL"></div><div class="qsBR"></div>'; document.body.appendChild(bodyEl);
@@ -520,6 +522,10 @@
         ftrEl.querySelector('.qsGr').style.backgroundImage = uri(grassTile(s, p));
         ftrEl.querySelector('.qsOrn').style.backgroundImage = uri(orn(s, p));
       } else ftrEl.innerHTML = '';
+    }
+    if (botEl) {
+      if (on) { botEl.innerHTML = '<svg class="qsBs" viewBox="0 0 400 60" preserveAspectRatio="xMidYMid slice"><g class="qsN">' + stars(400, 40, 16) + '</g></svg><div class="qsGr"></div>'; botEl.querySelector('.qsGr').style.backgroundImage = uri(grassTile(s, p)); }
+      else botEl.innerHTML = '';
     }
     if (bodyEl) {
       if (on) { bodyEl.firstChild.innerHTML = bodySVG(s, p, 'L'); bodyEl.lastChild.innerHTML = bodySVG(s, p, 'R'); bodyEl.style.setProperty('--qsTint', p.tint); }
@@ -1089,6 +1095,7 @@
       else if (user && first) av.innerHTML = '<b class="qpIni">' + esc(first.charAt(0).toUpperCase()) + '</b>';
       else av.innerHTML = ICON0;
     }
+    var bav = el('qbAv'); if (bav) { if (!bav.__d) bav.__d = bav.innerHTML; if (user && user.photoURL) bav.innerHTML = '<img alt="" referrerpolicy="no-referrer" src="' + esc(user.photoURL) + '"/>'; else if (user && first) bav.innerHTML = '<b class="qbIni">' + esc(first.charAt(0).toUpperCase()) + '</b>'; else bav.innerHTML = bav.__d; }
     if (nm) nm.textContent = 'Masuk';
     if (lb) { lb.setAttribute('aria-label', user ? 'Profil ' + name : 'Masuk dan lihat profil'); lb.setAttribute('title', user ? name : 'Masuk'); }
     if (mn) mn.textContent = user ? 'Profil saya (' + first + ')' : 'Profil saya';
