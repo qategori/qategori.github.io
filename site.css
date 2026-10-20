@@ -75,7 +75,7 @@ iframe.qhGame{width:100%;border:0;min-height:480px;display:block}
 }
 /* iklan anchor di atas menu bawah, tanpa tertutup */
 @media(max-width:896px){
- details.stickAd,.stickAd{bottom:calc(62px + env(safe-area-inset-bottom) + 8px)!important;z-index:70!important}
+ details.stickAd,.stickAd{bottom:0!important;z-index:70!important}
  #HTML95{display:none!important}
  .sideB{padding:14px 14px 0}
 }
@@ -89,7 +89,6 @@ iframe.qhGame{width:100%;border:0;min-height:480px;display:block}
 .qCard{position:relative}.qCard>.ignielBookmarkPost{margin-inline-start:auto;align-self:flex-start;padding:2px}
 
 /* iklan tertutup: tab di pojok kanan bawah (di atas nav), terbuka: di atas nav */
-@media(max-width:896px){details.stickAd:not([open]){bottom:env(safe-area-inset-bottom,0px)!important}}
 /* footer seperti versi lama */
 .qFoot{display:flex;align-items:center;justify-content:space-between;text-align:start;padding:14px 16px 76px;opacity:1;gap:12px}
 .qFoot p{order:-1;margin:0;font-size:inherit}
@@ -129,3 +128,9 @@ iframe.qhGame{width:100%;border:0;min-height:480px;display:block}
 /* ruang untuk bar Tutup di bawah, supaya isi tidak tertutup */
 .popUp .popC{padding-block-end:76px!important}
 .popUp .popC:has(#qpBody){min-height:min(60dvh,440px)}
+
+/* tombol tutup popup: tanda panah kembali, seperti popup penanda */
+.popUp .popH .c{justify-content:flex-start!important;min-width:44px}
+.popUp .popH .c:not(.r){right:auto!important;left:var(--contentPadding)}
+.popUp .popH .c.r{left:auto!important;right:var(--contentPadding)}
+.popUp .popH .c::after{content:''!important;display:block;width:24px;height:24px;background:currentColor;-webkit-mask:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%221.5%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22M15%2019.9201L8.47997%2013.4001C7.70997%2012.6301%207.70997%2011.3701%208.47997%2010.6001L15%204.08008%22/%3E%3C/svg%3E") center/contain no-repeat;mask:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%221.5%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22M15%2019.9201L8.47997%2013.4001C7.70997%2012.6301%207.70997%2011.3701%208.47997%2010.6001L15%204.08008%22/%3E%3C/svg%3E") center/contain no-repeat}
