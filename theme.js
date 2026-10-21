@@ -1552,7 +1552,7 @@
     var d=ev.target.closest&&ev.target.closest('.bm-delete');if(!d)return;
     var id=d.parentNode.getAttribute('data-id');save(load().filter(function(e){return e.id!==id}));render();
   });
-  var mo=new MutationObserver(function(){clearTimeout(mo.t);mo.t=setTimeout(sync,80)});
+  var mo=new MutationObserver(function(){clearTimeout(mo.t);mo.t=setTimeout(function(){var al=document.querySelector('.ignielBookmarks');if(al&&/Memuat daftar penanda/.test(al.textContent))render();else sync()},80)});
   mo.observe(document.body,{childList:true,subtree:true});
   /* tutup popup tema/penanda kalau tap di luar */
   document.addEventListener('click',function(ev){
