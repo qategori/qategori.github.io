@@ -237,7 +237,7 @@ function viewLogin(msg=''){
   view(`<section class="card center">
     <h2 class="kd-title" lang="ja">\u5916\u98df\u696d \u7df4\u7fd2\u554f\u984c 100\u554f</h2>
     <p class="sub">Gaishoku renshu mondai \u00b7 latihan ujian \u5916\u98df\u696d (Restoran)</p>
-    <p>Halaman ini khusus anggota. Masuk dengan akun Google atau Email yang sudah didaftarkan admin.</p>
+    <p>Masuk untuk membeli akses Paket 2 dan seterusnya. Paket 1 gratis tanpa login.</p>
     ${loginMode === 'choice' ? `
     <button class="btn" data-action="login">Masuk dengan Google</button>
     <div class="or-sep">atau</div>
@@ -253,7 +253,7 @@ function viewLogin(msg=''){
     <button class="switch" data-action="${loginMode === 'signup' ? 'toSignin' : 'toSignup'}">${loginMode === 'signup' ? 'Sudah punya akun? Masuk' : 'Belum punya akun? Daftar'}</button>
     <button class="switch" data-action="resetPassword">Lupa password?</button>
     <button class="switch" data-action="toChoice">&larr; Kembali ke pilihan lain</button>`}
-    <p class="err" id="err">${esc(msg)}</p></section>`);
+    <p class="err" id="err">${esc(msg)}</p><button class="switch" data-action="toMenu">&larr; Kembali ke Paket 1 (gratis)</button></section>`);
 }
 function viewVerifyEmail(email){
   view(`<section class="card center"><h2 class="kd-title">Verifikasi email dulu</h2>
@@ -326,7 +326,7 @@ async function pay(){
 async function onUser(user){
   S.user = user; S.role = null; S.bank = null; S.quiz = null;
   paintTop();
-  if (!user) return viewLogin();
+  if (!user) { S.role = 'free'; return viewMenu(); }
   if (!user.emailVerified) return viewVerifyEmail(user.email);
   viewLoading('Memeriksa akses\u2026');
   let deniedBidang = false;
@@ -360,7 +360,7 @@ async function onUser(user){
     } else {
       clearPaidParam();
     }
-    return deniedBidang ? viewDeniedBidang() : viewDenied();
+    S.role = 'free'; return viewMenu();
   }
   clearPaidParam();
   viewMenu();
@@ -375,8 +375,8 @@ function norm(d){
 }
 async function loadBank(){
   if (S.bank) return S.bank;
-  const snap = await getDocs(collection(db, 'questions_restoran'));
-  S.bank = snap.docs.map(d => norm({ id: d.id, ...d.data() })).sort((a, b) => (a.no || 0) - (b.no || 0));
+  const snap = await getDocs(S.role === 'free' ? query(collection(db, 'questions_restoran'), where('no', '<=', 100)) : collection(db, 'questions_restoran'));
+  S.bank = snap.docs.map(d => norm({ id: d.id, ...d.data() })).sort((a, b) => (a.no || 0) - (b.no || 0)).filter(q => S.role !== 'free' || q._paket === 1);
   S.hasArti = S.bank.some(q => q.qArti || (q._opts || []).some(o => o.arti));
   return S.bank;
 }
@@ -385,10 +385,10 @@ const jenisLabel = (j) => j === 'praktik' ? '\u5b9f\u6280' : '\u7406\u8ad6';
 
 /* ---------------- Menu ---------------- */
 async function viewMenu(){
-  try { await loadBank(); } catch (err) { console.error(err); return viewError('Gagal memuat soal.', err); }
+  try { await loadBank(); } catch (err) { console.error(err); return viewError(S.role === 'free' && err && err.code === 'permission-denied' ? 'Paket 1 belum dibuka untuk umum (aturan Firestore belum diubah admin).' : 'Gagal memuat soal.', err); }
   const p = Prefs.get(); S.romaji = p.romaji !== false; S.arti = !!p.arti; applyRomaji();
   const bank = S.bank, t = bank.filter(q => q.jenis !== 'praktik').length, pr = bank.length - t;
-  const first = (S.user.displayName || S.user.email).split(/[ @]/)[0];
+  const first = S.user ? (S.user.displayName || S.user.email).split(/[ @]/)[0] : 'Tamu';
   const mode = p.mode || 'semua';
   const pakets = [...new Set(bank.map(q => q._paket))].sort((x, y) => x - y);
   const paket = pakets.map(String).includes(String(p.paket)) ? String(p.paket) : 'semua';
@@ -408,11 +408,12 @@ async function viewMenu(){
     <label class="check"><input type="checkbox" id="opt-shuffle" ${p.shuffle!==false?'checked':''}> Acak urutan soal</label>
     <label class="check"><input type="checkbox" id="opt-romaji" ${S.romaji?'checked':''}> Tampilkan romaji</label>
     ${S.hasArti ? `<label class="check"><input type="checkbox" id="opt-arti" ${S.arti?'checked':''}> Tampilkan arti (bahasa Indonesia)</label>` : ''}
+    ${S.role === 'free' ? `<div class="card" style="margin:14px 0;text-align:center"><p><strong>Paket 1 gratis.</strong> Paket 2 dan seterusnya berbayar.</p><button class="btn" data-action="${S.user ? 'pay' : 'goLogin'}">${S.user ? 'Bayar untuk buka Paket 2+' : 'Masuk untuk membeli Paket 2+'}</button><p class="kd-note" id="pay-note"></p></div>` : ''}
     <div style="height:14px"></div>
     <button class="btn" data-action="start">Mulai kuis</button>` :
     `<p class="kd-note">${S.role === 'admin' ? 'Buka menu Kelola \u2192 Soal untuk mengimpor soal.' : 'Admin belum mengunggah soal.'}</p>`}
     <div class="row">
-      <button class="ghost" data-action="history">Riwayat skor</button>
+      ${S.user ? '<button class="ghost" data-action="history">Riwayat skor</button>' : ''}
       ${S.role === 'admin' ? '<button class="ghost" data-action="admin">Kelola</button>' : ''}
     </div></section>`);
 }
@@ -510,6 +511,7 @@ async function finish(){
         ${q.qArti ? `<span class="arti q">${esc(q.qArti)}</span>` : ''}
         <strong>${'ABCDEF'[q._ans]}. <span lang="ja">${esc(q._opts[q._ans]?.jp || '')}</span></strong>${q._opts[q._ans]?.arti ? `<span class="arti">${esc(q._opts[q._ans].arti)}</span>` : ''}
         ${q.explanation ? `<br><span style="color:var(--muted)">${esc(q.explanation)}</span>` : ''}</li>`).join('')}</ol></section>` : ''}`);
+  if (!S.user) { const n0 = $('#saved'); if (n0) n0.textContent = 'Masuk untuk menyimpan riwayat skor.'; return; }
   try {
     await addDoc(collection(db, 'results_restoran'), {
       uid: S.user.uid, email: S.user.email.toLowerCase(), nama: S.user.displayName || '',
@@ -638,6 +640,8 @@ const actions = {
     catch (err) { if (errEl) errEl.textContent = authErrMsg(err); }
   },
   showEmailForm(){ loginMode = 'signin'; viewLogin(); },
+  goLogin(){ loginMode = 'choice'; viewLogin(); },
+  toMenu(){ onUser(S.user); },
   toSignup(){ loginMode = 'signup'; viewLogin(); },
   toSignin(){ loginMode = 'signin'; viewLogin(); },
   toChoice(){ loginMode = 'choice'; viewLogin(); },
@@ -1537,8 +1541,7 @@ import { getFirestore, doc, getDoc }
 
   onAuthStateChanged(auth, function(user){
     __authUser = user;
-    if (!user) { viewLogin(); return; }
-    checkAccess(user);
+    showContent(); /* materi terbuka untuk semua */
   });
 
   function show(i, skipScroll){
@@ -1771,7 +1774,7 @@ function viewLogin(msg=''){
   view(`<section class="card center">
     <h2 class="kd-title" lang="ja">\u98f2\u98df\u6599\u54c1\u88fd\u9020\u696d \u7df4\u7fd2\u554f\u984c 100\u554f</h2>
     <p class="sub">Inshoku ryouhin seizougyou renshuu mondai \u00b7 latihan ujian \u98f2\u98df\u6599\u54c1\u88fd\u9020\u696d (Pabrik Makanan)</p>
-    <p>Halaman ini khusus anggota. Masuk dengan akun Google atau Email yang sudah didaftarkan admin.</p>
+    <p>Masuk untuk membeli akses Paket 2 dan seterusnya. Paket 1 gratis tanpa login.</p>
     ${loginMode === 'choice' ? `
     <button class="btn" data-action="login">Masuk dengan Google</button>
     <div class="or-sep">atau</div>
@@ -1787,7 +1790,7 @@ function viewLogin(msg=''){
     <button class="switch" data-action="${loginMode === 'signup' ? 'toSignin' : 'toSignup'}">${loginMode === 'signup' ? 'Sudah punya akun? Masuk' : 'Belum punya akun? Daftar'}</button>
     <button class="switch" data-action="resetPassword">Lupa password?</button>
     <button class="switch" data-action="toChoice">&larr; Kembali ke pilihan lain</button>`}
-    <p class="err" id="err">${esc(msg)}</p></section>`);
+    <p class="err" id="err">${esc(msg)}</p><button class="switch" data-action="toMenu">&larr; Kembali ke Paket 1 (gratis)</button></section>`);
 }
 function viewVerifyEmail(email){
   view(`<section class="card center"><h2 class="kd-title">Verifikasi email dulu</h2>
@@ -1860,7 +1863,7 @@ async function pay(){
 async function onUser(user){
   S.user = user; S.role = null; S.bank = null; S.quiz = null;
   paintTop();
-  if (!user) return viewLogin();
+  if (!user) { S.role = 'free'; return viewMenu(); }
   if (!user.emailVerified) return viewVerifyEmail(user.email);
   viewLoading('Memeriksa akses\u2026');
   let deniedBidang = false;
@@ -1894,7 +1897,7 @@ async function onUser(user){
     } else {
       clearPaidParam();
     }
-    return deniedBidang ? viewDeniedBidang() : viewDenied();
+    S.role = 'free'; return viewMenu();
   }
   clearPaidParam();
   viewMenu();
@@ -1909,8 +1912,8 @@ function norm(d){
 }
 async function loadBank(){
   if (S.bank) return S.bank;
-  const snap = await getDocs(collection(db, 'questions_pabrik'));
-  S.bank = snap.docs.map(d => norm({ id: d.id, ...d.data() })).sort((a, b) => (a.no || 0) - (b.no || 0));
+  const snap = await getDocs(S.role === 'free' ? query(collection(db, 'questions_pabrik'), where('no', '<=', 100)) : collection(db, 'questions_pabrik'));
+  S.bank = snap.docs.map(d => norm({ id: d.id, ...d.data() })).sort((a, b) => (a.no || 0) - (b.no || 0)).filter(q => S.role !== 'free' || q._paket === 1);
   S.hasArti = S.bank.some(q => q.qArti || (q._opts || []).some(o => o.arti));
   return S.bank;
 }
@@ -1919,10 +1922,10 @@ const jenisLabel = (j) => j === 'praktik' ? '\u5b9f\u6280' : '\u7406\u8ad6';
 
 /* ---------------- Menu ---------------- */
 async function viewMenu(){
-  try { await loadBank(); } catch (err) { console.error(err); return viewError('Gagal memuat soal.', err); }
+  try { await loadBank(); } catch (err) { console.error(err); return viewError(S.role === 'free' && err && err.code === 'permission-denied' ? 'Paket 1 belum dibuka untuk umum (aturan Firestore belum diubah admin).' : 'Gagal memuat soal.', err); }
   const p = Prefs.get(); S.romaji = p.romaji !== false; S.arti = !!p.arti; applyRomaji();
   const bank = S.bank, t = bank.filter(q => q.jenis !== 'praktik').length, pr = bank.length - t;
-  const first = (S.user.displayName || S.user.email).split(/[ @]/)[0];
+  const first = S.user ? (S.user.displayName || S.user.email).split(/[ @]/)[0] : 'Tamu';
   const mode = p.mode || 'semua';
   const pakets = [...new Set(bank.map(q => q._paket))].sort((x, y) => x - y);
   const paket = pakets.map(String).includes(String(p.paket)) ? String(p.paket) : 'semua';
@@ -1942,11 +1945,12 @@ async function viewMenu(){
     <label class="check"><input type="checkbox" id="opt-shuffle" ${p.shuffle!==false?'checked':''}> Acak urutan soal</label>
     <label class="check"><input type="checkbox" id="opt-romaji" ${S.romaji?'checked':''}> Tampilkan romaji</label>
     ${S.hasArti ? `<label class="check"><input type="checkbox" id="opt-arti" ${S.arti?'checked':''}> Tampilkan arti (bahasa Indonesia)</label>` : ''}
+    ${S.role === 'free' ? `<div class="card" style="margin:14px 0;text-align:center"><p><strong>Paket 1 gratis.</strong> Paket 2 dan seterusnya berbayar.</p><button class="btn" data-action="${S.user ? 'pay' : 'goLogin'}">${S.user ? 'Bayar untuk buka Paket 2+' : 'Masuk untuk membeli Paket 2+'}</button><p class="kd-note" id="pay-note"></p></div>` : ''}
     <div style="height:14px"></div>
     <button class="btn" data-action="start">Mulai kuis</button>` :
     `<p class="kd-note">${S.role === 'admin' ? 'Buka menu Kelola \u2192 Soal untuk mengimpor soal.' : 'Admin belum mengunggah soal.'}</p>`}
     <div class="row">
-      <button class="ghost" data-action="history">Riwayat skor</button>
+      ${S.user ? '<button class="ghost" data-action="history">Riwayat skor</button>' : ''}
       ${S.role === 'admin' ? '<button class="ghost" data-action="admin">Kelola</button>' : ''}
     </div></section>`);
 }
@@ -2044,6 +2048,7 @@ async function finish(){
         ${q.qArti ? `<span class="arti q">${esc(q.qArti)}</span>` : ''}
         <strong>${'ABCDEF'[q._ans]}. <span lang="ja">${esc(q._opts[q._ans]?.jp || '')}</span></strong>${q._opts[q._ans]?.arti ? `<span class="arti">${esc(q._opts[q._ans].arti)}</span>` : ''}
         ${q.explanation ? `<br><span style="color:var(--muted)">${esc(q.explanation)}</span>` : ''}</li>`).join('')}</ol></section>` : ''}`);
+  if (!S.user) { const n0 = $('#saved'); if (n0) n0.textContent = 'Masuk untuk menyimpan riwayat skor.'; return; }
   try {
     await addDoc(collection(db, 'results_pabrik'), {
       uid: S.user.uid, email: S.user.email.toLowerCase(), nama: S.user.displayName || '',
@@ -2172,6 +2177,8 @@ const actions = {
     catch (err) { if (errEl) errEl.textContent = authErrMsg(err); }
   },
   showEmailForm(){ loginMode = 'signin'; viewLogin(); },
+  goLogin(){ loginMode = 'choice'; viewLogin(); },
+  toMenu(){ onUser(S.user); },
   toSignup(){ loginMode = 'signup'; viewLogin(); },
   toSignin(){ loginMode = 'signin'; viewLogin(); },
   toChoice(){ loginMode = 'choice'; viewLogin(); },
@@ -3029,8 +3036,7 @@ import { getFirestore, doc, getDoc }
 
   onAuthStateChanged(auth, function(user){
     __authUser = user;
-    if (!user) { viewLogin(); return; }
-    checkAccess(user);
+    showContent(); /* materi terbuka untuk semua */
   });
 
   function show(i, skipScroll){
