@@ -582,22 +582,24 @@ function berStats(){
 
 var BER_TITLE={bushu:'Bushu',jlpt:'JLPT',tg2:'TG2',jawa:'Jawa',sunda:'Sunda',bali:'Bali',kana:'Kana',rambu:'Rambu'};
 function stageKind(){var h=new Date().getHours();return h>=6&&h<17?'day':h>=17&&h<19?'dusk':'night'}
+var QL={"home": {"order": ["mochi", "ringkasan", "berita"], "off": [], "news": 4}};
 function renderBeranda(){
   var s=berStats(),d=s.d,pct=Math.min(100,Math.round(100*d.n/(d.goal||10))),bel=lsGet('qh_bel');
   var cont=bel&&BER_TITLE[bel]?bel:'bushu',sk=stageKind();
   var stars='';if(sk==='night'){for(var i=0;i<26;i++)stars+='<i style="left:'+((i*37+11)%100)+'%;top:'+((i*53+7)%52)+'%;animation-delay:'+((i%7)*.4)+'s"></i>'}
-  var h='<section class="qbHero"><div class="qbStage '+sk+'" id="qbStage"><div class="qbSky">'+stars+'<b class="qbSun"></b><s class="qbCloud c1"></s><s class="qbCloud c2"></s></div><div class="qbHill"></div><div class="qbGround"></div>'+
+  var B={};B.mochi='<section class="qbHero"><div class="qbStage '+sk+'" id="qbStage"><div class="qbSky">'+stars+'<b class="qbSun"></b><s class="qbCloud c1"></s><s class="qbCloud c2"></s></div><div class="qbHill"></div><div class="qbGround"></div>'+
    '<div class="qbCar" id="qbCar" role="button" aria-label="Mobil mainan">'+CARSVG+'</div><div class="qbBall" id="qbBall" role="button" aria-label="Bola">'+BALLSVG+'</div>'+
-   '<div class="mochi" id="qMochi" role="button" tabindex="0" aria-label="Mochi: ketuk untuk menyapa">'+MSVG+'</div><div class="qbBubble" id="qBub"></div><div class="qbHint">Ketuk Mochi, bola, atau mobil</div></div></section>'+
-  '<h2 class="qhH">Ringkasan belajar</h2><div class="qbStats">'+
+   '<div class="mochi" id="qMochi" role="button" tabindex="0" aria-label="Mochi: ketuk untuk menyapa">'+MSVG+'</div><div class="qbBubble" id="qBub"></div><div class="qbHint">Ketuk Mochi, bola, atau mobil</div></div></section>';
+  B.ringkasan='<h2 class="qhH">Ringkasan belajar</h2><div class="qbStats">'+
   '<div class="qbSt"><small>Beruntun</small><b>&#128293; '+d.streak+'</b><span>hari'+(d.best?' · terbaik '+d.best:'')+'</span></div>'+
   '<div class="qbSt"><small>Target hari ini</small><b>'+d.n+' / '+d.goal+'</b><span>'+(d.met?'Tercapai! すごい':'kartu dihapal')+'</span><i class="qtBar"><u style="width:'+pct+'%"></u></i></div>'+
   '<div class="qbSt"><small>Total dihapal</small><b>'+s.tot+'</b><span>kotoba + kanji</span></div></div>'+
   '<div class="qbAct"><button type="button" class="qhBtn" data-go="'+cont+'">Lanjut belajar &middot; '+BER_TITLE[cont]+'</button><button type="button" class="qhBtn alt" data-go="game">Main game</button></div>'+
-  '<div class="qbRiw">'+s.rows+(s.lq&&s.lq.t>0?'<p class="qbLast">Kuis terakhir: <b>'+s.lq.s+'/'+s.lq.t+'</b>'+(s.lq.at?' &middot; '+ago(+s.lq.at):'')+'</p>':'<p class="qbLast">Belum ada riwayat kuis. Ayo coba satu!</p>')+'</div>'+
-  '<h2 class="qhH">Berita terbaru</h2><div class="qGrid qbNews" id="qbNews"><p class="qhLoad">Memuat...</p></div><button type="button" class="qMore" data-go="berita">Lihat semua berita</button>';
+  '<div class="qbRiw">'+s.rows+(s.lq&&s.lq.t>0?'<p class="qbLast">Kuis terakhir: <b>'+s.lq.s+'/'+s.lq.t+'</b>'+(s.lq.at?' &middot; '+ago(+s.lq.at):'')+'</p>':'<p class="qbLast">Belum ada riwayat kuis. Ayo coba satu!</p>')+'</div>';
+  B.berita='<h2 class="qhH">Berita terbaru</h2><div class="qGrid qbNews" id="qbNews"><p class="qhLoad">Memuat...</p></div><button type="button" class="qMore" data-go="berita">Lihat semua berita</button>';
+  var LH=(typeof QL!=='undefined'&&QL.home)||{order:['mochi','ringkasan','berita'],off:[],news:4},h='';(LH.order||['mochi','ringkasan','berita']).forEach(function(k){if(B[k]&&(LH.off||[]).indexOf(k)<0)h+=B[k]});
   berEl.innerHTML=h;
-  loadPosts(function(){var rows=postRows().slice(0,4);var n=document.getElementById('qbNews');if(n)n.innerHTML=rows.map(function(x){return cardHtml(x)}).join('')});
+  loadPosts(function(){var rows=postRows().slice(0,(typeof QL!=='undefined'&&QL.home&&QL.home.news)||4);var n=document.getElementById('qbNews');if(n)n.innerHTML=rows.map(function(x){return cardHtml(x)}).join('')});
   mochiInit(s);
 }
 var mTimer=0,mBusy=false,mx=8;
