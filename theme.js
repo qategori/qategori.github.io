@@ -998,7 +998,7 @@
   function run(){ try { Array.prototype.forEach.call(document.querySelectorAll(SEL), make); } catch(e){} }
   /* Iklan anchor mobile (HTML99): setelah tampil (jeda 10 dtk) video diputar otomatis. Berbunyi bila pengunjung sudah menyentuh halaman, kalau belum tanpa suara. Desktop tetap menunggu klik. */
   document.addEventListener('animationstart', function(e){
-    if (e.animationName !== 'qAdIn') return;
+    return; /* HP: tidak putar otomatis, sama seperti PC (tunggu ketuk) */
     try { if (!e.target.closest('#HTML99')) return; var b = e.target.querySelector('.ytLz'); if (b && b.__auto) b.__auto(); } catch(x){}
   }, true);
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', run); else run();
