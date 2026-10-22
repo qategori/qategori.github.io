@@ -861,7 +861,8 @@
   window.qcat = {
     isOn: function(){ return st.on; },
     toggle: function(){ st.on = !st.on; save(); apply(); return st.on; },
-    reset: function(){ st.x = st.y = null; save(); place(); }
+    reset: function(){ st.x = st.y = null; save(); place(); },
+    meow: meow
   };
   function init(){
     apply();

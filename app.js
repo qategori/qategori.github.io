@@ -537,33 +537,29 @@ root.addEventListener('click',function(e){
 });
 /* ===== Beranda: Mochi interaktif + ringkasan riwayat + berita terbaru ===== */
 var berEl=panes.beranda.querySelector('.qhBody');berEl.classList.remove('pE','postBody');berEl.id='qBeranda';
-var MSVG='<svg viewBox="0 0 120 140" aria-hidden="true"><defs>'+
-'<radialGradient id="mFur" cx="42%" cy="30%" r="78%"><stop offset="0" stop-color="#ffc98a"/><stop offset=".55" stop-color="#f2a65a"/><stop offset="1" stop-color="#d9822f"/></radialGradient>'+
-'<radialGradient id="mBel" cx="50%" cy="40%" r="70%"><stop offset="0" stop-color="#fffaf0"/><stop offset="1" stop-color="#f6dfc0"/></radialGradient>'+
-'<radialGradient id="mIris" cx="40%" cy="35%" r="70%"><stop offset="0" stop-color="#8a5a2c"/><stop offset="1" stop-color="#2d1a0d"/></radialGradient></defs>'+
-'<ellipse class="mShadow" cx="60" cy="133" rx="30" ry="4.5" fill="rgba(0,0,0,.2)"/>'+
-'<g class="mAll">'+
-'<g class="mTail"><path d="M78 108C102 110 110 88 98 74" fill="none" stroke="#5a3a22" stroke-width="10" stroke-linecap="round"/><path d="M78 108C102 110 110 88 98 74" fill="none" stroke="url(#mFur)" stroke-width="7" stroke-linecap="round"/><path d="M78 108C102 110 110 88 98 74" fill="none" stroke="#b9661f" stroke-width="7" stroke-linecap="butt" stroke-dasharray="2.2 9" opacity=".55"/></g>'+
-'<g class="mLegL"><path d="M52 104L49 124" fill="none" stroke="#5a3a22" stroke-width="11" stroke-linecap="round"/><path d="M52 104L49 124" fill="none" stroke="url(#mFur)" stroke-width="8" stroke-linecap="round"/><ellipse cx="47" cy="128" rx="8" ry="4.4" fill="url(#mBel)" stroke="#5a3a22" stroke-width="1.5"/><path d="M44 128v2M47 127.5v2.4M50 128v2" stroke="#c9a27a" stroke-width=".8" stroke-linecap="round"/></g>'+
-'<g class="mLegR"><path d="M68 104L71 124" fill="none" stroke="#5a3a22" stroke-width="11" stroke-linecap="round"/><path d="M68 104L71 124" fill="none" stroke="url(#mFur)" stroke-width="8" stroke-linecap="round"/><ellipse cx="73" cy="128" rx="8" ry="4.4" fill="url(#mBel)" stroke="#5a3a22" stroke-width="1.5"/><path d="M70 128v2M73 127.5v2.4M76 128v2" stroke="#c9a27a" stroke-width=".8" stroke-linecap="round"/></g>'+
-'<ellipse cx="60" cy="88" rx="22.5" ry="21.5" fill="url(#mFur)" stroke="#5a3a22" stroke-width="1.7"/>'+
-'<path d="M40 82Q44 80 46 85M40 92Q44 90 46 95M80 82Q76 80 74 85M80 92Q76 90 74 95" fill="none" stroke="#b9661f" stroke-width="2" stroke-linecap="round" opacity=".6"/>'+
-'<ellipse cx="60" cy="94" rx="12.5" ry="13.5" fill="url(#mBel)"/>'+
-'<g class="mArmL"><path d="M41 80Q29 90 31 103" fill="none" stroke="#5a3a22" stroke-width="10" stroke-linecap="round"/><path d="M41 80Q29 90 31 103" fill="none" stroke="url(#mFur)" stroke-width="7" stroke-linecap="round"/><circle cx="31" cy="105" r="5.4" fill="url(#mBel)" stroke="#5a3a22" stroke-width="1.5"/><path d="M29 107v1.6M31 107.4v1.8M33 107v1.6" stroke="#c9a27a" stroke-width=".7" stroke-linecap="round"/></g>'+
-'<g class="mArmR"><path d="M79 80Q91 90 89 103" fill="none" stroke="#5a3a22" stroke-width="10" stroke-linecap="round"/><path d="M79 80Q91 90 89 103" fill="none" stroke="url(#mFur)" stroke-width="7" stroke-linecap="round"/><circle cx="89" cy="105" r="5.4" fill="url(#mBel)" stroke="#5a3a22" stroke-width="1.5"/><path d="M87 107v1.6M89 107.4v1.8M91 107v1.6" stroke="#c9a27a" stroke-width=".7" stroke-linecap="round"/></g>'+
-'<path d="M47 69Q60 76 73 69" fill="none" stroke="#c43a2f" stroke-width="3.2" stroke-linecap="round"/><circle cx="60" cy="74.5" r="3" fill="#f3c340" stroke="#a8801a" stroke-width=".9"/><path d="M58.6 74.8h2.8" stroke="#a8801a" stroke-width=".7"/>'+
-'<g class="mHead"><g transform="translate(26.4 21.5) scale(1.05)">'+
-'<path d="M17.5 24L19 7.5L31 17.5Z" fill="url(#mFur)" stroke="#5a3a22" stroke-width="1.6" stroke-linejoin="round"/><path d="M21 19L21.6 12.5L26.5 17Z" fill="#f7b6b6"/>'+
-'<path d="M46.5 24L45 7.5L33 17.5Z" fill="url(#mFur)" stroke="#5a3a22" stroke-width="1.6" stroke-linejoin="round"/><path d="M43 19L42.4 12.5L37.5 17Z" fill="#f7b6b6"/>'+
-'<ellipse cx="32" cy="29" rx="16" ry="13.5" fill="url(#mFur)" stroke="#5a3a22" stroke-width="1.6"/>'+
-'<path d="M32 16.5V21M27 17.5L28 21M37 17.5L36 21" stroke="#b9661f" stroke-width="1.6" stroke-linecap="round"/>'+
-'<ellipse cx="21.5" cy="33" rx="3" ry="2" fill="#f28b8b" opacity=".45"/><ellipse cx="42.5" cy="33" rx="3" ry="2" fill="#f28b8b" opacity=".45"/>'+
-'<ellipse cx="32" cy="34" rx="7.5" ry="5.2" fill="url(#mBel)"/>'+
-'<g class="mEyes"><ellipse cx="25" cy="28.5" rx="2.7" ry="3.2" fill="url(#mIris)"/><ellipse cx="39" cy="28.5" rx="2.7" ry="3.2" fill="url(#mIris)"/><ellipse cx="25" cy="28.7" rx="1.2" ry="2" fill="#140a04"/><ellipse cx="39" cy="28.7" rx="1.2" ry="2" fill="#140a04"/><circle cx="26" cy="27.2" r="1" fill="#fff"/><circle cx="40" cy="27.2" r="1" fill="#fff"/><circle cx="24.2" cy="29.8" r=".5" fill="#fff" opacity=".7"/><circle cx="38.2" cy="29.8" r=".5" fill="#fff" opacity=".7"/></g>'+
-'<path d="M30.2 32.4H33.8L32 34.4Z" fill="#e58a8a"/><path d="M32 34.4V36M32 36Q30.3 37.6 28.6 36.3M32 36Q33.7 37.6 35.4 36.3" fill="none" stroke="#5a3a22" stroke-width="1.1" stroke-linecap="round"/>'+
-'<path d="M18 32L9.5 30M18 34.5L9.5 36M46 32L54.5 30M46 34.5L54.5 36" stroke="#5a3a22" stroke-width=".8" stroke-linecap="round" opacity=".5"/>'+
-'<path d="M20 15Q32 8 44 15L42 20Q32 14 22 20Z" fill="#3b4a9c" stroke="#27306b" stroke-width="1"/><circle cx="32" cy="11" r="1.6" fill="#ffd45a"/></g></g>'+
-'</g></svg>';
+var MSVG='<svg viewBox="0 0 64 64" aria-hidden="true">'+
+ '<ellipse class="mShadow" cx="32" cy="62.5" rx="15" ry="2.2" fill="rgba(0,0,0,.18)"/>'+
+ '<g class="qcTail"><path d="M45 54C58 54 60 40 54 34" fill="none" stroke="#5a3a22" stroke-width="7" stroke-linecap="round"/><path d="M45 54C58 54 60 40 54 34" fill="none" stroke="#f2a65a" stroke-width="4.6" stroke-linecap="round"/></g>'+
+ '<ellipse cx="32" cy="50" rx="16" ry="12.5" fill="#f2a65a" stroke="#5a3a22" stroke-width="1.6"/>'+
+ '<ellipse cx="32" cy="53" rx="8.5" ry="8" fill="#fff3e0"/>'+
+ '<ellipse cx="25" cy="59.5" rx="5" ry="3" fill="#fff3e0" stroke="#5a3a22" stroke-width="1.3"/><ellipse cx="39" cy="59.5" rx="5" ry="3" fill="#fff3e0" stroke="#5a3a22" stroke-width="1.3"/>'+
+ '<g class="qcHead">'+
+  '<g class="qcEarL"><path d="M17.5 24L19 7.5L31 17.5Z" fill="#f2a65a" stroke="#5a3a22" stroke-width="1.6" stroke-linejoin="round"/><path d="M21 19L21.6 12.5L26.5 17Z" fill="#f7b6b6"/></g>'+
+  '<g class="qcEarR"><path d="M46.5 24L45 7.5L33 17.5Z" fill="#f2a65a" stroke="#5a3a22" stroke-width="1.6" stroke-linejoin="round"/><path d="M43 19L42.4 12.5L37.5 17Z" fill="#f7b6b6"/></g>'+
+  '<ellipse cx="32" cy="29" rx="16" ry="13.5" fill="#f2a65a" stroke="#5a3a22" stroke-width="1.6"/>'+
+  '<path d="M32 16.5V21M27 17.5L28 21M37 17.5L36 21" stroke="#c9772e" stroke-width="1.6" stroke-linecap="round"/>'+
+  '<ellipse cx="32" cy="34" rx="7.5" ry="5.2" fill="#fff3e0"/>'+
+  '<g class="qcEyes"><ellipse cx="25" cy="28.5" rx="2.1" ry="2.8" fill="#3b2415"/><ellipse cx="39" cy="28.5" rx="2.1" ry="2.8" fill="#3b2415"/><circle cx="25.7" cy="27.4" r=".8" fill="#fff"/><circle cx="39.7" cy="27.4" r=".8" fill="#fff"/></g>'+
+  '<g class="qcSleep"><path d="M22.5 29Q25 31.5 27.5 29M36.5 29Q39 31.5 41.5 29" fill="none" stroke="#3b2415" stroke-width="1.6" stroke-linecap="round"/></g>'+
+  '<path d="M30.2 32.4H33.8L32 34.4Z" fill="#e58a8a"/><path d="M32 34.4V36M32 36Q30.3 37.6 28.6 36.3M32 36Q33.7 37.6 35.4 36.3" fill="none" stroke="#5a3a22" stroke-width="1.1" stroke-linecap="round"/>'+
+  '<path d="M18 32L10.5 30.5M18 34.5L10.5 35.5M46 32L53.5 30.5M46 34.5L53.5 35.5" stroke="#5a3a22" stroke-width=".9" stroke-linecap="round" opacity=".55"/>'+
+  '<g class="qcAcc qcSakura"><circle cx="43" cy="14.5" r="2" fill="#f9c7d4"/><circle cx="45.6" cy="16.2" r="2" fill="#f9c7d4"/><circle cx="45" cy="19" r="2" fill="#f9c7d4"/><circle cx="41.6" cy="18.4" r="2" fill="#f9c7d4"/><circle cx="41.2" cy="15.4" r="2" fill="#f9c7d4"/><circle cx="43.3" cy="16.9" r="1.2" fill="#f2a65a"/></g>'+
+  '<g class="qcAcc qcAki"><path d="M42 13C47 12 49.5 16.5 47.5 20.5C43 20 41 17 42 13Z" fill="#c8431c" stroke="#7a2a10" stroke-width="1"/><path d="M42.5 14.5L46.8 19.6" stroke="#7a2a10" stroke-width=".8"/></g>'+
+  '<g class="qcAcc qcSalju"><path d="M20 40Q32 46 44 40L44.5 44Q32 50 19.5 44Z" fill="#d6453d" stroke="#8a2420" stroke-width="1"/><path d="M40 43L42.5 52L46 51L44 43Z" fill="#d6453d" stroke="#8a2420" stroke-width="1" stroke-linejoin="round"/></g>'+
+  '<g class="qcAcc qcPanas"><path d="M17 22Q32 14 47 22" fill="none" stroke="#e8c15a" stroke-width="3" stroke-linecap="round"/><path d="M13 22H51" stroke="#d9a93c" stroke-width="3.4" stroke-linecap="round"/><path d="M20 22Q32 8 44 22Z" fill="#f1d27a" stroke="#b88a24" stroke-width="1"/><path d="M20.5 20.5H43.5" stroke="#d6453d" stroke-width="2"/></g>'+
+  '<g class="qcAcc qcNightCap"><path d="M19 20Q30 2 46 10Q40 14 46 22Z" fill="#5b6fd6" stroke="#2f3b8a" stroke-width="1"/><path d="M17 21Q32 25 47 21" fill="none" stroke="#e8ecff" stroke-width="3" stroke-linecap="round"/><circle cx="46.5" cy="10" r="2.6" fill="#fff"/><path d="M33 12l1 2 2 .3-1.5 1.4.4 2-1.9-1-1.9 1 .4-2L30 14.3 32 14Z" fill="#ffe27a"/></g>'+
+ '</g>'+
+ '<g class="qcNite"><path d="M54 3A6 6 0 1 0 54 15A4.8 4.8 0 0 1 54 3Z" fill="#fdf3c0"/><circle class="qcTw" cx="60" cy="20" r="1.1" fill="#fff6c8"/><circle class="qcTw qcTw2" cx="8" cy="8" r="1.2" fill="#fff6c8"/><circle class="qcTw" cx="4" cy="26" r=".9" fill="#fff6c8"/></g></svg>';
 var CARSVG='<svg viewBox="0 0 90 44" aria-hidden="true"><path d="M6 30V22Q6 18 11 17L24 16Q28 8 36 8H54Q62 8 66 16L80 18Q86 19 86 25V30Z" fill="#e5484d" stroke="#7a1d22" stroke-width="1.6" stroke-linejoin="round"/><path d="M29 16Q32 11 38 11H50V17Z" fill="#cfeaff" stroke="#7a1d22" stroke-width="1.2"/><path d="M53 11H58Q62 12 64 17H53Z" fill="#cfeaff" stroke="#7a1d22" stroke-width="1.2"/><rect x="80" y="22" width="5" height="4" rx="1.5" fill="#ffe27a"/><rect x="5" y="23" width="4" height="4" rx="1.5" fill="#ff9aa0"/>'+
 '<g class="cW" style="transform-origin:24px 32px"><circle cx="24" cy="32" r="8" fill="#2d2d36"/><circle cx="24" cy="32" r="3.2" fill="#c8ccd6"/><path d="M24 25v14M17 32h14" stroke="#8c92a2" stroke-width="1.4"/></g><g class="cW" style="transform-origin:67px 32px"><circle cx="67" cy="32" r="8" fill="#2d2d36"/><circle cx="67" cy="32" r="3.2" fill="#c8ccd6"/><path d="M67 25v14M60 32h14" stroke="#8c92a2" stroke-width="1.4"/></g></svg>';
 var BALLSVG='<svg viewBox="0 0 30 30" aria-hidden="true"><g class="bSp"><circle cx="15" cy="15" r="13" fill="#fff" stroke="#3a3a46" stroke-width="1.6"/><path d="M15 6l6 4.4-2.3 7h-7.4L9 10.4Z" fill="#3a3a46"/><path d="M15 6V2M21 10.4l4-1.6M18.7 17.4l2.6 4.4M11.3 17.4l-2.6 4.4M9 10.4L5 8.8" stroke="#3a3a46" stroke-width="1.3"/></g></svg>';
@@ -582,7 +578,7 @@ function berStats(){
 
 var BER_TITLE={bushu:'Bushu',jlpt:'JLPT',tg2:'TG2',jawa:'Jawa',sunda:'Sunda',bali:'Bali',kana:'Kana',rambu:'Rambu'};
 function stageKind(){var h=new Date().getHours();return h>=6&&h<17?'day':h>=17&&h<19?'dusk':'night'}
-var QL={"home": {"order": ["mochi", "berita", "ringkasan"], "off": [], "news": 2}};
+var QL={"home": {"order": ["mochi", "berita", "ringkasan"], "off": [], "news": 2}, "traktir": {"url": "https://saweria.co/Bshantoz"}};
 function renderBeranda(){
   var s=berStats(),d=s.d,pct=Math.min(100,Math.round(100*d.n/(d.goal||10))),bel=lsGet('qh_bel');
   var cont=bel&&BER_TITLE[bel]?bel:'bushu',sk=stageKind();
@@ -615,7 +611,15 @@ function mLines(s){var g=sapa(),d=s.d,h=new Date().getHours(),L=[
   ['やった','yatta',d.streak?'Beruntun '+d.streak+' hari. Jangan putus ya!':'Mulai hari pertama streak-mu sekarang.']];
   if(h<4)L.push(['もう遅いよ','mou osoi yo','Sudah lewat tengah malam. Jangan lupa istirahat ya.']);
   return L}
-function say(l){var b=document.getElementById('qBub');if(!b)return;b.innerHTML='<b>'+l[0]+'</b> <small>'+l[1]+'</small><p>'+l[2]+'</p>';b.classList.add('on')}
+function getWStock(){try{var v=localStorage.getItem('mochi_w_stock');return v!==null?parseInt(v,10)||0:3}catch(e){return 3}}
+function setWStock(n){try{localStorage.setItem('mochi_w_stock',String(Math.max(0,n)))}catch(e){}}
+function traktirUrl(){return (typeof QL!=='undefined'&&QL.traktir&&QL.traktir.url)||'https://saweria.co/Bshantoz'}
+window.feedWhiskas=function(e){if(e){e.stopPropagation();e.preventDefault()}
+  var n=getWStock();
+  if(n>0){setWStock(n-1);mState('purr',2000);if(window.qcat&&window.qcat.meow)window.qcat.meow();say(['おいしい！','oishii!','Nyam nyam! Whiskas-nya enak banget! 🐟'])}
+  else{window.open(traktirUrl(),'_blank','noopener')}};
+function say(l){var b=document.getElementById('qBub');if(!b)return;var n=getWStock();
+  b.innerHTML='<b>'+l[0]+'</b> <small>'+l[1]+'</small><p>'+l[2]+'</p><button type="button" class="mWhiskasBtn'+(n>0?'':' empty')+'" onclick="feedWhiskas(event)">'+(n>0?'Beri Whiskas ('+n+') 🐟':'Whiskas habis! Traktir Mochi 🐟')+'</button>';b.classList.add('on')}
 function mEl(){return document.getElementById('qMochi')}
 function mState(c,ms){var m=mEl();if(!m)return;m.className='mochi '+c;if(ms)setTimeout(function(){if(m.className==='mochi '+c)m.className='mochi'},ms)}
 function mGo(x,cb){var st=document.getElementById('qbStage'),m=mEl();if(!st||!m){return}
@@ -665,7 +669,7 @@ function show(){
   if(r.tab==='game')showGame(r.sub);
   else if(r.tab==='kana')showKana(r.sub);
   else if(r.tab==='berita'){showBerita(r.qs)}
-  else if(r.tab==='beranda'){showBeranda()}
+  else if(r.tab==='beranda'){showBeranda();var mh=mEl();if(mh){mh.classList.add('qcHop');setTimeout(function(){mh.classList.remove('qcHop')},700)}}
   else mount(r.tab,r.sub?r.tab+'-'+r.sub:r.tab);
   if(r.tab!=='berita'&&readKey){readKey='';document.title=document.title}
   if(r.tab==='bushu'){var bq=new URLSearchParams(r.qs);if(bq.get('q')||bq.get('tab')){var ap=function(){if(window.kbqOpen)window.kbqOpen(bq.get('q')||'',bq.get('tab')||'asal')};if(mounted.bushu&&document.getElementById('kuis-kanji'))setTimeout(ap,50);else panes.bushu.__after=ap}}

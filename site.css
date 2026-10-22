@@ -354,6 +354,29 @@ iframe.qhGame{width:100%;border:0;min-height:480px;display:block}
 /* tombol Mochi & Suasana diangkat JS agar tidak menutupi footer */
 #qcat,#qfxFab{translate:0 calc(-1px * var(--qlift,0))}
 
+/* ===== Mochi beranda: kucing chibi yang sama dengan Mochi melayang ===== */
+.qbStage .mochi{width:88px;height:88px;bottom:13px}
+.mochi .qcTail{transform-origin:45px 54px;animation:qcTail 3.4s ease-in-out infinite}
+.mochi .qcHead{transform-origin:32px 40px;animation:qcHead 5s ease-in-out infinite}
+.mochi .qcEyes{transform-origin:32px 28.5px;animation:qcBlink 4.8s infinite}
+.mochi .qcEarL{transform-origin:24px 17px;animation:qcEar 7s ease-in-out 1s infinite}
+.mochi .qcSleep{opacity:0}
+.mochi .qcAcc,.mochi .qcNightCap,.mochi .qcNite{display:none}
+html[data-qn="1"] .mochi .qcNightCap,html[data-qn="1"] .mochi .qcNite{display:block}
+html[data-qn="1"] .mochi{filter:drop-shadow(0 2px 4px rgba(0,0,0,.25)) drop-shadow(0 0 6px rgba(255,235,160,.2))}
+html[data-qn="1"] .mochi .qcSakura,html[data-qn="1"] .mochi .qcAki,html[data-qn="1"] .mochi .qcSalju,html[data-qn="1"] .mochi .qcPanas{display:none!important}
+html[data-qs="sakura"][data-qn="0"] .mochi .qcSakura,html[data-qs="aki"][data-qn="0"] .mochi .qcAki,html[data-qs="salju"][data-qn="0"] .mochi .qcSalju,html[data-qs="panas"][data-qn="0"] .mochi .qcPanas{display:block}
+.mochi .qcTw{animation:qsTw2 2.6s ease-in-out infinite}.mochi .qcTw2{animation-delay:1.1s}
+.mochi.run .qcHead{animation:qcHop .25s ease-in-out infinite alternate}
+.mochi.kick{animation:qcHop .4s ease}
+.mochi.wave .qcHead{animation:qcGiggle 1s ease-in-out infinite}
+.mochi.purr{animation:qcGiggle .4s ease infinite}
+.mochi.purr .qcEyes{opacity:0}.mochi.purr .qcSleep{opacity:1}
+.mochi.qcHop{animation:qcHop .6s ease}
+.qbBubble .mWhiskasBtn{pointer-events:auto;display:inline-flex;align-items:center;gap:5px;margin-top:8px;padding:5px 12px;border:0;border-radius:99px;background:var(--themeLink,#5b5bd6);color:#fff;font:inherit;font-weight:700;font-size:11.5px;cursor:pointer;box-shadow:0 2px 6px rgba(0,0,0,.15);transition:transform .15s}
+.qbBubble .mWhiskasBtn:active{transform:scale(.94)}
+.qbBubble .mWhiskasBtn.empty{background:#e67e22}
+
 .leftF{justify-content:flex-start!important}
 .leftF label{min-width:56px!important;justify-content:flex-start!important;padding-inline:var(--contentPadding,16px)!important}
 .leftF label::before{content:''!important;display:block;width:24px;height:24px;background:currentColor;-webkit-mask:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%221.5%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22M15%2019.9201L8.47997%2013.4001C7.70997%2012.6301%207.70997%2011.3701%208.47997%2010.6001L15%204.08008%22/%3E%3C/svg%3E") center/contain no-repeat;mask:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%221.5%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22M15%2019.9201L8.47997%2013.4001C7.70997%2012.6301%207.70997%2011.3701%208.47997%2010.6001L15%204.08008%22/%3E%3C/svg%3E") center/contain no-repeat}
