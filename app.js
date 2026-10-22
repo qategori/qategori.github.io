@@ -296,10 +296,9 @@ var listEl=qs0;
   todayEl.innerHTML =
     '<div class="qtTile"><small>日本 Nihon</small><b data-qt="jt">--:--</b><span data-qt="jd"></span><span data-qt="wib"></span></div>' +
     '<div class="qtTile"><small><label for="qtCity">Cuaca</label><select id="qtCity" aria-label="Pilih kota">' + CITIES.map(function(c){ return '<option>' + c[0] + '</option>'; }).join('') + '</select></small><b data-qt="tp">--&deg;</b><span data-qt="wd">Memuat...</span></div>' +
-    '<a class="qtTile qtKj" href="/p/materi-dan-kuis-kanji-metode-bushu.html" data-qt="kj"><small>今日の漢字 Kanji hari ini</small><b>·</b><span>Memuat...</span></a>' +
-    '<button type="button" class="qtTile qtGl" data-qt="gl" aria-label="Ganti target harian"><small>Target hari ini</small><b>0 / 10</b><span></span></button>';
+    '';
   panes.berita.insertBefore(todayEl, listEl);
-  function q(k){ return todayEl.querySelector('[data-qt="' + k + '"]'); }
+  function q(k){ return document.querySelector('[data-qt="' + k + '"]'); }
   function tickClock(){
     var j = atOff(9), w = atOff(7);
     q('jt').textContent = p2(j.getUTCHours()) + ':' + p2(j.getUTCMinutes());
@@ -339,7 +338,7 @@ var listEl=qs0;
       var K = (window.KBQ_DATA && window.KBQ_DATA.KANJI) || [], pool = K.filter(function(r){ return r[0] === 'N5' || r[0] === 'N4'; });
       var ak = {}; ['n5', 'n4'].forEach(function(l){ var o = readSet(l + '_kanji_archived_v1'); for (var k in o) ak[k] = 1; });
       var unseen = pool.filter(function(r){ return !ak[r[1]]; }); if (unseen.length) pool = unseen;
-      if (!pool.length) { q('kj').querySelector('span').textContent = 'Belum bisa dimuat'; return; }
+      if (!pool.length) { var kk = q('kj'); if (kk && kk.querySelector('span')) kk.querySelector('span').textContent = 'Belum bisa dimuat'; return; }
       var day = Math.floor(j.getTime() / 86400000), r = pool[(day * 7919) % pool.length];
       lsSet('qt_kd', JSON.stringify({d:dk, r:r.slice(0, 5)})); showKanji(r);
     };
@@ -393,7 +392,7 @@ var listEl=qs0;
     var pct = Math.min(100, Math.round(100 * d.n / d.goal));
     g.innerHTML = '<small>Target hari ini</small><b>' + d.n + ' / ' + d.goal + '</b><span>' + (d.met ? 'Tercapai! すごい' : 'kartu dihapal') + (d.streak ? ' · 🔥 ' + d.streak + ' hari' : '') + '</span><i class="qtBar"><u style="width:' + pct + '%"></u></i>';
   }
-  todayEl.addEventListener('click', function(e){
+  document.addEventListener('click', function(e){
     var b = e.target.closest ? e.target.closest('[data-qt="gl"]') : null;
     if (b && window.qDaily) { window.qDaily.nextGoal(); showGoal(); }
   });
@@ -588,13 +587,15 @@ function renderBeranda(){
    '<div class="mochi" id="qMochi" role="button" tabindex="0" aria-label="Mochi: ketuk untuk menyapa">'+MSVG+'</div><div class="qbBubble" id="qBub"></div><div class="qbHint">Ketuk Mochi, bola, atau mobil</div></div></section>';
   B.ringkasan='<h2 class="qhH">Ringkasan belajar</h2><div class="qbStats">'+
   '<div class="qbSt"><small>Beruntun</small><b>&#128293; '+d.streak+'</b><span>hari'+(d.best?' · terbaik '+d.best:'')+'</span></div>'+
-  '<div class="qbSt"><small>Target hari ini</small><b>'+d.n+' / '+d.goal+'</b><span>'+(d.met?'Tercapai! すごい':'kartu dihapal')+'</span><i class="qtBar"><u style="width:'+pct+'%"></u></i></div>'+
-  '<div class="qbSt"><small>Total dihapal</small><b>'+s.tot+'</b><span>kotoba + kanji</span></div></div>'+
+  '<div class="qbSt"><small>Total dihapal</small><b>'+s.tot+'</b><span>kotoba + kanji</span></div>'+
+  '<a class="qbSt qtKj" href="/p/materi-dan-kuis-kanji-metode-bushu.html" data-qt="kj"><small>今日の漢字 Kanji hari ini</small><b>·</b><span>Memuat...</span></a>'+
+  '<button type="button" class="qbSt qtGl" data-qt="gl" aria-label="Ganti target harian"><small>Target hari ini</small><b>'+d.n+' / '+d.goal+'</b><span>'+(d.met?'Tercapai! すごい':'kartu dihapal')+'</span><i class="qtBar"><u style="width:'+pct+'%"></u></i></button></div>'+
   '<div class="qbAct"><button type="button" class="qhBtn" data-go="'+cont+'">Lanjut belajar &middot; '+BER_TITLE[cont]+'</button><button type="button" class="qhBtn alt" data-go="game">Main game</button></div>'+
   '<div class="qbRiw">'+s.rows+(s.lq&&s.lq.t>0?'<p class="qbLast">Kuis terakhir: <b>'+s.lq.s+'/'+s.lq.t+'</b>'+(s.lq.at?' &middot; '+ago(+s.lq.at):'')+'</p>':'<p class="qbLast">Belum ada riwayat kuis. Ayo coba satu!</p>')+'</div>';
-  B.berita='<h2 class="qhH">Berita terbaru</h2><div class="qGrid qbNews" id="qbNews"><p class="qhLoad">Memuat...</p></div><button type="button" class="qMore" data-go="berita">Lihat semua berita</button>';
+  B.berita='<h2 class="qhH">Berita terbaru</h2><div class="qGrid qbNews" id="qbNews"><p class="qhLoad">Memuat...</p></div>';
   var LH=(typeof QL!=='undefined'&&QL.home)||{order:['mochi','ringkasan','berita'],off:[],news:4},h='';(LH.order||['mochi','ringkasan','berita']).forEach(function(k){if(B[k]&&(LH.off||[]).indexOf(k)<0)h+=B[k]});
   berEl.innerHTML=h;
+  try{showGoal();loadKanji()}catch(e){}
   loadPosts(function(){var rows=postRows().slice(0,(typeof QL!=='undefined'&&QL.home&&QL.home.news)||4);var n=document.getElementById('qbNews');if(n)n.innerHTML=rows.map(function(x){return cardHtml(x)}).join('')});
   mochiInit(s);
 }
