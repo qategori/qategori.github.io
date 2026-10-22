@@ -342,6 +342,18 @@ iframe.qhGame{width:100%;border:0;min-height:480px;display:block}
  body.qSrh .headS .srh button svg{width:20px;height:20px}
 }
 
+/* ===== nav bawah bentuk kapsul melayang (HP) ===== */
+@media(max-width:896px){
+ html body .qBottom{left:0;right:0;margin:0 auto;width:calc(100% - 24px);max-width:460px;bottom:calc(10px + env(safe-area-inset-bottom));padding-bottom:0;border:1px solid var(--themeBd-color);border-radius:999px;box-shadow:0 6px 20px rgba(0,0,0,.25)}
+ html body .qBottom .qsBot{border-radius:inherit}
+ html body .qBottom>a,html body .qBottom>label,html body .qBottom>.qbMenu{border-radius:999px}
+ html body #qcat{bottom:calc(var(--mobileHeight,60px) + 16px + env(safe-area-inset-bottom))}
+ html body #qfxFab{bottom:calc(var(--mobileHeight,60px) + 24px + env(safe-area-inset-bottom))}
+ .qFoot{padding-bottom:96px}
+}
+/* tombol Mochi & Suasana diangkat JS agar tidak menutupi footer */
+#qcat,#qfxFab{translate:0 calc(-1px * var(--qlift,0))}
+
 .leftF{justify-content:flex-start!important}
 .leftF label{min-width:56px!important;justify-content:flex-start!important;padding-inline:var(--contentPadding,16px)!important}
 .leftF label::before{content:''!important;display:block;width:24px;height:24px;background:currentColor;-webkit-mask:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%221.5%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22M15%2019.9201L8.47997%2013.4001C7.70997%2012.6301%207.70997%2011.3701%208.47997%2010.6001L15%204.08008%22/%3E%3C/svg%3E") center/contain no-repeat;mask:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%221.5%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22M15%2019.9201L8.47997%2013.4001C7.70997%2012.6301%207.70997%2011.3701%208.47997%2010.6001L15%204.08008%22/%3E%3C/svg%3E") center/contain no-repeat}

@@ -1569,3 +1569,22 @@
   });
   render();
 })();
+
+/* Mochi & tombol Suasana tidak boleh menutupi footer (sosmed & kredit): naik di atas garis footer */
+(function(){
+  var ids=['qcat','qfxFab'],raf=0;
+  function run(){
+    raf=0;
+    var f=document.querySelector('.qFoot'),line=f?f.getBoundingClientRect().top:1e9;
+    ids.forEach(function(id){
+      var e=document.getElementById(id);if(!e)return;
+      var cur=parseFloat(e.style.getPropertyValue('--qlift'))||0;
+      var r=e.getBoundingClientRect();if(!r.width)return;
+      var base=r.bottom+cur,lim=line-8,need=base>lim?Math.ceil(base-lim):0;
+      if(need!==cur){if(need)e.style.setProperty('--qlift',need);else e.style.removeProperty('--qlift')}
+    });
+  }
+  function q(){if(!raf)raf=requestAnimationFrame(run)}
+  addEventListener('scroll',q,{passive:true});addEventListener('resize',q);
+  addEventListener('load',q);setInterval(q,1000);q();
+})();
