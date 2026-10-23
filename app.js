@@ -577,7 +577,7 @@ function berStats(){
 
 var BER_TITLE={bushu:'Bushu',jlpt:'JLPT',tg2:'TG2',jawa:'Jawa',sunda:'Sunda',bali:'Bali',kana:'Kana',rambu:'Rambu'};
 function stageKind(){var h=new Date().getHours();return h>=6&&h<17?'day':h>=17&&h<19?'dusk':'night'}
-var QL={"home": {"order": ["mochi", "berita", "ringkasan"], "off": [], "news": 2}, "traktir": {"url": "https://saweria.co/Bshantoz"}};
+var QL={"home": {"order": ["mochi", "berita", "ringkasan"], "off": [], "news": 4}, "traktir": {"url": "https://saweria.co/Bshantoz"}};
 function renderBeranda(){
   var s=berStats(),d=s.d,pct=Math.min(100,Math.round(100*d.n/(d.goal||10))),bel=lsGet('qh_bel');
   var cont=bel&&BER_TITLE[bel]?bel:'bushu',sk=stageKind();
