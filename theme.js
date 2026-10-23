@@ -1680,7 +1680,7 @@
       if(!(await take())){w.innerHTML='Jatah 15 pertanyaan hari ini sudah habis. Besok datang lagi ya, nyaa~';left();return}
       var ctx='[Halaman yang sedang dibuka: '+(location.hash||'#beranda')+']\n'+q;
       var r=await chat.sendMessage(ctx);w.innerHTML=fmt(r.response.text());left();
-    }catch(e){console.warn(e);w.innerHTML='Maaf, Mochi lagi error: '+esc((e&&e.code)||(e&&e.message)||String(e))}
+    }catch(e){console.warn(e);w.innerHTML='Maaf, Mochi lagi error: '+esc([e&&e.code,e&&e.message].filter(Boolean).join(' – ')||String(e))}
     finally{busy=false;box.querySelector('.s').disabled=false;inp.focus()}
   }
   window.addEventListener('qmochi:open',function(){if(!box)build();box.hidden=false;box.querySelector('input').focus();boot().then(left).catch(function(e){console.warn(e)})});
