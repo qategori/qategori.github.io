@@ -298,19 +298,30 @@
   fab.type = 'button'; fab.id = 'qfxFab'; fab.setAttribute('aria-label', 'Suasana: efek musim dan musik');
   fab.innerHTML = '<svg viewBox="0 0 24 24" class="line" aria-hidden="true"><path d="M9 18V6l11-2v12"/><circle cx="6.5" cy="18" r="2.5"/><circle cx="17.5" cy="16" r="2.5"/></svg>';
   var pan = document.createElement('div'); pan.id = 'qfxPan'; pan.hidden = true; pan.setAttribute('role', 'dialog'); pan.setAttribute('aria-label', 'Suasana');
-  function panHtml(){
-    return '<div class="qfxH"><b>Suasana</b><button type="button" class="qfxX" data-x="1" aria-label="Tutup">&times;</button></div>' +
-      '<div class="qfxT">Efek musim</div><div class="qfxRow">' + FX.map(function(f){
-        return '<button type="button" class="qfxChip' + (st.fx === f[0] ? ' on' : '') + '" data-fx="' + f[0] + '">' + (f[2] ? '<span>' + f[2] + '</span>' : '') + f[1] + '</button>';
-      }).join('') + '</div>' +
-      '<div class="qfxT">Musik santai (ambient)</div><div class="qfxRow">' + SOUNDS.map(function(s){
-        return '<button type="button" class="qfxChip' + (st.snd[s[0]] ? ' on' : '') + '" data-snd="' + s[0] + '" aria-pressed="' + (!!st.snd[s[0]]) + '">' + s[1] + '</button>';
-      }).join('') + '</div>' +
-      '<div class="qfxT">Teman belajar</div><div class="qfxRow"><button type="button" class="qfxChip' + (window.qcat && window.qcat.isOn() ? ' on' : '') + '" data-cat="1">Kucing Mochi</button><button type="button" class="qfxChip" data-catreset="1">Kembalikan posisi</button></div>' +
-      '<label class="qfxVol">Volume <input type="range" min="0" max="100" value="' + Math.round(st.vol * 100) + '" id="qfxVol"></label>' +
-      (/android/i.test(navigator.userAgent) && !/QategoriApp/.test(navigator.userAgent) ? '<a class="qfxD" href="https://github.com/bshantoz/qategori/releases/download/terbaru/QategoriKartu.apk">Unduh aplikasi Android</a><p class="qfxN">Kalau tidak terunduh, buka situs ini lewat Chrome lalu coba lagi.</p>' : '');
+  var SND_IC = {hujan: ['🌧️', 'Hujan'], guntur: ['⛈️', 'Hujan guntur'], katak: ['🌳', 'Hutan'], burung: ['🐦', 'Burung'], meditasi: ['💧', 'Meditasi']};
+  var FX_IC = {sakura: ['🌸', 'Sakura'], salju: ['❄️', 'Salju'], aki: ['🍂', 'Aki'], panas: ['☀️', 'Panas']};
+  var SP_URL = 'https://open.spotify.com/show/7aK1Y0P6WiCFKFBlkXAA7R', SP_EMB = 'https://open.spotify.com/embed/show/7aK1Y0P6WiCFKFBlkXAA7R', spTitle = 'Myction', spOpen = false, spWrap = null;
+  try { fetch('https://open.spotify.com/oembed?url=' + encodeURIComponent(SP_URL)).then(function(r){ return r.json(); }).then(function(j){ if (j && j.title) { spTitle = j.title; if (!pan.hidden) renderPan(); } }).catch(function(){}); } catch (e) {}
+  function ic(cls, attr, emoji, label, on){
+    return '<button type="button" class="qfxIc' + (on ? ' on' : '') + '" ' + attr + ' aria-label="' + label + '" title="' + label + '" aria-pressed="' + (!!on) + '">' + emoji + '</button>';
   }
-  function renderPan(){ pan.innerHTML = panHtml(); }
+  function panHtml(){
+    var fxs = ['sakura', 'salju', 'aki', 'panas'].map(function(k){ return ic('', 'data-fx="' + k + '"', FX_IC[k][0], FX_IC[k][1], st.fx === k); }).join('');
+    var snds = SOUNDS.map(function(x){ return ic('', 'data-snd="' + x[0] + '"', SND_IC[x[0]][0], SND_IC[x[0]][1], !!st.snd[x[0]]); }).join('');
+    return '<div class="qfxH"><b>Suasana</b><button type="button" class="qfxX" data-x="1" aria-label="Tutup">&times;</button></div>' +
+      '<div class="qfxL"><span class="qfxT">Musim</span><div class="qfxRow">' + fxs + '</div></div>' +
+      '<div class="qfxL"><span class="qfxT">Ambient</span><div class="qfxRow">' + snds + '</div></div>' +
+      '<div class="qfxL"><span class="qfxT">Podcast</span><div class="qfxRow qfxPod"><span class="qfxPt">' + spTitle.replace(/</g, '&lt;') + '</span>' + ic('', 'data-pod="1"', spOpen ? '⏸️' : '▶️', spOpen ? 'Tutup pemutar' : 'Putar podcast', spOpen) + '</div></div>' +
+      '<div class="qfxSpHost"></div>' +
+      '<div class="qfxL"><span class="qfxT">Mochi</span><div class="qfxRow">' + ic('', 'data-cat="1"', '🐱', 'Kucing Mochi', !!(window.qcat && window.qcat.isOn())) + ic('', 'data-catreset="1"', '↺', 'Kembalikan posisi', false) + '</div></div>' +
+      '<label class="qfxVol">🔊 <input type="range" min="0" max="100" value="' + Math.round(st.vol * 100) + '" id="qfxVol" aria-label="Volume"></label>' +
+      (/android/i.test(navigator.userAgent) && !/QategoriApp/.test(navigator.userAgent) ? '<a class="qfxD" href="https://github.com/bshantoz/qategori/releases/download/terbaru/QategoriKartu.apk">📲 Unduh aplikasi</a>' : '');
+  }
+  function renderPan(){
+    pan.innerHTML = panHtml();
+    var host = pan.querySelector('.qfxSpHost');
+    if (spWrap && host) { host.appendChild(spWrap); spWrap.style.display = spOpen ? 'block' : 'none'; }
+  }
   fab.addEventListener('click', function(){ pan.hidden = !pan.hidden; if (!pan.hidden) renderPan(); });
   pan.addEventListener('click', function(e){
     e.stopPropagation();
@@ -318,7 +329,12 @@
     if (b.hasAttribute('data-x')) { pan.hidden = true; return; }
     if (b.hasAttribute('data-cat')) { if (window.qcat) window.qcat.toggle(); renderPan(); return; }
     if (b.hasAttribute('data-catreset')) { if (window.qcat) window.qcat.reset(); return; }
-    if (b.hasAttribute('data-fx')) { st.fx = b.getAttribute('data-fx'); save(); applyFx(); fxChanged(); renderPan(); return; }
+    if (b.hasAttribute('data-pod')) {
+      spOpen = !spOpen;
+      if (spOpen && !spWrap) { spWrap = document.createElement('div'); spWrap.className = 'qfxSp'; spWrap.innerHTML = '<iframe src="' + SP_EMB + '" width="100%" height="152" style="border:0;border-radius:12px" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy" title="Podcast Myction"></iframe>'; }
+      renderPan(); return;
+    }
+    if (b.hasAttribute('data-fx')) { var nf = b.getAttribute('data-fx'); st.fx = st.fx === nf ? 'off' : nf; save(); applyFx(); fxChanged(); renderPan(); return; }
     if (b.hasAttribute('data-snd')) { var k = b.getAttribute('data-snd'); st.snd[k] = !st.snd[k]; save(); applyAudio(); renderPan(); }
   });
   pan.addEventListener('input', function(e){
