@@ -298,29 +298,43 @@
   fab.type = 'button'; fab.id = 'qfxFab'; fab.setAttribute('aria-label', 'Suasana: efek musim dan musik');
   fab.innerHTML = '<svg viewBox="0 0 24 24" class="line" aria-hidden="true"><path d="M9 18V6l11-2v12"/><circle cx="6.5" cy="18" r="2.5"/><circle cx="17.5" cy="16" r="2.5"/></svg>';
   var pan = document.createElement('div'); pan.id = 'qfxPan'; pan.hidden = true; pan.setAttribute('role', 'dialog'); pan.setAttribute('aria-label', 'Suasana');
-  var SND_IC = {hujan: ['🌧️', 'Hujan'], guntur: ['⛈️', 'Hujan guntur'], katak: ['🌳', 'Hutan'], burung: ['🐦', 'Burung'], meditasi: ['💧', 'Meditasi']};
-  var FX_IC = {sakura: ['🌸', 'Sakura'], salju: ['❄️', 'Salju'], aki: ['🍂', 'Aki'], panas: ['☀️', 'Panas']};
-  var SP_URL = 'https://open.spotify.com/show/7aK1Y0P6WiCFKFBlkXAA7R', SP_EMB = 'https://open.spotify.com/embed/show/7aK1Y0P6WiCFKFBlkXAA7R', spTitle = 'Myction', spOpen = false, spWrap = null;
-  try { fetch('https://open.spotify.com/oembed?url=' + encodeURIComponent(SP_URL)).then(function(r){ return r.json(); }).then(function(j){ if (j && j.title) { spTitle = j.title; if (!pan.hidden) renderPan(); } }).catch(function(){}); } catch (e) {}
-  function ic(cls, attr, emoji, label, on){
-    return '<button type="button" class="qfxIc' + (on ? ' on' : '') + '" ' + attr + ' aria-label="' + label + '" title="' + label + '" aria-pressed="' + (!!on) + '">' + emoji + '</button>';
-  }
+  var SP_EMB = 'https://open.spotify.com/embed/show/7aK1Y0P6WiCFKFBlkXAA7R', built = false;
+  function svg(d){ return '<svg viewBox="0 0 24 24" aria-hidden="true">' + d + '</svg>'; }
+  var IC = {
+    cat: svg('<path d="M5 9V4l4 3h6l4-3v5a7 7 0 0 1-14 0z"/><path d="M9.5 12.5v.5M14.5 12.5v.5M10.5 15.5c.8.6 2.2.6 3 0"/>'),
+    reset: svg('<path d="M4 12a8 8 0 1 0 3-6.2"/><path d="M4 4v4h4"/>'),
+    sakura: svg('<circle cx="12" cy="12" r="1.6"/><path d="M12 10.4C10.5 8 10.8 4.8 12 3.5c1.2 1.3 1.5 4.5 0 6.9zM13.5 11.2c2.700-.7 5.600.700 6.500 2.300-1.700.800-4.800.400-6.500-1.300zM13 13.600c1.500 2.300 1 5.400-.200 6.700-1.500-1-2.300-4.100-.800-6.200zM10.800 13c-1.400 2.400-4.500 3-6.200 2.300.400-1.800 3-3.700 5.600-3.100zM10.600 11.300c-2.600.200-5.100-1.600-5.300-3.400 1.800-.4 4.700.800 5.800 2.800z"/>'),
+    salju: svg('<path d="M12 3v18M4.200 7.500l15.600 9M19.800 7.500l-15.600 9"/><path d="M9.500 4.500L12 6.500l2.500-2M9.500 19.500l2.500-2 2.500 2"/>'),
+    aki: svg('<path d="M12 21V11"/><path d="M12 3c4 2 7 5 6 9-1 3-3 4-6 4s-5-1-6-4c-1-4 2-7 6-9z"/><path d="M12 11l-3-3M12 14l3-3"/>'),
+    panas: svg('<circle cx="12" cy="12" r="4"/><path d="M12 2.500v2.500M12 19v2.500M2.500 12H5M19 12h2.500M5.300 5.300l1.800 1.800M16.900 16.900l1.800 1.800M5.300 18.700l1.800-1.800M16.900 7.100l1.800-1.800"/>'),
+    hujan: svg('<path d="M7 15a4.500 4.500 0 1 1 1-8.900A5.500 5.500 0 0 1 18.500 8 3.500 3.500 0 0 1 18 15z"/><path d="M8 18l-1 2.500M12 18l-1 2.500M16 18l-1 2.500"/>'),
+    guntur: svg('<path d="M7 14a4.500 4.500 0 1 1 1-8.900A5.500 5.500 0 0 1 18.500 7 3.500 3.500 0 0 1 18 14"/><path d="M12.500 11l-3 5h3l-1.500 5 4.500-6.500h-3z"/>'),
+    katak: svg('<path d="M12 21v-5"/><path d="M12 3l5 6h-3l4 5H6l4-5H7z"/>'),
+    burung: svg('<path d="M3 15c3 0 4-3 6-5 1.500-1.500 4-1.500 5.500 0L19 6l2 1.500-2 3c0 5-4 9-9 9-3 0-5-1.500-7-4.500z"/><circle cx="16.500" cy="8.500" r=".6"/>'),
+    meditasi: svg('<path d="M12 3C8 8 6 11 6 14.500a6 6 0 0 0 12 0C18 11 16 8 12 3z"/>'),
+    vol: svg('<path d="M4 9.500v5h3.500L12 18.500v-13L7.500 9.500z"/><path d="M15.500 9a4 4 0 0 1 0 6M18 6.500a7.500 7.500 0 0 1 0 11"/>')
+  };
+  var FX_LB = {sakura: 'Sakura', salju: 'Salju', aki: 'Aki', panas: 'Panas'}, SND_LB = {hujan: 'Hujan', guntur: 'Hujan guntur', katak: 'Hutan', burung: 'Burung', meditasi: 'Meditasi'};
+  function ic(attr, key, label){ return '<button type="button" class="qfxIc" ' + attr + ' aria-label="' + label + '" title="' + label + '" aria-pressed="false">' + IC[key] + '</button>'; }
   function panHtml(){
-    var fxs = ['sakura', 'salju', 'aki', 'panas'].map(function(k){ return ic('', 'data-fx="' + k + '"', FX_IC[k][0], FX_IC[k][1], st.fx === k); }).join('');
-    var snds = SOUNDS.map(function(x){ return ic('', 'data-snd="' + x[0] + '"', SND_IC[x[0]][0], SND_IC[x[0]][1], !!st.snd[x[0]]); }).join('');
+    var fxs = ['sakura', 'salju', 'aki', 'panas'].map(function(k){ return ic('data-fx="' + k + '"', k, FX_LB[k]); }).join('');
+    var snds = SOUNDS.map(function(x){ return ic('data-snd="' + x[0] + '"', x[0], SND_LB[x[0]] || x[1]); }).join('');
     return '<div class="qfxH"><b>Suasana</b><button type="button" class="qfxX" data-x="1" aria-label="Tutup">&times;</button></div>' +
+      '<div class="qfxL"><span class="qfxT">Mochi</span><div class="qfxRow">' + ic('data-cat="1"', 'cat', 'Kucing Mochi') + ic('data-catreset="1"', 'reset', 'Kembalikan posisi') + '</div></div>' +
       '<div class="qfxL"><span class="qfxT">Musim</span><div class="qfxRow">' + fxs + '</div></div>' +
       '<div class="qfxL"><span class="qfxT">Ambient</span><div class="qfxRow">' + snds + '</div></div>' +
-      '<div class="qfxL"><span class="qfxT">Podcast</span><div class="qfxRow qfxPod"><span class="qfxPt">' + spTitle.replace(/</g, '&lt;') + '</span>' + ic('', 'data-pod="1"', spOpen ? '⏸️' : '▶️', spOpen ? 'Tutup pemutar' : 'Putar podcast', spOpen) + '</div></div>' +
-      '<div class="qfxSpHost"></div>' +
-      '<div class="qfxL"><span class="qfxT">Mochi</span><div class="qfxRow">' + ic('', 'data-cat="1"', '🐱', 'Kucing Mochi', !!(window.qcat && window.qcat.isOn())) + ic('', 'data-catreset="1"', '↺', 'Kembalikan posisi', false) + '</div></div>' +
-      '<label class="qfxVol">🔊 <input type="range" min="0" max="100" value="' + Math.round(st.vol * 100) + '" id="qfxVol" aria-label="Volume"></label>' +
-      (/android/i.test(navigator.userAgent) && !/QategoriApp/.test(navigator.userAgent) ? '<a class="qfxD" href="https://github.com/bshantoz/qategori/releases/download/terbaru/QategoriKartu.apk">📲 Unduh aplikasi</a>' : '');
+      '<label class="qfxVol">' + IC.vol + '<input type="range" min="0" max="100" value="' + Math.round(st.vol * 100) + '" id="qfxVol" aria-label="Volume"></label>' +
+      '<div class="qfxT" style="margin:12px 0 6px">Podcast</div>' +
+      '<div class="qfxSp"><iframe src="' + SP_EMB + '" width="100%" height="152" style="border:0;border-radius:12px" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy" title="Podcast Myction"></iframe></div>' +
+      (/android/i.test(navigator.userAgent) && !/QategoriApp/.test(navigator.userAgent) ? '<a class="qfxD" href="https://github.com/bshantoz/qategori/releases/download/terbaru/QategoriKartu.apk">Unduh aplikasi</a>' : '');
   }
+  /* Panel dibangun sekali; setelah itu hanya status tombol yang disinkronkan, supaya pemutar Spotify tidak dimuat ulang. */
   function renderPan(){
-    pan.innerHTML = panHtml();
-    var host = pan.querySelector('.qfxSpHost');
-    if (spWrap && host) { host.appendChild(spWrap); spWrap.style.display = spOpen ? 'block' : 'none'; }
+    if (!built) { pan.innerHTML = panHtml(); built = true; }
+    var on = function(b, v){ b.classList.toggle('on', !!v); b.setAttribute('aria-pressed', String(!!v)); };
+    Array.prototype.forEach.call(pan.querySelectorAll('[data-fx]'), function(b){ on(b, st.fx === b.getAttribute('data-fx')); });
+    Array.prototype.forEach.call(pan.querySelectorAll('[data-snd]'), function(b){ on(b, st.snd[b.getAttribute('data-snd')]); });
+    var c = pan.querySelector('[data-cat]'); if (c) on(c, window.qcat && window.qcat.isOn());
   }
   fab.addEventListener('click', function(){ pan.hidden = !pan.hidden; if (!pan.hidden) renderPan(); });
   pan.addEventListener('click', function(e){
@@ -329,11 +343,6 @@
     if (b.hasAttribute('data-x')) { pan.hidden = true; return; }
     if (b.hasAttribute('data-cat')) { if (window.qcat) window.qcat.toggle(); renderPan(); return; }
     if (b.hasAttribute('data-catreset')) { if (window.qcat) window.qcat.reset(); return; }
-    if (b.hasAttribute('data-pod')) {
-      spOpen = !spOpen;
-      if (spOpen && !spWrap) { spWrap = document.createElement('div'); spWrap.className = 'qfxSp'; spWrap.innerHTML = '<iframe src="' + SP_EMB + '" width="100%" height="152" style="border:0;border-radius:12px" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy" title="Podcast Myction"></iframe>'; }
-      renderPan(); return;
-    }
     if (b.hasAttribute('data-fx')) { var nf = b.getAttribute('data-fx'); st.fx = st.fx === nf ? 'off' : nf; save(); applyFx(); fxChanged(); renderPan(); return; }
     if (b.hasAttribute('data-snd')) { var k = b.getAttribute('data-snd'); st.snd[k] = !st.snd[k]; save(); applyAudio(); renderPan(); }
   });
