@@ -91,6 +91,8 @@ var GAMES=[
      ic: '<path d="M4 5H20V13C20 17.4 16.4 21 12 21C7.6 21 4 17.4 4 13Z"/><path d="M8.5 10H8.51M15.5 10H15.51"/><path d="M9 14.5C10.2 16 13.8 16 15 14.5"/>'},
     {id: 'hari', f: 'hari.html', t: 'Satu Hari Mochi', j: '\u30e2\u30c1\u306e\u4e00\u65e5', r: 'mochi no ichinichi', d: 'Cerita panjang sekitar 10 menit dengan latar yang berganti: sehari berkeliling kota, atau Mochi demam dan pergi ke klinik.',
      ic: '<circle cx="12" cy="12" r="4"/><path d="M12 2.5V5M12 19V21.5M2.5 12H5M19 12H21.5M5.3 5.3L7 7M17 17L18.7 18.7M5.3 18.7L7 17M17 7L18.7 5.3"/>'},
+    {id: 'mochi-dash', f: 'mochi-dash.html', t: 'Mochi Dash: Tokyo Run', j: '\u30e2\u30c1\u30c0\u30c3\u30b7\u30e5', r: 'mochi dasshu', d: 'Lari di jalan Tokyo, lompat rintangan, kumpulkan koin dan kosakata Jepang.',
+     ic: '<path d="M3 17.5L7 13l3 3 5-7 6 8.5"/><path d="M4 21h16"/><circle cx="17.5" cy="5.5" r="2.5"/>'},
     {id: 'kana', f: 'kana.html', t: 'Hapalan Kana', j: '\u304b\u306a', r: 'kana', d: 'Tabel, kartu hapalan, dan kuis Hiragana serta Katakana: huruf dasar, dakuten, dan yoon. Progres hafal tersinkron dengan widget di aplikasi.',
      ic: '<rect x="4" y="4" width="7" height="7" rx="1.5"/><rect x="13" y="4" width="7" height="7" rx="1.5"/><rect x="4" y="13" width="7" height="7" rx="1.5"/><rect x="13" y="13" width="7" height="7" rx="1.5"/>'}
   ];;
@@ -246,7 +248,7 @@ var gkey='';
 function showGame(sub){
   var host=panes.game.querySelector('.qhBody'),g=GAMES.filter(function(x){return x.id===sub})[0];
   /* Empat game utama memakai halaman lokal mandiri, bukan iframe. */
-  if(g && ['pasangan-kanji.html','trivia.html','tts.html','tebak-gambar.html'].indexOf(g.f)>=0){
+  if(g && ['pasangan-kanji.html','trivia.html','tts.html','tebak-gambar.html','mochi-dash.html'].indexOf(g.f)>=0){
     window.location.href='/game/'+g.f;
     return;
   }
