@@ -91,18 +91,16 @@ var GAMES=[
      ic: '<path d="M4 5H20V13C20 17.4 16.4 21 12 21C7.6 21 4 17.4 4 13Z"/><path d="M8.5 10H8.51M15.5 10H15.51"/><path d="M9 14.5C10.2 16 13.8 16 15 14.5"/>'},
     {id: 'hari', f: 'hari.html', t: 'Satu Hari Mochi', j: '\u30e2\u30c1\u306e\u4e00\u65e5', r: 'mochi no ichinichi', d: 'Cerita panjang sekitar 10 menit dengan latar yang berganti: sehari berkeliling kota, atau Mochi demam dan pergi ke klinik.',
      ic: '<circle cx="12" cy="12" r="4"/><path d="M12 2.5V5M12 19V21.5M2.5 12H5M19 12H21.5M5.3 5.3L7 7M17 17L18.7 18.7M5.3 18.7L7 17M17 7L18.7 5.3"/>'},
-    {id: 'mochi-village', f: 'mochi-village.html', t: 'Mochi Village: Kebun Impian', j: '\u30e2\u30c1\u306e\u6751', r: 'mochi no mura', d: 'Bangun kebun, tanam sayur, rawat Mochi dan kembangkan desa kecil Jepang.',
-     ic: '<path d="M3 10.5L12 3l9 7.5"/><path d="M5.5 9.5V21h13V9.5"/><path d="M9 21v-7h6v7"/><path d="M2 21h20"/>'},
-    {id: 'mochi-dash', f: 'mochi-dash.html', t: 'Mochi Dash: Tokyo Run', j: '\u30e2\u30c1\u30c0\u30c3\u30b7\u30e5', r: 'mochi dasshu', d: 'Lari di jalan Tokyo, lompat rintangan, kumpulkan koin dan kosakata Jepang.',
-     ic: '<path d="M3 17.5L7 13l3 3 5-7 6 8.5"/><path d="M4 21h16"/><circle cx="17.5" cy="5.5" r="2.5"/>'},
     {id: 'kana', f: 'kana.html', t: 'Hapalan Kana', j: '\u304b\u306a', r: 'kana', d: 'Tabel, kartu hapalan, dan kuis Hiragana serta Katakana: huruf dasar, dakuten, dan yoon. Progres hafal tersinkron dengan widget di aplikasi.',
      ic: '<rect x="4" y="4" width="7" height="7" rx="1.5"/><rect x="13" y="4" width="7" height="7" rx="1.5"/><rect x="4" y="13" width="7" height="7" rx="1.5"/><rect x="13" y="13" width="7" height="7" rx="1.5"/>'}
   ];;
+var SEGS=[['jlpt','JLPT'],['tg2','TG2'],['jawa','Jawa'],['sunda','Sunda'],['bali','Bali'],['kana','Kana'],['rambu','Rambu']];
 var panes={};
 PANES.forEach(function(id){
   var p=root.querySelector('.qhPane[data-pane="'+id+'"]');
   if(!p){p=document.createElement('div');p.className='qhPane';p.setAttribute('data-pane',id);p.hidden=true;
-    p.innerHTML='<div class="qhBody pE postBody"></div>';root.appendChild(p)}
+    var seg=BEL.indexOf(id)>=0?'<div class="qhSeg" role="group" aria-label="Pilih materi">'+SEGS.map(function(s){return'<button type="button" data-go="'+s[0]+'" aria-pressed="false">'+s[1]+'</button>'}).join('')+'</div>':'';
+    p.innerHTML=seg+'<div class="qhBody pE postBody"></div>';root.appendChild(p)}
   panes[id]=p;
 });
 function parse(){
@@ -116,20 +114,7 @@ function parse(){
   ['jlpt','tg2','jawa','sunda','bali'].forEach(function(k){if(tab===k&&!URL_OF[k+'-'+sub])sub=k==='tg2'?'semua':''});
   return{tab:tab,sub:sub,qs:qs};
 }
-function go(r){
-  /* Normalisasi rute internal: tombol materi tidak boleh jatuh ke beranda
-     hanya karena nilai data-go kosong/tidak dikenal. */
-  r=String(r||'').replace(/^#+/,'').trim();
-  if(!r)return;
-  var base=r.split('?')[0];
-  if(base==='belajar'){
-    var saved=lsGet('qh_bel');
-    r=(BEL.indexOf(saved)>=0?saved:'jlpt')+(saved==='tg2'?'-semua':'');
-  }else if(!panes[base.split('-')[0]] && !panes[base]){
-    return;
-  }
-  if(location.hash==='#'+r)show();else location.hash=r;
-}
+function go(r){if(location.hash==='#'+r)show();else location.hash=r}
   var SI = {
     kartu: '<path d="M4 8.5C4 6.6 5.1 6 7 6H17C18.9 6 20 6.6 20 8.5V16.5C20 18.4 18.9 19 17 19H7C5.1 19 4 18.4 4 16.5Z"/><path d="M8 3H16"/><path d="M9 12.5H15"/>',
     daftar: '<path d="M8 6H21M8 12H21M8 18H21"/><path d="M3 6H3.01M3 12H3.01M3 18H3.01"/>',
@@ -249,11 +234,6 @@ function frame(host,file,title,bar,onload){
 var gkey='';
 function showGame(sub){
   var host=panes.game.querySelector('.qhBody'),g=GAMES.filter(function(x){return x.id===sub})[0];
-  /* Empat game utama memakai halaman lokal mandiri, bukan iframe. */
-  if(g && ['pasangan-kanji.html','trivia.html','tts.html','tebak-gambar.html','mochi-dash.html','mochi-village.html'].indexOf(g.f)>=0){
-    window.location.href='/game/'+g.f;
-    return;
-  }
   if(!g){stopT();gkey='';gameFrame=null;host.innerHTML='<div class="qhGameGrid">'+GAMES.filter(function(x){return x.id!=='kana'}).map(function(g){return'<button type="button" class="qhGameCard" data-go="game-'+g.id+'"><svg viewBox="0 0 24 24" aria-hidden="true">'+g.ic+'</svg><b>'+esc(g.t)+'</b><i>'+g.j+' &middot; '+esc(g.r)+'</i><small>'+esc(g.d)+'</small></button>'}).join('')+'</div>';return}
   if(gkey===g.id&&gameFrame&&host.contains(gameFrame)){startT();return}
   gkey=g.id;gameFrame=null;frame(host,g.f,g.t,'<div class="qhBar"><button type="button" class="qhBtn alt" data-go="game">&larr; Semua game</button></div>');
@@ -551,12 +531,7 @@ root.addEventListener('click',function(e){
   if(c){lab=c.getAttribute('data-lab');shown=20;root.querySelectorAll('.qChip').forEach(function(x){x.classList.toggle('on',x===c)});loadPosts(renderList);return}
   if(e.target.id==='qAll'||e.target.closest&&e.target.closest('#qAll')){showAllL=true;loadPosts(renderList);return}
   if(e.target.id==='qMore'){shown+=20;loadPosts(renderList);return}
-  var g=e.target.closest&&e.target.closest('[data-go]');if(g){
-    e.preventDefault();e.stopPropagation();
-    var dest=g.getAttribute('data-go');
-    if(dest)go(dest);
-    window.scrollTo({top:0,behavior:'auto'});return
-  }
+  var g=e.target.closest&&e.target.closest('[data-go]');if(g&&/^\d+$/.test(g.getAttribute('data-go')||''))g=null;if(g){e.preventDefault();go(g.getAttribute('data-go'));window.scrollTo(0,0);return}
   var r=e.target.closest&&e.target.closest('[data-retry]');if(r){mounted[PANES.filter(function(p){return panes[p].contains(r)})[0]]=null;show();}
 });
 /* ===== Beranda: Mochi interaktif + ringkasan riwayat + berita terbaru ===== */
@@ -688,7 +663,7 @@ function show(){
   document.body.classList.toggle('qBer',r.tab==='beranda');
   var act=BEL.indexOf(r.tab)>=0?'belajar':r.tab;
   document.querySelectorAll('a[data-tab]').forEach(function(a){a.classList.toggle('on',a.getAttribute('data-tab')===act)});
-  if(BEL.indexOf(r.tab)>=0){lsSet('qh_bel',r.tab)}
+  if(BEL.indexOf(r.tab)>=0){lsSet('qh_bel',r.tab);panes[r.tab].querySelectorAll('.qhSeg button').forEach(function(b){b.setAttribute('aria-pressed',b.getAttribute('data-go').split('-')[0]===r.tab?'true':'false')})}
   if(r.tab!=='game'&&r.tab!=='kana')stopT();
   var T={beranda:'Qategori',bushu:'Bushu',jlpt:'Materi JLPT',tg2:'Materi TG2',jawa:'Bahasa Jawa',sunda:'Bahasa Sunda',bali:'Bahasa Bali',kana:'Hapalan Kana',rambu:'Rambu-rambu Jepang',podcast:'Podcast',game:'Game',berita:'Berita'};
   document.title=(T[r.tab]||'')+' | Qategori';

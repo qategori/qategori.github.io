@@ -240,7 +240,7 @@ function viewLogin(msg=''){
   view(`<section class="card center">
     <h2 class="kd-title" lang="ja">\u6a5f\u68b0\u91d1\u5c5e\u52a0\u5de5\u533a\u5206 \u7df4\u7fd2\u554f\u984c 100\u554f</h2>
     <p class="sub">Kikai kinzoku kakou-kubun renshuu mondai \u00b7 latihan ujian \u6a5f\u68b0\u91d1\u5c5e\u52a0\u5de5\u533a\u5206 (Kikai \u2014 Mesin &amp; Pengolahan Logam)</p>
-    <p>Masuk untuk membeli akses Paket 2 dan seterusnya. Paket 1 gratis tanpa login.</p>
+    <p>Masuk untuk membeli akses Paket 1 (±100 soal) dan seterusnya. Paket Uji Coba gratis tanpa login.</p>
     ${loginMode === 'choice' ? `
     <button class="btn" data-action="login">Masuk dengan Google</button>
     <div class="or-sep">atau</div>
@@ -256,7 +256,7 @@ function viewLogin(msg=''){
     <button class="switch" data-action="${loginMode === 'signup' ? 'toSignin' : 'toSignup'}">${loginMode === 'signup' ? 'Sudah punya akun? Masuk' : 'Belum punya akun? Daftar'}</button>
     <button class="switch" data-action="resetPassword">Lupa password?</button>
     <button class="switch" data-action="toChoice">&larr; Kembali ke pilihan lain</button>`}
-    <p class="err" id="err">${esc(msg)}</p><button class="switch" data-action="toMenu">&larr; Kembali ke Paket 1 (gratis)</button></section>`);
+    <p class="err" id="err">${esc(msg)}</p><button class="switch" data-action="toMenu">&larr; Kembali ke Paket Uji Coba (gratis)</button></section>`);
 }
 function viewVerifyEmail(email){
   view(`<section class="card center"><h2 class="kd-title">Verifikasi email dulu</h2>
@@ -388,7 +388,7 @@ const jenisLabel = (j) => j === 'praktik' ? '\u5b9f\u6280' : '\u7406\u8ad6';
 
 /* ---------------- Menu ---------------- */
 async function viewMenu(){
-  try { await loadBank(); } catch (err) { console.error(err); return viewError(S.role === 'free' && err && err.code === 'permission-denied' ? 'Paket 1 belum dibuka untuk umum (aturan Firestore belum diubah admin).' : 'Gagal memuat soal.', err); }
+  try { await loadBank(); } catch (err) { console.error(err); return viewError(S.role === 'free' && err && err.code === 'permission-denied' ? 'Paket Uji Coba belum dibuka untuk umum (aturan Firestore belum diubah admin).' : 'Gagal memuat soal.', err); }
   const p = Prefs.get(); S.romaji = p.romaji !== false; S.arti = !!p.arti; applyRomaji();
   const bank = S.bank, t = bank.filter(q => q.jenis !== 'praktik').length, pr = bank.length - t;
   const first = S.user ? (S.user.displayName || S.user.email).split(/[ @]/)[0] : 'Tamu';
@@ -411,7 +411,7 @@ async function viewMenu(){
     <label class="check"><input type="checkbox" id="opt-shuffle" ${p.shuffle!==false?'checked':''}> Acak urutan soal</label>
     <label class="check"><input type="checkbox" id="opt-romaji" ${S.romaji?'checked':''}> Tampilkan romaji</label>
     ${S.hasArti ? `<label class="check"><input type="checkbox" id="opt-arti" ${S.arti?'checked':''}> Tampilkan arti (bahasa Indonesia)</label>` : ''}
-    ${S.role === 'free' ? `<div class="card" style="margin:14px 0;text-align:center"><p><strong>Paket 1 gratis.</strong> Paket 2 dan seterusnya berbayar.</p><button class="btn" data-action="${S.user ? 'pay' : 'goLogin'}">${S.user ? 'Bayar untuk buka Paket 2+' : 'Masuk untuk membeli Paket 2+'}</button><p class="kd-note" id="pay-note"></p></div>` : ''}
+    ${S.role === 'free' ? `<div class="card" style="margin:14px 0;text-align:center"><p><strong>Paket Uji Coba gratis (20 soal: 10 teori + 10 praktik).</strong><br>Paket 1 (±100 soal) dan seterusnya berbayar.</p><button class="btn" data-action="${S.user ? 'pay' : 'goLogin'}">${S.user ? 'Bayar untuk buka Paket 1+' : 'Masuk untuk membeli Paket 1+'}</button><p class="kd-note" id="pay-note"></p></div>` : ''}
     <div style="height:14px"></div>
     <button class="btn" data-action="start">Mulai kuis</button>` :
     `<p class="kd-note">${S.role === 'admin' ? 'Buka menu Kelola \u2192 Soal untuk mengimpor soal.' : 'Admin belum mengunggah soal.'}</p>`}
@@ -1436,7 +1436,7 @@ function viewLogin(msg=''){
   view(`<section class="card center">
     <h2 class="kd-title" lang="ja">\u96fb\u6c17\u96fb\u5b50\u6a5f\u5668\u7d44\u7acb\u3066 \u7df4\u7fd2\u554f\u984c 100\u554f</h2>
     <p class="sub">Denki denshi kiki kumitate renshuu mondai \u00b7 latihan ujian \u96fb\u6c17\u96fb\u5b50\u6a5f\u5668\u7d44\u7acb\u3066\u533a\u5206 (Perakitan Peralatan Listrik &amp; Elektronik, bagian dari \u5de5\u696d\u88fd\u54c1\u88fd\u9020\u696d)</p>
-    <p>Masuk untuk membeli akses Paket 2 dan seterusnya. Paket 1 gratis tanpa login.</p>
+    <p>Masuk untuk membeli akses Paket 1 (±100 soal) dan seterusnya. Paket Uji Coba gratis tanpa login.</p>
     ${loginMode === 'choice' ? `
     <button class="btn" data-action="login">Masuk dengan Google</button>
     <div class="or-sep">atau</div>
@@ -1452,7 +1452,7 @@ function viewLogin(msg=''){
     <button class="switch" data-action="${loginMode === 'signup' ? 'toSignin' : 'toSignup'}">${loginMode === 'signup' ? 'Sudah punya akun? Masuk' : 'Belum punya akun? Daftar'}</button>
     <button class="switch" data-action="resetPassword">Lupa password?</button>
     <button class="switch" data-action="toChoice">&larr; Kembali ke pilihan lain</button>`}
-    <p class="err" id="err">${esc(msg)}</p><button class="switch" data-action="toMenu">&larr; Kembali ke Paket 1 (gratis)</button></section>`);
+    <p class="err" id="err">${esc(msg)}</p><button class="switch" data-action="toMenu">&larr; Kembali ke Paket Uji Coba (gratis)</button></section>`);
 }
 function viewVerifyEmail(email){
   view(`<section class="card center"><h2 class="kd-title">Verifikasi email dulu</h2>
@@ -1584,7 +1584,7 @@ const jenisLabel = (j) => j === 'praktik' ? '\u5b9f\u6280' : '\u7406\u8ad6';
 
 /* ---------------- Menu ---------------- */
 async function viewMenu(){
-  try { await loadBank(); } catch (err) { console.error(err); return viewError(S.role === 'free' && err && err.code === 'permission-denied' ? 'Paket 1 belum dibuka untuk umum (aturan Firestore belum diubah admin).' : 'Gagal memuat soal.', err); }
+  try { await loadBank(); } catch (err) { console.error(err); return viewError(S.role === 'free' && err && err.code === 'permission-denied' ? 'Paket Uji Coba belum dibuka untuk umum (aturan Firestore belum diubah admin).' : 'Gagal memuat soal.', err); }
   const p = Prefs.get(); S.romaji = p.romaji !== false; S.arti = !!p.arti; applyRomaji();
   const bank = S.bank, t = bank.filter(q => q.jenis !== 'praktik').length, pr = bank.length - t;
   const first = S.user ? (S.user.displayName || S.user.email).split(/[ @]/)[0] : 'Tamu';
@@ -1607,7 +1607,7 @@ async function viewMenu(){
     <label class="check"><input type="checkbox" id="opt-shuffle" ${p.shuffle!==false?'checked':''}> Acak urutan soal</label>
     <label class="check"><input type="checkbox" id="opt-romaji" ${S.romaji?'checked':''}> Tampilkan romaji</label>
     ${S.hasArti ? `<label class="check"><input type="checkbox" id="opt-arti" ${S.arti?'checked':''}> Tampilkan arti (bahasa Indonesia)</label>` : ''}
-    ${S.role === 'free' ? `<div class="card" style="margin:14px 0;text-align:center"><p><strong>Paket 1 gratis.</strong> Paket 2 dan seterusnya berbayar.</p><button class="btn" data-action="${S.user ? 'pay' : 'goLogin'}">${S.user ? 'Bayar untuk buka Paket 2+' : 'Masuk untuk membeli Paket 2+'}</button><p class="kd-note" id="pay-note"></p></div>` : ''}
+    ${S.role === 'free' ? `<div class="card" style="margin:14px 0;text-align:center"><p><strong>Paket Uji Coba gratis (20 soal: 10 teori + 10 praktik).</strong><br>Paket 1 (±100 soal) dan seterusnya berbayar.</p><button class="btn" data-action="${S.user ? 'pay' : 'goLogin'}">${S.user ? 'Bayar untuk buka Paket 1+' : 'Masuk untuk membeli Paket 1+'}</button><p class="kd-note" id="pay-note"></p></div>` : ''}
     <div style="height:14px"></div>
     <button class="btn" data-action="start">Mulai kuis</button>` :
     `<p class="kd-note">${S.role === 'admin' ? 'Buka menu Kelola \u2192 Soal untuk mengimpor soal.' : 'Admin belum mengunggah soal.'}</p>`}
@@ -2632,7 +2632,7 @@ function viewLogin(msg=''){
   view(`<section class="card center">
     <h2 class="kd-title" lang="ja">\u91d1\u5c5e\u8868\u9762\u51e6\u7406\u533a\u5206 \u7df4\u7fd2\u554f\u984c 100\u554f</h2>
     <p class="sub">Kinzoku hyoumen shori kubun renshuu mondai \u00b7 latihan ujian \u91d1\u5c5e\u8868\u9762\u51e6\u7406 (Hyoumen &#8212; sub-bidang \u5de5\u696d\u88fd\u54c1\u88fd\u9020\u696d)</p>
-    <p>Masuk untuk membeli akses Paket 2 dan seterusnya. Paket 1 gratis tanpa login.</p>
+    <p>Masuk untuk membeli akses Paket 1 (±100 soal) dan seterusnya. Paket Uji Coba gratis tanpa login.</p>
     ${loginMode === 'choice' ? `
     <button class="btn" data-action="login">Masuk dengan Google</button>
     <div class="or-sep">atau</div>
@@ -2648,7 +2648,7 @@ function viewLogin(msg=''){
     <button class="switch" data-action="${loginMode === 'signup' ? 'toSignin' : 'toSignup'}">${loginMode === 'signup' ? 'Sudah punya akun? Masuk' : 'Belum punya akun? Daftar'}</button>
     <button class="switch" data-action="resetPassword">Lupa password?</button>
     <button class="switch" data-action="toChoice">&larr; Kembali ke pilihan lain</button>`}
-    <p class="err" id="err">${esc(msg)}</p><button class="switch" data-action="toMenu">&larr; Kembali ke Paket 1 (gratis)</button></section>`);
+    <p class="err" id="err">${esc(msg)}</p><button class="switch" data-action="toMenu">&larr; Kembali ke Paket Uji Coba (gratis)</button></section>`);
 }
 function viewVerifyEmail(email){
   view(`<section class="card center"><h2 class="kd-title">Verifikasi email dulu</h2>
@@ -2780,7 +2780,7 @@ const jenisLabel = (j) => j === 'praktik' ? '\u5b9f\u6280' : '\u7406\u8ad6';
 
 /* ---------------- Menu ---------------- */
 async function viewMenu(){
-  try { await loadBank(); } catch (err) { console.error(err); return viewError(S.role === 'free' && err && err.code === 'permission-denied' ? 'Paket 1 belum dibuka untuk umum (aturan Firestore belum diubah admin).' : 'Gagal memuat soal.', err); }
+  try { await loadBank(); } catch (err) { console.error(err); return viewError(S.role === 'free' && err && err.code === 'permission-denied' ? 'Paket Uji Coba belum dibuka untuk umum (aturan Firestore belum diubah admin).' : 'Gagal memuat soal.', err); }
   const p = Prefs.get(); S.romaji = p.romaji !== false; S.arti = !!p.arti; applyRomaji();
   const bank = S.bank, t = bank.filter(q => q.jenis !== 'praktik').length, pr = bank.length - t;
   const first = S.user ? (S.user.displayName || S.user.email).split(/[ @]/)[0] : 'Tamu';
@@ -2803,7 +2803,7 @@ async function viewMenu(){
     <label class="check"><input type="checkbox" id="opt-shuffle" ${p.shuffle!==false?'checked':''}> Acak urutan soal</label>
     <label class="check"><input type="checkbox" id="opt-romaji" ${S.romaji?'checked':''}> Tampilkan romaji</label>
     ${S.hasArti ? `<label class="check"><input type="checkbox" id="opt-arti" ${S.arti?'checked':''}> Tampilkan arti (bahasa Indonesia)</label>` : ''}
-    ${S.role === 'free' ? `<div class="card" style="margin:14px 0;text-align:center"><p><strong>Paket 1 gratis.</strong> Paket 2 dan seterusnya berbayar.</p><button class="btn" data-action="${S.user ? 'pay' : 'goLogin'}">${S.user ? 'Bayar untuk buka Paket 2+' : 'Masuk untuk membeli Paket 2+'}</button><p class="kd-note" id="pay-note"></p></div>` : ''}
+    ${S.role === 'free' ? `<div class="card" style="margin:14px 0;text-align:center"><p><strong>Paket Uji Coba gratis (20 soal: 10 teori + 10 praktik).</strong><br>Paket 1 (±100 soal) dan seterusnya berbayar.</p><button class="btn" data-action="${S.user ? 'pay' : 'goLogin'}">${S.user ? 'Bayar untuk buka Paket 1+' : 'Masuk untuk membeli Paket 1+'}</button><p class="kd-note" id="pay-note"></p></div>` : ''}
     <div style="height:14px"></div>
     <button class="btn" data-action="start">Mulai kuis</button>` :
     `<p class="kd-note">${S.role === 'admin' ? 'Buka menu Kelola \u2192 Soal untuk mengimpor soal.' : 'Admin belum mengunggah soal.'}</p>`}
