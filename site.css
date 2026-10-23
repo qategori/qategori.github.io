@@ -39,16 +39,12 @@ a{color:var(--themeLink)}
 .qhLoad{opacity:.7;padding:20px 0}
 .qhErr{padding:16px;border:1px solid var(--themeBd-color);border-radius:10px}
 .qhBtn{display:inline-block;padding:7px 14px;border-radius:8px;background:var(--themeLink);color:#fff;border:0;text-decoration:none;cursor:pointer;font:inherit}.qhBtn.alt{background:var(--themeBg-alt);color:var(--themeC);border:1px solid var(--themeBd-color)}
-.qhSeg{display:flex;gap:6px;overflow-x:auto;padding:0 0 10px;scrollbar-width:none}
-.qhSeg button{flex:0 0 auto;padding:6px 14px;border:1px solid var(--themeBd-color);border-radius:20px;background:var(--themeBg-alt);color:var(--themeC);font:inherit;font-size:13px;cursor:pointer}
-.qhSeg button[aria-pressed=true]{background:var(--themeLink);color:#fff;border-color:var(--themeLink)}
 .qhGameGrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px}
 .qhGameCard{display:flex;flex-direction:column;align-items:flex-start;gap:3px;text-align:left;padding:14px;border:1px solid var(--themeBd-color);border-radius:var(--contentBd-radiusA,10px);background:var(--themeBg-alt);color:var(--themeC);cursor:pointer;font:inherit}
 .qhGameCard svg{width:26px;height:26px;fill:none;stroke:var(--themeLink);stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
 .qhGameCard i{font-style:normal;font-size:12px;opacity:.7}.qhGameCard small{font-size:12px;opacity:.8}
 iframe.qhGame{width:100%;border:0;min-height:480px;display:block}
 .qhBar{margin:0 0 10px}
-#qHome .qhSeg{display:flex!important}
 
 /* ---- tambahan di atas CSS tema ---- */
 .qBottom{position:fixed;left:0;right:0;bottom:0;z-index:60;display:flex;background:var(--themeBg);border-top:1px solid var(--themeBd-color);padding-bottom:env(safe-area-inset-bottom)}
@@ -81,8 +77,11 @@ iframe.qhGame{width:100%;border:0;min-height:480px;display:block}
 }
 .qSideIn .sideSticky{gap:14px}
 .qSideIn .mwk,.qSideIn .qfl{margin:0!important}
-/* tanpa chip di atas konten */
-#qHome .qhSeg,#qHome .qChips,.qhBeritaHead{display:none!important}
+/* Tab materi harus tetap terlihat; hanya chip berita yang disembunyikan. */
+#qHome .qChips,.qhBeritaHead{display:none!important}
+#qHome .qhBody{min-width:0;overflow-wrap:anywhere}
+#qHome .qhPane{min-width:0;animation:qPaneIn .18s ease-out}
+@keyframes qPaneIn{from{opacity:.65;transform:translateY(3px)}to{opacity:1;transform:translateY(0)}}
 
 .book{--thumbSize:80px;--thumbnailRatio-box:100%}.book.all{--thumbSize:60px}
 .qFootR{align-items:center;justify-content:space-between;gap:12px;margin-bottom:10px}
@@ -389,6 +388,17 @@ a.qbSt,button.qbSt{color:inherit;font:inherit;text-align:left;text-decoration:no
  .mainB{row-gap:14px!important;gap:14px!important}
  .mainB .sideB{padding-left:0!important;padding-right:0!important;padding-top:0!important}
 }
+
+
+/* Qategori responsive polish: artikel, materi dan area sentuh */
+.postBody{overflow-wrap:anywhere;word-wrap:break-word}
+.postBody img,.postBody video,.postBody iframe{max-width:100%}
+.postBody img{height:auto}
+.postBody pre,.postBody table{max-width:100%;overflow:auto}
+.postBody table{display:block;width:100%;overflow-x:auto;border-collapse:collapse;-webkit-overflow-scrolling:touch}
+.postBody h2,.postBody h3,.postBody h4{scroll-margin-top:88px;line-height:1.35}
+.postBody a{overflow-wrap:anywhere}
+@media(max-width:600px){.qPost{font-size:16px;line-height:1.75}.qPost h1{font-size:clamp(1.45rem,6vw,2rem);line-height:1.25}.qPost .postBody h2{font-size:1.35rem}.qPost .postBody h3{font-size:1.15rem}.qGrid{gap:14px 10px}.qG h3{font-size:.9rem}.qFoot{flex-wrap:wrap;justify-content:center;text-align:center}}
 
 .leftF{justify-content:flex-start!important}
 .leftF label{min-width:56px!important;justify-content:flex-start!important;padding-inline:var(--contentPadding,16px)!important}

@@ -94,13 +94,11 @@ var GAMES=[
     {id: 'kana', f: 'kana.html', t: 'Hapalan Kana', j: '\u304b\u306a', r: 'kana', d: 'Tabel, kartu hapalan, dan kuis Hiragana serta Katakana: huruf dasar, dakuten, dan yoon. Progres hafal tersinkron dengan widget di aplikasi.',
      ic: '<rect x="4" y="4" width="7" height="7" rx="1.5"/><rect x="13" y="4" width="7" height="7" rx="1.5"/><rect x="4" y="13" width="7" height="7" rx="1.5"/><rect x="13" y="13" width="7" height="7" rx="1.5"/>'}
   ];;
-var SEGS=[['jlpt','JLPT'],['tg2','TG2'],['jawa','Jawa'],['sunda','Sunda'],['bali','Bali'],['kana','Kana'],['rambu','Rambu']];
 var panes={};
 PANES.forEach(function(id){
   var p=root.querySelector('.qhPane[data-pane="'+id+'"]');
   if(!p){p=document.createElement('div');p.className='qhPane';p.setAttribute('data-pane',id);p.hidden=true;
-    var seg=BEL.indexOf(id)>=0?'<div class="qhSeg" role="group" aria-label="Pilih materi">'+SEGS.map(function(s){return'<button type="button" data-go="'+s[0]+'" aria-pressed="false">'+s[1]+'</button>'}).join('')+'</div>':'';
-    p.innerHTML=seg+'<div class="qhBody pE postBody"></div>';root.appendChild(p)}
+    p.innerHTML='<div class="qhBody pE postBody"></div>';root.appendChild(p)}
   panes[id]=p;
 });
 function parse(){
@@ -114,7 +112,20 @@ function parse(){
   ['jlpt','tg2','jawa','sunda','bali'].forEach(function(k){if(tab===k&&!URL_OF[k+'-'+sub])sub=k==='tg2'?'semua':''});
   return{tab:tab,sub:sub,qs:qs};
 }
-function go(r){if(location.hash==='#'+r)show();else location.hash=r}
+function go(r){
+  /* Normalisasi rute internal: tombol materi tidak boleh jatuh ke beranda
+     hanya karena nilai data-go kosong/tidak dikenal. */
+  r=String(r||'').replace(/^#+/,'').trim();
+  if(!r)return;
+  var base=r.split('?')[0];
+  if(base==='belajar'){
+    var saved=lsGet('qh_bel');
+    r=(BEL.indexOf(saved)>=0?saved:'jlpt')+(saved==='tg2'?'-semua':'');
+  }else if(!panes[base.split('-')[0]] && !panes[base]){
+    return;
+  }
+  if(location.hash==='#'+r)show();else location.hash=r;
+}
   var SI = {
     kartu: '<path d="M4 8.5C4 6.6 5.1 6 7 6H17C18.9 6 20 6.6 20 8.5V16.5C20 18.4 18.9 19 17 19H7C5.1 19 4 18.4 4 16.5Z"/><path d="M8 3H16"/><path d="M9 12.5H15"/>',
     daftar: '<path d="M8 6H21M8 12H21M8 18H21"/><path d="M3 6H3.01M3 12H3.01M3 18H3.01"/>',
@@ -531,7 +542,12 @@ root.addEventListener('click',function(e){
   if(c){lab=c.getAttribute('data-lab');shown=20;root.querySelectorAll('.qChip').forEach(function(x){x.classList.toggle('on',x===c)});loadPosts(renderList);return}
   if(e.target.id==='qAll'||e.target.closest&&e.target.closest('#qAll')){showAllL=true;loadPosts(renderList);return}
   if(e.target.id==='qMore'){shown+=20;loadPosts(renderList);return}
-  var g=e.target.closest&&e.target.closest('[data-go]');if(g){e.preventDefault();go(g.getAttribute('data-go'));window.scrollTo(0,0);return}
+  var g=e.target.closest&&e.target.closest('[data-go]');if(g){
+    e.preventDefault();e.stopPropagation();
+    var dest=g.getAttribute('data-go');
+    if(dest)go(dest);
+    window.scrollTo({top:0,behavior:'auto'});return
+  }
   var r=e.target.closest&&e.target.closest('[data-retry]');if(r){mounted[PANES.filter(function(p){return panes[p].contains(r)})[0]]=null;show();}
 });
 /* ===== Beranda: Mochi interaktif + ringkasan riwayat + berita terbaru ===== */
@@ -663,7 +679,7 @@ function show(){
   document.body.classList.toggle('qBer',r.tab==='beranda');
   var act=BEL.indexOf(r.tab)>=0?'belajar':r.tab;
   document.querySelectorAll('a[data-tab]').forEach(function(a){a.classList.toggle('on',a.getAttribute('data-tab')===act)});
-  if(BEL.indexOf(r.tab)>=0){lsSet('qh_bel',r.tab);panes[r.tab].querySelectorAll('.qhSeg button').forEach(function(b){b.setAttribute('aria-pressed',b.getAttribute('data-go').split('-')[0]===r.tab?'true':'false')})}
+  if(BEL.indexOf(r.tab)>=0){lsSet('qh_bel',r.tab)}
   if(r.tab!=='game'&&r.tab!=='kana')stopT();
   var T={beranda:'Qategori',bushu:'Bushu',jlpt:'Materi JLPT',tg2:'Materi TG2',jawa:'Bahasa Jawa',sunda:'Bahasa Sunda',bali:'Bahasa Bali',kana:'Hapalan Kana',rambu:'Rambu-rambu Jepang',podcast:'Podcast',game:'Game',berita:'Berita'};
   document.title=(T[r.tab]||'')+' | Qategori';
