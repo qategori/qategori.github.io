@@ -302,6 +302,7 @@
   function svg(d){ return '<svg viewBox="0 0 24 24" aria-hidden="true">' + d + '</svg>'; }
   var IC = {
     cat: svg('<path d="M5 9V4l4 3h6l4-3v5a7 7 0 0 1-14 0z"/><path d="M9.5 12.5v.5M14.5 12.5v.5M10.5 15.5c.8.6 2.2.6 3 0"/>'),
+    chat: svg('<path d="M4 5h16v11H9l-5 4z"/><path d="M8.500 9.500h7M8.500 12.500h4"/>'),
     reset: svg('<path d="M4 12a8 8 0 1 0 3-6.2"/><path d="M4 4v4h4"/>'),
     sakura: svg('<circle cx="12" cy="12" r="1.6"/><path d="M12 10.4C10.5 8 10.8 4.8 12 3.5c1.2 1.3 1.5 4.5 0 6.9zM13.5 11.2c2.700-.7 5.600.700 6.500 2.300-1.700.800-4.800.400-6.500-1.300zM13 13.600c1.500 2.300 1 5.400-.200 6.700-1.500-1-2.300-4.100-.800-6.200zM10.800 13c-1.400 2.400-4.500 3-6.200 2.300.400-1.800 3-3.700 5.600-3.100zM10.600 11.300c-2.600.200-5.100-1.600-5.300-3.400 1.800-.4 4.700.800 5.800 2.800z"/>'),
     salju: svg('<path d="M12 3v18M4.200 7.500l15.600 9M19.800 7.500l-15.600 9"/><path d="M9.500 4.500L12 6.500l2.500-2M9.500 19.500l2.500-2 2.500 2"/>'),
@@ -320,7 +321,7 @@
     var fxs = ['sakura', 'salju', 'aki', 'panas'].map(function(k){ return ic('data-fx="' + k + '"', k, FX_LB[k]); }).join('');
     var snds = SOUNDS.map(function(x){ return ic('data-snd="' + x[0] + '"', x[0], SND_LB[x[0]] || x[1]); }).join('');
     return '<div class="qfxH"><b>Suasana</b><button type="button" class="qfxX" data-x="1" aria-label="Tutup">&times;</button></div>' +
-      '<div class="qfxL"><span class="qfxT">Mochi</span><div class="qfxRow">' + ic('data-cat="1"', 'cat', 'Kucing Mochi') + ic('data-catreset="1"', 'reset', 'Kembalikan posisi') + '</div></div>' +
+      '<div class="qfxL"><span class="qfxT">Mochi</span><div class="qfxRow">' + ic('data-cat="1"', 'cat', 'Kucing Mochi') + ic('data-chat="1"', 'chat', 'Tanya Mochi (AI)') + ic('data-catreset="1"', 'reset', 'Kembalikan posisi') + '</div></div>' +
       '<div class="qfxL"><span class="qfxT">Musim</span><div class="qfxRow">' + fxs + '</div></div>' +
       '<div class="qfxL"><span class="qfxT">Ambient</span><div class="qfxRow">' + snds + '</div></div>' +
       '<label class="qfxVol">' + IC.vol + '<input type="range" min="0" max="100" value="' + Math.round(st.vol * 100) + '" id="qfxVol" aria-label="Volume"></label>' +
@@ -341,6 +342,7 @@
     e.stopPropagation();
     var b = e.target.closest ? e.target.closest('button') : null; if (!b) return;
     if (b.hasAttribute('data-x')) { pan.hidden = true; return; }
+    if (b.hasAttribute('data-chat')) { pan.hidden = true; window.dispatchEvent(new CustomEvent('qmochi:open')); return; }
     if (b.hasAttribute('data-cat')) { if (window.qcat) window.qcat.toggle(); renderPan(); return; }
     if (b.hasAttribute('data-catreset')) { if (window.qcat) window.qcat.reset(); return; }
     if (b.hasAttribute('data-fx')) { var nf = b.getAttribute('data-fx'); st.fx = st.fx === nf ? 'off' : nf; save(); applyFx(); fxChanged(); renderPan(); return; }
@@ -1613,4 +1615,73 @@
   function q(){if(!raf)raf=requestAnimationFrame(run)}
   addEventListener('scroll',q,{passive:true});addEventListener('resize',q);
   addEventListener('load',q);setInterval(q,1000);q();
+})();
+
+/* ===== Tanya Mochi (agen AI): Firebase AI Logic + Gemini =====
+   Dibuka dari panel Suasana (ikon obrolan). Tamu pakai login anonim; batas pertanyaan per hari dicatat di Firestore (mochiUsage). */
+(function(){
+  var CFG={apiKey:'AIzaSyA1WrsQJfTo7dj_WfTh3j_E6Ecoko7rYX4',authDomain:'qategori.firebaseapp.com',projectId:'qategori',appId:'1:323434645943:web:5c0449e902b0f32655c032'};
+  var V='12.3.0',MODEL='gemini-2.5-flash',LIMIT=15,SITEKEY='';/* SITEKEY: site key reCAPTCHA Enterprise (Fraud Defense) untuk App Check (isi setelah dibuat di Console) */
+  var SYS='Kamu Mochi, kucing oranye guru bahasa Jepang di situs Qategori untuk pekerja Indonesia program TG (Tokutei Ginou) di Jepang. '+
+   'Jawab dalam bahasa Indonesia yang santai dan singkat (maks sekitar 120 kata), sertakan romaji setiap menulis Jepang. '+
+   'Topik yang boleh: belajar bahasa Jepang (JLPT, kanji, kotoba, tata bahasa), materi dan soal ujian TG/ujian keterampilan (makanan, konstruksi, manufaktur, dll.), serta koreksi jawaban kuis pengguna beserta alasannya. '+
+   'Kalau di luar topik, tolak dengan sopan dan ajak kembali belajar. Jangan memberi nasihat hukum, visa, atau medis yang pasti; sarankan menghubungi pihak resmi. Kalau tidak yakin, katakan tidak yakin. Boleh diselingi "nyaa~" sesekali.';
+  var box=null,chat=null,mods=null,used=0,busy=false,uid=null,db=null;
+  function esc(s){return String(s).replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})}
+  function day(){var d=new Date(Date.now()+9*36e5);return d.toISOString().slice(0,10).replace(/-/g,'')}
+  function fmt(t){return esc(t).replace(/\*\*(.+?)\*\*/g,'<b>$1</b>').replace(/\n/g,'<br>')}
+  var css=document.createElement('style');css.textContent=
+   '#qmc{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(var(--mobileHeight,60px) + 12px);width:min(420px,calc(100vw - 20px));height:min(520px,calc(100vh - 140px));z-index:2147483000;display:flex;flex-direction:column;border:1px solid var(--themeBd-color);border-radius:16px;background:var(--themeBg);color:var(--themeC);box-shadow:0 10px 36px rgba(0,0,0,.3)}#qmc[hidden]{display:none}'+
+   '#qmc .h{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-bottom:1px solid var(--themeBd-color)}#qmc .h small{opacity:.65;margin-left:8px}#qmc .x{border:0;background:none;color:inherit;font-size:24px;cursor:pointer;line-height:1}'+
+   '#qmc .m{flex:1;overflow:auto;padding:12px;display:flex;flex-direction:column;gap:8px;font-size:14px;line-height:1.5}#qmc .b{max-width:86%;padding:8px 12px;border-radius:14px;word-break:break-word}'+
+   '#qmc .b.me{align-self:flex-end;background:var(--themeLink);color:#fff;border-bottom-right-radius:4px}#qmc .b.ai{align-self:flex-start;background:var(--themeBg-alt,rgba(127,127,127,.15));border-bottom-left-radius:4px}'+
+   '#qmc form{display:flex;gap:8px;padding:10px;border-top:1px solid var(--themeBd-color)}#qmc input{flex:1;min-width:0;padding:9px 12px;border:1px solid var(--themeBd-color);border-radius:99px;background:var(--themeBg);color:inherit;font:inherit;font-size:14px}'+
+   '#qmc button.s{border:0;border-radius:99px;padding:0 16px;background:var(--themeLink);color:#fff;font:inherit;font-weight:600;cursor:pointer}#qmc button.s:disabled{opacity:.5}';
+  document.head.appendChild(css);
+  function add(cls,html){var m=box.querySelector('.m'),d=document.createElement('div');d.className='b '+cls;d.innerHTML=html;m.appendChild(d);m.scrollTop=m.scrollHeight;return d}
+  function left(){box.querySelector('.h small').textContent='sisa '+Math.max(0,LIMIT-used)+' pertanyaan hari ini'}
+  function build(){
+    box=document.createElement('div');box.id='qmc';box.hidden=true;box.setAttribute('role','dialog');box.setAttribute('aria-label','Tanya Mochi');
+    box.innerHTML='<div class="h"><span><b>Tanya Mochi</b><small></small></span><button type="button" class="x" aria-label="Tutup">&times;</button></div><div class="m"></div><form><input type="text" maxlength="500" placeholder="Tanya soal Jepang / materi / kuis..." aria-label="Pertanyaan"><button class="s" type="submit">Kirim</button></form>';
+    document.body.appendChild(box);
+    box.querySelector('.x').onclick=function(){box.hidden=true};
+    box.querySelector('form').onsubmit=function(e){e.preventDefault();ask()};
+    add('ai','<b lang="ja">こんにちは</b> konnichiwa! Aku Mochi. Tanya apa saja soal bahasa Jepang, materi TG, atau minta aku koreksi jawaban kuismu ya. nyaa~');left();
+  }
+  async function boot(){
+    if(mods)return;
+    var b='https://www.gstatic.com/firebasejs/'+V+'/';
+    var a=await Promise.all([import(b+'firebase-app.js'),import(b+'firebase-auth.js'),import(b+'firebase-firestore.js'),import(b+'firebase-ai.js')]);
+    mods={app:a[0],auth:a[1],fs:a[2],ai:a[3]};
+    var app=mods.app.getApps().filter(function(x){return x.name==='mochi'})[0]||mods.app.initializeApp(CFG,'mochi');
+    if(SITEKEY){try{var ac=await import(b+'firebase-app-check.js');ac.initializeAppCheck(app,{provider:new ac.ReCaptchaEnterpriseProvider(SITEKEY),isTokenAutoRefreshEnabled:true})}catch(e){console.warn('App Check',e)}}
+    var au=mods.auth.getAuth(app);
+    if(!au.currentUser)await mods.auth.signInAnonymously(au);
+    uid=au.currentUser.uid;db=mods.fs.getFirestore(app);
+    var ai=mods.ai.getAI(app,{backend:new mods.ai.GoogleAIBackend()});
+    var model=mods.ai.getGenerativeModel(ai,{model:MODEL,systemInstruction:SYS});
+    chat=model.startChat({history:[]});
+    try{var s=await mods.fs.getDoc(mods.fs.doc(db,'mochiUsage',uid+'_'+day()));used=s.exists()?(s.data().n||0):0}catch(e){}
+    left();
+  }
+  async function take(){
+    var ref=mods.fs.doc(db,'mochiUsage',uid+'_'+day());
+    return mods.fs.runTransaction(db,async function(tx){
+      var s=await tx.get(ref),n=s.exists()?(s.data().n||0):0;
+      if(n>=LIMIT){used=n;return false}
+      tx.set(ref,{uid:uid,n:n+1});used=n+1;return true});
+  }
+  async function ask(){
+    var inp=box.querySelector('input'),q=inp.value.trim();if(!q||busy)return;
+    busy=true;box.querySelector('.s').disabled=true;inp.value='';add('me',esc(q));
+    var w=add('ai','Mochi mikir dulu... 🐾');
+    try{
+      await boot();
+      if(!(await take())){w.innerHTML='Jatah 15 pertanyaan hari ini sudah habis. Besok datang lagi ya, nyaa~';left();return}
+      var ctx='[Halaman yang sedang dibuka: '+(location.hash||'#beranda')+']\n'+q;
+      var r=await chat.sendMessage(ctx);w.innerHTML=fmt(r.response.text());left();
+    }catch(e){console.warn(e);w.innerHTML='Maaf, Mochi lagi error. Coba lagi sebentar ya.'}
+    finally{busy=false;box.querySelector('.s').disabled=false;inp.focus()}
+  }
+  window.addEventListener('qmochi:open',function(){if(!box)build();box.hidden=false;box.querySelector('input').focus();boot().then(left).catch(function(e){console.warn(e)})});
 })();
