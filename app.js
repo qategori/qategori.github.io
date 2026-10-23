@@ -87,8 +87,11 @@ var GAMES=[
      ic: '<path d="M4 8.5C4 6.6 5.1 6 7 6H17C18.9 6 20 6.6 20 8.5V16.5C20 18.4 18.9 19 17 19H7C5.1 19 4 18.4 4 16.5Z"/><path d="M8 3H16"/><path d="M9 12.5H15"/>'},
     {id: 'gambar', f: 'tebak-gambar.html', t: 'Tebak Gambar', j: '\u7d75\u5f53\u3066\u30af\u30a4\u30ba', r: 'e ate kuizu', d: 'Tebak nama benda dalam bahasa Jepang.',
      ic: '<rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="1.8"/><path d="M3 17L9 12L13 15.5L16 13L21 17.5"/>'},
+    {id: 'drama', f: 'drama.html', t: 'Mini Drama', j: '\u30c9\u30e9\u30de', r: 'dorama', d: 'Mochi di konbini dan tempat lain: simak dialog berfurigana, lalu kuis.',
      ic: '<path d="M4 5H20V13C20 17.4 16.4 21 12 21C7.6 21 4 17.4 4 13Z"/><path d="M8.5 10H8.51M15.5 10H15.51"/><path d="M9 14.5C10.2 16 13.8 16 15 14.5"/>'},
+    {id: 'hari', f: 'hari.html', t: 'Satu Hari Mochi', j: '\u30e2\u30c1\u306e\u4e00\u65e5', r: 'mochi no ichinichi', d: 'Cerita panjang sekitar 10 menit dengan latar yang berganti: sehari berkeliling kota, atau Mochi demam dan pergi ke klinik.',
      ic: '<circle cx="12" cy="12" r="4"/><path d="M12 2.5V5M12 19V21.5M2.5 12H5M19 12H21.5M5.3 5.3L7 7M17 17L18.7 18.7M5.3 18.7L7 17M17 7L18.7 5.3"/>'},
+    {id: 'kana', f: 'kana.html', t: 'Hapalan Kana', j: '\u304b\u306a', r: 'kana', d: 'Tabel, kartu hapalan, dan kuis Hiragana serta Katakana: huruf dasar, dakuten, dan yoon. Progres hafal tersinkron dengan widget di aplikasi.',
      ic: '<rect x="4" y="4" width="7" height="7" rx="1.5"/><rect x="13" y="4" width="7" height="7" rx="1.5"/><rect x="4" y="13" width="7" height="7" rx="1.5"/><rect x="13" y="13" width="7" height="7" rx="1.5"/>'}
   ];;
 var panes={};
@@ -233,8 +236,6 @@ function tune(fr){try{var d=fr.contentDocument;if(!d||!d.documentElement)return;
 function stopT(){if(gameTimer){clearInterval(gameTimer);gameTimer=0}}
 function startT(){stopT();if(gameFrame)gameTimer=setInterval(function(){tune(gameFrame)},400)}
 function frame(host,file,title,bar,onload){
-  document.body.classList.add('qGameFull');
-  host.classList.add('qhGameFullscreen');
   host.innerHTML=(bar||'')+'<p class="qhLoad">Memuat...</p>';
   fetch(GAME_BASE+file).then(function(r){if(!r.ok)throw new Error('HTTP '+r.status);return r.text()}).then(function(html){
     host.innerHTML=bar||'';var fr=document.createElement('iframe');fr.className='qhGame';fr.title=title;fr.setAttribute('scrolling','no');
@@ -244,9 +245,9 @@ function frame(host,file,title,bar,onload){
 var gkey='';
 function showGame(sub){
   var host=panes.game.querySelector('.qhBody'),g=GAMES.filter(function(x){return x.id===sub})[0];
-  if(!g){document.body.classList.remove('qGameFull');host.classList.remove('qhGameFullscreen');stopT();gkey='';gameFrame=null;host.innerHTML='<section class="qhGamePicker"><p class="qhGameIntro">Pilih permainan untuk mulai.</p><details class="qhGameDetails"><summary><span>Pilih permainan</span><span aria-hidden="true">⌄</span></summary><div class="qhGameOptions">'+GAMES.map(function(g){return'<button type="button" class="qhGameOption" data-go="game-'+g.id+'"><span><b>'+esc(g.t)+'</b><small>'+esc(g.d)+'</small></span><span aria-hidden="true">›</span></button>'}).join('')+'</div></details></section>';return}
+  if(!g){stopT();gkey='';gameFrame=null;host.innerHTML='<div class="qhGameGrid">'+GAMES.filter(function(x){return x.id!=='kana'}).map(function(g){return'<button type="button" class="qhGameCard" data-go="game-'+g.id+'"><svg viewBox="0 0 24 24" aria-hidden="true">'+g.ic+'</svg><b>'+esc(g.t)+'</b><i>'+g.j+' &middot; '+esc(g.r)+'</i><small>'+esc(g.d)+'</small></button>'}).join('')+'</div>';return}
   if(gkey===g.id&&gameFrame&&host.contains(gameFrame)){startT();return}
-  gkey=g.id;gameFrame=null;frame(host,g.f,g.t,'<div class="qhBar qhGameExitBar"><button type="button" class="qhBtn alt qhGameExit" data-go="game">✕ Keluar dari game</button><span>'+esc(g.t)+'</span></div>');
+  gkey=g.id;gameFrame=null;frame(host,g.f,g.t,'<div class="qhBar"><button type="button" class="qhBtn alt" data-go="game">&larr; Semua game</button></div>');
 }
 function kanaPick(fr,mode){var n=0;
   (function t(){try{var d=fr.contentDocument,b=d&&d.querySelector('[data-sc="'+(mode==='katakana'?'k':'h')+'"]');if(b){if(b.getAttribute('aria-pressed')!=='true')b.click();return}}catch(x){}
