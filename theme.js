@@ -1621,7 +1621,7 @@
    Dibuka dari panel Suasana (ikon obrolan). Tamu pakai login anonim; batas pertanyaan per hari dicatat di Firestore (mochiUsage). */
 (function(){
   var CFG={apiKey:'AIzaSyA1WrsQJfTo7dj_WfTh3j_E6Ecoko7rYX4',authDomain:'qategori.firebaseapp.com',projectId:'qategori',appId:'1:323434645943:web:5c0449e902b0f32655c032'};
-  var V='12.3.0',MODEL='gemini-2.5-flash',LIMIT=15,SITEKEY='';/* SITEKEY: site key reCAPTCHA Enterprise (Fraud Defense) untuk App Check (isi setelah dibuat di Console) */
+  var V='12.3.0',MODEL='gemini-2.5-flash',LIMIT=15,SITEKEY='6LeycP0tAAAAANg9Gq3mFXoCGZ_NucHfoCuwwBbS';/* SITEKEY: site key reCAPTCHA Enterprise (Fraud Defense) untuk App Check (isi setelah dibuat di Console) */
   var SYS='Kamu Mochi, kucing oranye guru bahasa Jepang di situs Qategori untuk pekerja Indonesia program TG (Tokutei Ginou) di Jepang. '+
    'Jawab dalam bahasa Indonesia yang santai dan singkat (maks sekitar 120 kata), sertakan romaji setiap menulis Jepang. '+
    'Topik yang boleh: belajar bahasa Jepang (JLPT, kanji, kotoba, tata bahasa), materi dan soal ujian TG/ujian keterampilan (makanan, konstruksi, manufaktur, dll.), serta koreksi jawaban kuis pengguna beserta alasannya. '+
@@ -1680,7 +1680,7 @@
       if(!(await take())){w.innerHTML='Jatah 15 pertanyaan hari ini sudah habis. Besok datang lagi ya, nyaa~';left();return}
       var ctx='[Halaman yang sedang dibuka: '+(location.hash||'#beranda')+']\n'+q;
       var r=await chat.sendMessage(ctx);w.innerHTML=fmt(r.response.text());left();
-    }catch(e){console.warn(e);w.innerHTML='Maaf, Mochi lagi error. Coba lagi sebentar ya.'}
+    }catch(e){console.warn(e);w.innerHTML='Maaf, Mochi lagi error: '+esc((e&&e.code)||(e&&e.message)||String(e))}
     finally{busy=false;box.querySelector('.s').disabled=false;inp.focus()}
   }
   window.addEventListener('qmochi:open',function(){if(!box)build();box.hidden=false;box.querySelector('input').focus();boot().then(left).catch(function(e){console.warn(e)})});
