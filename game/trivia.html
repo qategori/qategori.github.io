@@ -1,0 +1,299 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<style>html{color-scheme:light}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>Trivia Budaya Jepang · Qategori</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@600;800&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+/* Layout: satu kolom sempit seperti kartu kuis; bilah progres di atas, kartu soal, lalu kotak fakta setelah menjawab */
+:root{
+  --bg:#edf1ec; --surface:#ffffff; --ink:#18221a; --muted:#587060; --line:#d3dcd3;
+  --accent:#3f6b3a; --accent-ink:#ffffff; --tint:#dfeadc; --kaki:#c8561f;
+  --ok:#1f7a45; --ok-bg:#d6efdf; --bad:#b3342f; --bad-bg:#f9dad7;
+  --font-display:'Shippori Mincho','Hiragino Mincho ProN','Yu Mincho',serif;
+  --font-body:'Zen Kaku Gothic New','Hiragino Kaku Gothic ProN','Yu Gothic',system-ui,sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0f1511; --surface:#18211b; --ink:#e8f0e8; --muted:#9db3a2; --line:#2b3a2f;
+  --accent:#8fc68a; --accent-ink:#0f1511; --tint:#243629; --kaki:#ff9a63;
+  --ok:#7fdca5; --ok-bg:#173a27; --bad:#ff8c85; --bad-bg:#47201f; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0f1511; --surface:#18211b; --ink:#e8f0e8; --muted:#9db3a2; --line:#2b3a2f;
+  --accent:#8fc68a; --accent-ink:#0f1511; --tint:#243629; --kaki:#ff9a63;
+  --ok:#7fdca5; --ok-bg:#173a27; --bad:#ff8c85; --bad-bg:#47201f; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--font-body);font-size:16px;line-height:1.55;padding-inline:16px;padding-block:20px 48px}
+button{font:inherit;color:inherit;cursor:pointer}
+button:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.wrap{max-width:640px;margin-inline:auto;display:grid;gap:16px}
+h1{margin:0;font-family:var(--font-display);font-weight:800;font-size:clamp(1.7rem,6vw,2.3rem);line-height:1.15;text-wrap:balance}
+h1 small{display:block;font-family:var(--font-body);font-weight:500;font-size:.78rem;letter-spacing:.08em;color:var(--muted);margin-top:4px;text-transform:uppercase}
+.cats{display:flex;flex-wrap:wrap;gap:6px}
+.cat{border:1px solid var(--line);background:var(--surface);border-radius:99px;padding:6px 14px;font-size:.88rem;font-weight:500}
+.cat[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.top{display:flex;justify-content:space-between;align-items:center;gap:12px;font-variant-numeric:tabular-nums;color:var(--muted);font-size:.9rem}
+.top b{color:var(--ink)}
+.streak b{color:var(--kaki)}
+.prog{height:6px;border-radius:99px;background:var(--line);overflow:hidden}
+.prog i{display:block;height:100%;background:var(--accent);width:0;transition:width .3s}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:20px 18px;display:grid;gap:16px}
+.tag{font-size:.75rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:700}
+.q{margin:0;font-family:var(--font-display);font-weight:600;font-size:clamp(1.2rem,4.6vw,1.5rem);line-height:1.4;text-wrap:balance;overflow-wrap:anywhere}
+.opts{display:grid;gap:8px}
+.o{display:flex;gap:12px;align-items:center;width:100%;text-align:left;padding:12px 14px;border:1.5px solid var(--line);border-radius:10px;background:var(--bg);min-height:48px}
+.o .k{flex:none;width:24px;height:24px;border-radius:6px;background:var(--surface);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;font-size:.78rem;font-weight:700;color:var(--muted)}
+.o:not(:disabled):hover{border-color:var(--accent)}
+.o.ok{background:var(--ok-bg);border-color:var(--ok);color:var(--ok)}
+.o.bad{background:var(--bad-bg);border-color:var(--bad);color:var(--bad)}
+.o:disabled{cursor:default}
+.o:disabled:not(.ok):not(.bad){opacity:.55}
+.fact{border-radius:10px;background:var(--tint);padding:12px 14px;display:grid;gap:10px}
+.fact p{margin:0}
+.fact .v{font-weight:700}
+.btn{border:1px solid var(--line);background:var(--surface);border-radius:10px;padding:10px 18px;font-weight:700}
+.btn.pri{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.fact .btn{justify-self:end}
+.end{text-align:center;gap:10px}
+.end .big{font-family:var(--font-display);font-weight:800;font-size:3rem;line-height:1}
+.end .rank{font-family:var(--font-display);font-size:1.4rem;font-weight:600}
+.end .ro{color:var(--muted);font-size:.9rem;margin-top:-6px}
+.row{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
+.foot{color:var(--muted);font-size:.82rem;margin:0}
+@media (prefers-reduced-motion:reduce){.prog i{transition:none}}
+
+
+/* Qategori standalone game shell */
+html { min-height: 100%; background: var(--bg); }
+body {
+  min-height: 100vh;
+  min-height: 100svh;
+  margin: 0 !important;
+  padding: 0 !important;
+  box-sizing: border-box;
+  overflow-x: hidden;
+}
+.game-topbar {
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 54px;
+  padding: max(8px, env(safe-area-inset-top)) max(12px, env(safe-area-inset-right)) 8px max(12px, env(safe-area-inset-left));
+  box-sizing: border-box;
+  background: var(--surface);
+  color: var(--ink);
+  border-bottom: 1px solid var(--line);
+  box-shadow: 0 2px 10px rgba(0,0,0,.05);
+}
+.game-topbar .game-brand {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font: 800 14px/1.2 var(--font-body);
+  letter-spacing: .02em;
+}
+.game-topbar .game-brand .game-mark {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  flex: 0 0 30px;
+  border-radius: 9px;
+  background: var(--tint);
+  color: var(--accent);
+  font-size: 16px;
+}
+.game-topbar .game-brand span:last-child {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.game-topbar .game-exit {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  min-height: 38px;
+  padding: 0 13px;
+  border: 1px solid var(--line);
+  border-radius: 11px;
+  background: var(--bg);
+  color: var(--ink);
+  text-decoration: none;
+  font: 700 13px/1 var(--font-body);
+  white-space: nowrap;
+  -webkit-tap-highlight-color: transparent;
+}
+.game-topbar .game-exit:active { transform: scale(.98); }
+.game-topbar .game-exit svg { width: 16px; height: 16px; }
+.wrap {
+  width: min(100%, 1120px) !important;
+  max-width: 1120px !important;
+  margin: 0 auto !important;
+  padding: 16px clamp(12px, 3vw, 28px) max(28px, env(safe-area-inset-bottom)) !important;
+  box-sizing: border-box;
+}
+.wrap > header { margin-top: 0 !important; }
+@media (max-width: 600px) {
+  .game-topbar { min-height: 50px; }
+  .game-topbar .game-brand { font-size: 12px; }
+  .game-topbar .game-exit { min-height: 36px; padding: 0 10px; }
+  .wrap { padding-top: 12px !important; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .game-topbar .game-exit { transition: none !important; }
+}
+
+</style>
+
+<nav class="game-topbar" aria-label="Navigasi permainan">
+  <div class="game-brand"><span class="game-mark" aria-hidden="true">遊</span><span>QATEGORI · Trivia Budaya Jepang</span></div>
+  <a class="game-exit" href="/#game" aria-label="Keluar dan kembali ke daftar game">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/><path d="M20 12H9"/></svg>
+    <span>Keluar</span>
+  </a>
+</nav>
+<div class="wrap">
+  <header>
+    <h1>日本文化クイズ<small>nihon bunka kuizu · trivia budaya Jepang</small></h1>
+  </header>
+  <div class="cats" id="cats" role="group" aria-label="Pilih kategori"></div>
+  <div class="top">
+    <span>Soal <b id="no">1/10</b></span>
+    <span class="streak">Beruntun <b id="streak">0</b></span>
+    <span>Skor <b id="score">0</b></span>
+  </div>
+  <div class="prog" aria-hidden="true"><i id="bar"></i></div>
+  <div id="stage"></div>
+  <p class="foot" id="foot"></p>
+</div>
+
+<script>
+/* c = kategori, q = soal, a = jawaban benar, w = tiga jawaban salah, f = fakta */
+var CATS=['Semua','Festival','Makanan','Tradisi','Sejarah & Geografi','Alam & Musim','Bahasa & Seni'];
+var Q=[
+{c:'Festival',q:'Kegiatan menikmati bunga sakura bersama keluarga atau teman di bawah pohonnya disebut?',a:'Hanami (花見)',w:['Tanabata (七夕)','Obon (お盆)','Setsubun (節分)'],f:'Hanami artinya "melihat bunga". Orang biasanya duduk di atas alas, makan bekal, dan berpiknik di bawah pohon sakura yang sedang mekar.'},
+{c:'Festival',q:'Pada festival Tanabata (七夕), orang menulis harapan di kertas warna-warni lalu menggantungnya pada?',a:'Ranting bambu',w:['Pohon sakura','Lonceng kuil','Lentera kertas'],f:'Tanabata dirayakan 7 Juli dan berasal dari legenda dua bintang, Orihime dan Hikoboshi, yang hanya bertemu setahun sekali.'},
+{c:'Festival',q:'Pada Setsubun (節分), orang melempar kacang kedelai sambil berseru "Oni wa soto, fuku wa uchi!". Apa yang diusir?',a:'Setan atau oni (鬼)',w:['Kucing hitam','Hujan','Burung gagak'],f:'Artinya "Setan keluar, keberuntungan masuk!". Setsubun jatuh sekitar 3 Februari, sehari sebelum awal musim semi menurut kalender lama.'},
+{c:'Festival',q:'Obon (お盆) pada musim panas adalah waktu untuk?',a:'Menyambut arwah leluhur',w:['Menanam padi','Memanen kastanye','Merayakan tahun baru'],f:'Banyak orang pulang kampung, mengunjungi makam keluarga, dan menyalakan lentera. Obon biasanya berlangsung sekitar pertengahan Agustus.'},
+{c:'Festival',q:'Shichi-Go-San (七五三) pada 15 November dirayakan untuk anak-anak berusia?',a:'3, 5, dan 7 tahun',w:['1, 3, dan 5 tahun','5, 10, dan 15 tahun','7, 9, dan 12 tahun'],f:'Nama festivalnya sendiri berarti "tujuh-lima-tiga". Anak-anak berpakaian kimono atau pakaian resmi lalu berdoa di kuil.'},
+{c:'Festival',q:'Pada Kodomo no Hi (こどもの日, 5 Mei), keluarga menggantung bendera berbentuk ikan yang disebut?',a:'Koinobori (鯉のぼり)',w:['Tako-age (凧揚げ)','Furin (風鈴)','Noren (暖簾)'],f:'Ikan koi melambangkan kekuatan dan keberanian karena dipercaya mampu berenang melawan arus deras.'},
+{c:'Makanan',q:'Nori (海苔) yang membungkus onigiri dan sushi terbuat dari?',a:'Rumput laut kering',w:['Daun teh','Kulit kedelai','Jamur kering'],f:'Nori dibuat dari rumput laut jenis tertentu yang dicincang, dibentuk menjadi lembaran tipis, lalu dikeringkan.'},
+{c:'Makanan',q:'Natto (納豆) yang lengket dan berbau tajam dibuat dari?',a:'Kedelai yang difermentasi',w:['Beras ketan yang ditumbuk','Ikan asin','Kacang merah yang direbus manis'],f:'Natto sering dimakan saat sarapan bersama nasi. Rasanya terbilang menantang bagi orang yang baru mencobanya.'},
+{c:'Makanan',q:'Hidangan tahun baru yang ditata dalam kotak bertingkat disebut?',a:'Osechi (おせち)',w:['Bento (弁当)','Donburi (丼)','Oden (おでん)'],f:'Tiap isi osechi punya makna doa, misalnya kacang hitam untuk kesehatan dan telur ikan untuk banyak keturunan.'},
+{c:'Makanan',q:'Soba yang dimakan pada malam tahun baru disebut toshikoshi soba (年越しそば). Apa maknanya?',a:'Harapan umur panjang dan melepas kesialan tahun lama',w:['Tanda kekayaan','Doa agar hujan turun','Penghormatan pada kaisar'],f:'Mi soba mudah diputus, jadi dipercaya ikut memutus kesulitan tahun yang berlalu. Mi panjangnya juga melambangkan umur panjang.'},
+{c:'Makanan',q:'Mochi (餅) dibuat dari?',a:'Beras ketan yang ditumbuk',w:['Tepung gandum','Kentang manis','Rumput laut'],f:'Mochi ditumbuk dengan alat penumbuk kayu besar (kine) dan lesung (usu). Kegiatan menumbuk mochi disebut mochitsuki.'},
+{c:'Tradisi',q:'Di rumah Jepang, sepatu dilepas di bagian pintu masuk yang bernama?',a:'Genkan (玄関)',w:['Engawa (縁側)','Tokonoma (床の間)','Oshiire (押し入れ)'],f:'Genkan lebih rendah dari lantai rumah. Lantai dalam rumah dianggap bersih, jadi tidak boleh terinjak alas kaki dari luar.'},
+{c:'Tradisi',q:'Kebiasaan sebelum makan, orang Jepang mengucapkan?',a:'Itadakimasu (いただきます)',w:['Gochisousama (ごちそうさま)','Ojamashimasu (お邪魔します)','Tadaima (ただいま)'],f:'Ucapan ini bentuk syukur untuk makanan, petani, dan koki. Gochisousama diucapkan sesudah selesai makan.'},
+{c:'Tradisi',q:'Mengapa sumpit tidak boleh ditancapkan tegak ke dalam nasi?',a:'Mirip persembahan nasi di upacara pemakaman',w:['Membuat nasi cepat dingin','Dianggap menyinggung juru masak','Bisa merusak mangkuk'],f:'Di pemakaman, semangkuk nasi dengan sumpit tegak dipersembahkan untuk orang yang telah meninggal. Karena itu dianggap pantang di meja makan.'},
+{c:'Tradisi',q:'Sebelum masuk ke bak mandi (ofuro, お風呂), apa yang harus dilakukan?',a:'Membasuh dan membersihkan badan dulu',w:['Memakai sabun dalam bak','Memasukkan handuk ke dalam bak','Mendinginkan air bak'],f:'Bak mandi dipakai untuk berendam santai, bukan untuk mencuci. Air bak sering dipakai bergiliran oleh anggota keluarga.'},
+{c:'Tradisi',q:'Cara membungkuk untuk memberi salam atau hormat disebut?',a:'Ojigi (お辞儀)',w:['Kiritsu (起立)','Seiza (正座)','Dogeza (土下座)'],f:'Makin dalam bungkukan, makin tinggi rasa hormat. Bungkukan ringan sekitar 15 derajat dipakai untuk salam sehari-hari.'},
+{c:'Sejarah & Geografi',q:'Sebelum Tokyo, kota mana yang menjadi ibu kota Jepang selama sekitar seribu tahun?',a:'Kyoto (京都)',w:['Osaka (大阪)','Nara (奈良)','Nagoya (名古屋)'],f:'Kyoto menjadi pusat kaisar sejak tahun 794 saat bernama Heian-kyo. Ibu kota baru pindah ke Tokyo pada tahun 1868.'},
+{c:'Sejarah & Geografi',q:'Berapa tinggi Gunung Fuji (富士山)?',a:'3.776 meter',w:['2.456 meter','4.120 meter','3.014 meter'],f:'Fuji adalah gunung tertinggi di Jepang. Gunung ini berbentuk kerucut hampir sempurna, dan banyak orang mendakinya pada Juli sampai awal September.'},
+{c:'Sejarah & Geografi',q:'Pulau terbesar di Jepang adalah?',a:'Honshu (本州)',w:['Hokkaido (北海道)','Kyushu (九州)','Shikoku (四国)'],f:'Tokyo, Kyoto, dan Osaka semuanya ada di Honshu. Empat pulau besar Jepang adalah Honshu, Hokkaido, Kyushu, dan Shikoku.'},
+{c:'Sejarah & Geografi',q:'Shinkansen (新幹線) jalur pertama mulai beroperasi pada tahun?',a:'1964',w:['1945','1972','1989'],f:'Jalur Tokaido Shinkansen antara Tokyo dan Osaka dibuka beberapa hari sebelum Olimpiade Tokyo 1964.'},
+{c:'Sejarah & Geografi',q:'Pada era Edo, kebijakan pemerintah yang sangat membatasi hubungan dengan luar negeri disebut?',a:'Sakoku (鎖国)',w:['Haihan-chiken (廃藩置県)','Meiji Ishin (明治維新)','Kaikoku (開国)'],f:'Sakoku berarti "negara terkunci". Kebijakan ini berlangsung sekitar dua abad sampai kedatangan kapal-kapal Amerika pada tahun 1853.'},
+{c:'Sejarah & Geografi',q:'Bunga yang menjadi lambang keluarga kekaisaran Jepang adalah?',a:'Krisan atau kiku (菊)',w:['Sakura (桜)','Teratai (蓮)','Plum atau ume (梅)'],f:'Lambang krisan berkelopak enam belas dipakai keluarga kekaisaran. Sakura lebih dikenal sebagai bunga yang melambangkan musim semi.'},
+{c:'Alam & Musim',q:'Kegiatan menikmati daun musim gugur yang memerah disebut?',a:'Momijigari (紅葉狩り)',w:['Hanabi (花火)','Tsukimi (月見)','Yukimi (雪見)'],f:'Momijigari paling ramai di Kyoto dan Nikko. Daun pohon momiji (maple Jepang) berubah merah antara bulan Oktober dan Desember.'},
+{c:'Alam & Musim',q:'Pemandian air panas alami di Jepang disebut?',a:'Onsen (温泉)',w:['Sentou (銭湯)','Ofuro (お風呂)','Mizuumi (湖)'],f:'Air onsen berasal dari mata air panas bumi, banyak di daerah gunung berapi. Sentou adalah pemandian umum biasa yang airnya dipanaskan.'},
+{c:'Alam & Musim',q:'Sakura mekar bergerak dari arah mana ke arah mana setiap tahun?',a:'Dari selatan ke utara',w:['Dari utara ke selatan','Dari barat ke timur','Serentak di seluruh negeri'],f:'Mekar dimulai dari Okinawa sekitar akhir Januari. Hokkaido baru mekar sekitar bulan Mei. Perkiraan itu disebut sakura zensen (桜前線).'},
+{c:'Alam & Musim',q:'Musim hujan di awal musim panas, sekitar Juni, disebut?',a:'Tsuyu (梅雨)',w:['Taifuu (台風)','Hatsuyuki (初雪)','Haru ichiban (春一番)'],f:'Tulisan kanjinya berarti "hujan plum", karena terjadi saat buah plum matang. Disebut juga baiu.'},
+{c:'Bahasa & Seni',q:'Berapa jenis aksara yang dipakai bersamaan dalam tulisan sehari-hari bahasa Jepang?',a:'Tiga: hiragana, katakana, dan kanji',w:['Satu: kanji saja','Dua: hiragana dan romaji','Empat: kanji, hiragana, katakana, dan hangul'],f:'Romaji (huruf latin) juga sering muncul, misalnya di papan stasiun. Tetapi tiga aksara itulah yang membentuk kalimat.'},
+{c:'Bahasa & Seni',q:'Seribu bangau kertas yang dirangkai, senbazuru (千羽鶴), melambangkan?',a:'Harapan kesembuhan, umur panjang, dan perdamaian',w:['Kemenangan perang','Panen yang melimpah','Kelulusan ujian'],f:'Bangau dipercaya hidup seribu tahun. Rangkaian senbazuru sering dikirim sebagai doa untuk orang yang sedang sakit.'},
+{c:'Bahasa & Seni',q:'Patung kucing yang mengangkat satu tangan, maneki-neko (招き猫), dipercaya membawa?',a:'Rezeki dan keberuntungan usaha',w:['Hujan di musim kemarau','Perlindungan dari gempa','Kesembuhan penyakit'],f:'Kucing ini sering dipasang di depan toko dan restoran. Tangan kanan yang terangkat dipercaya menarik uang, tangan kiri menarik pelanggan.'},
+{c:'Bahasa & Seni',q:'Ikat pinggang lebar yang dililitkan pada kimono disebut?',a:'Obi (帯)',w:['Haori (羽織)','Geta (下駄)','Tabi (足袋)'],f:'Obi berfungsi menahan kimono sekaligus menjadi hiasan. Cara mengikatnya bervariasi sesuai acara dan usia pemakainya.'},
+{c:'Bahasa & Seni',q:'Seni merangkai bunga tradisional Jepang disebut?',a:'Ikebana (生け花)',w:['Origami (折り紙)','Bonsai (盆栽)','Kirigami (切り紙)'],f:'Ikebana menekankan garis, ruang kosong, dan keseimbangan. Rangkaiannya biasanya hanya memakai sedikit bunga dan ranting.'},
+{c:'Bahasa & Seni',q:'Kintsugi (金継ぎ) adalah seni memperbaiki?',a:'Keramik pecah dengan pernis dan serbuk emas',w:['Pedang yang tumpul','Kimono yang sobek','Atap kuil yang bocor'],f:'Garis retakan tidak disembunyikan, justru dipercantik. Gagasan ini dekat dengan wabi-sabi, yaitu menghargai ketidaksempurnaan.'},
+{c:'Bahasa & Seni',q:'Kain persegi yang dilipat untuk membungkus atau membawa barang disebut?',a:'Furoshiki (風呂敷)',w:['Noren (暖簾)','Zabuton (座布団)','Tenugui (手拭い)'],f:'Furoshiki bisa dipakai berulang kali dan dianggap ramah lingkungan sebagai pengganti kantong plastik.'},
+{c:'Festival',q:'Di Tahun Baru, orang Jepang mengirim kartu ucapan yang disebut?',a:'Nengajou (年賀状)',w:['Meishi (名刺)','Omamori (お守り)','Ema (絵馬)'],f:'Kantor pos mengumpulkan nengajou dan mengantarkannya serentak pada pagi 1 Januari.'}
+];
+var N=10,cat='Semua',round=[],i=0,score=0,streak=0,locked=false,rights=0;
+var $=function(id){return document.getElementById(id);};
+function shuffle(a){for(var j=a.length-1;j>0;j--){var k=Math.floor(Math.random()*(j+1)),t=a[j];a[j]=a[k];a[k]=t;}return a;}
+function esc(s){return String(s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
+function bestGet(){try{return +localStorage.getItem('trivia-best-'+cat)||0;}catch(e){return 0;}}
+function bestSet(v){try{localStorage.setItem('trivia-best-'+cat,String(v));}catch(e){}}
+
+function start(){
+  var pool=Q.filter(function(x){return cat==='Semua'||x.c===cat;});
+  round=shuffle(pool.slice()).slice(0,Math.min(N,pool.length));
+  i=0;score=0;streak=0;rights=0;locked=false;
+  $('foot').textContent='Rekor kategori ini: '+bestGet()+' poin. Bank soal: '+pool.length+' pertanyaan.';
+  show();
+}
+function show(){
+  var x=round[i];locked=false;
+  var opts=shuffle([x.a].concat(x.w));
+  $('no').textContent=(i+1)+'/'+round.length;
+  $('streak').textContent=streak;$('score').textContent=score;
+  $('bar').style.width=(i/round.length*100)+'%';
+  $('stage').innerHTML='<div class="card"><div class="tag">'+esc(x.c)+'</div><p class="q">'+esc(x.q)+'</p><div class="opts" id="opts">'+
+    opts.map(function(o,n){return '<button type="button" class="o" data-v="'+esc(o)+'"><span class="k">'+(n+1)+'</span><span>'+esc(o)+'</span></button>';}).join('')+
+    '</div><div id="fact"></div></div>';
+}
+function answer(btn){
+  if(locked)return;locked=true;
+  var x=round[i],ok=btn.getAttribute('data-v')===x.a;
+  var all=document.querySelectorAll('#opts .o');
+  Array.prototype.forEach.call(all,function(b){
+    b.disabled=true;
+    if(b.getAttribute('data-v')===x.a)b.classList.add('ok');
+  });
+  if(ok){rights++;streak++;score+=10+Math.min(streak-1,5)*2;}
+  else{btn.classList.add('bad');streak=0;}
+  $('streak').textContent=streak;$('score').textContent=score;
+  $('bar').style.width=((i+1)/round.length*100)+'%';
+  var last=i===round.length-1;
+  $('fact').innerHTML='<div class="fact" role="status"><p><span class="v">'+(ok?'Benar!':'Kurang tepat.')+'</span> '+esc(x.f)+'</p><button type="button" class="btn pri" id="next">'+(last?'Lihat hasil':'Lanjut')+'</button></div>';
+  $('next').focus();
+}
+function next(){
+  if(i<round.length-1){i++;show();}else finish();
+}
+function rank(r,n){
+  var p=r/n;
+  if(p>=.9)return ['Ahli budaya','tatsujin (達人)'];
+  if(p>=.7)return ['Hampir ahli','jouzu (上手)'];
+  if(p>=.4)return ['Murid rajin','benkyouka (勉強家)'];
+  return ['Pemula','nyuumon (入門)'];
+}
+function finish(){
+  var r=rank(rights,round.length),prev=bestGet(),rec=score>prev;
+  if(rec)bestSet(score);
+  $('bar').style.width='100%';
+  $('stage').innerHTML='<div class="card end"><div class="tag">Hasil</div><div class="big">'+rights+'/'+round.length+'</div><div class="rank">'+r[0]+'</div><div class="ro">'+r[1]+'</div>'+
+    '<p style="margin:0">Skor '+score+' poin'+(rec?', rekor baru untuk kategori ini.':'.')+'</p>'+
+    '<div class="row"><button type="button" class="btn pri" id="again">Main lagi</button><button type="button" class="btn" id="copy">Salin skor</button></div><p class="foot" id="cmsg"></p></div>';
+  $('foot').textContent='Rekor kategori ini: '+bestGet()+' poin.';
+}
+function copyScore(){
+  var t='Trivia Budaya Jepang ('+cat+'): '+rights+'/'+round.length+' benar, skor '+score+' poin.';
+  var done=function(m){$('cmsg').textContent=m;};
+  try{navigator.clipboard.writeText(t).then(function(){done('Skor disalin.');},function(){done(t);});}catch(e){done(t);}
+}
+function buildCats(){
+  $('cats').innerHTML=CATS.map(function(c){return '<button type="button" class="cat" data-c="'+esc(c)+'" aria-pressed="'+(c===cat)+'">'+esc(c)+'</button>';}).join('');
+}
+$('cats').addEventListener('click',function(e){var b=e.target.closest('[data-c]');if(!b)return;cat=b.getAttribute('data-c');buildCats();start();});
+$('stage').addEventListener('click',function(e){
+  var o=e.target.closest('.o');if(o){answer(o);return;}
+  if(e.target.id==='next')next();else if(e.target.id==='again')start();else if(e.target.id==='copy')copyScore();
+});
+document.addEventListener('keydown',function(e){
+  if(e.ctrlKey||e.metaKey||e.altKey)return;
+  var n=+e.key;
+  if(n>=1&&n<=4&&!locked){var b=document.querySelectorAll('#opts .o')[n-1];if(b)answer(b);}
+  else if((e.key==='Enter'||e.key==='ArrowRight')&&locked&&$('next')&&document.activeElement!==$('next'))next();
+});
+buildCats();start();
+</script>
+</body>
+</html>

@@ -245,6 +245,11 @@ function frame(host,file,title,bar,onload){
 var gkey='';
 function showGame(sub){
   var host=panes.game.querySelector('.qhBody'),g=GAMES.filter(function(x){return x.id===sub})[0];
+  /* Empat game utama memakai halaman lokal mandiri, bukan iframe. */
+  if(g && ['pasangan-kanji.html','trivia.html','tts.html','tebak-gambar.html'].indexOf(g.f)>=0){
+    window.location.href='/game/'+g.f;
+    return;
+  }
   if(!g){stopT();gkey='';gameFrame=null;host.innerHTML='<div class="qhGameGrid">'+GAMES.filter(function(x){return x.id!=='kana'}).map(function(g){return'<button type="button" class="qhGameCard" data-go="game-'+g.id+'"><svg viewBox="0 0 24 24" aria-hidden="true">'+g.ic+'</svg><b>'+esc(g.t)+'</b><i>'+g.j+' &middot; '+esc(g.r)+'</i><small>'+esc(g.d)+'</small></button>'}).join('')+'</div>';return}
   if(gkey===g.id&&gameFrame&&host.contains(gameFrame)){startT();return}
   gkey=g.id;gameFrame=null;frame(host,g.f,g.t,'<div class="qhBar"><button type="button" class="qhBtn alt" data-go="game">&larr; Semua game</button></div>');
