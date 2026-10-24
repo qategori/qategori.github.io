@@ -1,11 +1,12 @@
 /* Service worker Qategori — membuat situs bisa dipasang (PWA) dan dibaca offline.
    Naikkan nomor versi VER setiap kali strategi cache berubah, supaya cache lama dibuang. */
-var VER = 'qategori-pwa-v1';
+var VER = 'qategori-pwa-v3';
 var CORE = [
   '/',
   '/base.css',
   '/site.css',
   '/app.js',
+  '/mochi.js',
   '/theme.js',
   '/favicon.ico',
   '/site.webmanifest',
