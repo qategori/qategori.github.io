@@ -428,8 +428,8 @@ a.qbSt,button.qbSt{color:inherit;font:inherit;text-align:left;text-decoration:no
 /* ===== Mochi AI: tombol, avatar kepala beranimasi, panel chat ===== */
 .qProfTop{display:none!important}
 @media(max-width:896px){.headB .qProfTop{display:flex!important;align-items:center;cursor:pointer}}
-.qBottom .qmBtn .qmAv{display:flex;align-items:center;justify-content:center;height:27px;animation:qmBob 2.8s ease-in-out infinite}
-.qBottom .qmBtn .qmAv svg{width:31px;height:31px;display:block}
+.qBottom .qmBtn .qmAv{display:flex;align-items:center;justify-content:center;width:45px;height:45px;border-radius:50%;background:var(--themeBg-alt);border:2px solid var(--themeLink);overflow:hidden;margin-top:-16px;box-shadow:0 5px 14px rgba(0,0,0,.35);animation:none}
+.qBottom .qmBtn .qmAv svg{width:41px;height:41px;display:block}
 #qnvBar [data-k="mochi"] svg{width:30px;height:30px;fill:initial;stroke:none}
 .qmHeadSvg{overflow:visible}
 .qmHeadSvg .qcHead{transform-box:fill-box;transform-origin:50% 85%;animation:qmSway 3.4s ease-in-out infinite}

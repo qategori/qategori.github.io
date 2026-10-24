@@ -42,13 +42,15 @@
     if(used()>=20){ addRow(text,true); addRow('Kuota ngobrol gratis hari ini sudah habis (20 pertanyaan). Istirahat dulu ya, besok kita lanjut lagi! Materi dan kuis di situs tetap bisa dipakai sepuasnya.'); return }
     busy=true; addRow(text,true);
     var tb=addRow('Mochi sedang mengetik\u2026'); tb.classList.add('typing');
-    fetch(API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({message:text,history:history.slice(-12)})})
+    var ac=('AbortController' in window)?new AbortController():null;
+    var tm=ac?setTimeout(function(){ac.abort()},30000):null;
+    fetch(API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({message:text,history:history.slice(-12)}),signal:ac?ac.signal:undefined})
     .then(function(r){ return r.json() })
     .then(function(j){ if(!j||!j.reply) throw new Error('bad');
       tb.classList.remove('typing'); tb.innerHTML=rich(j.reply);
       history.push({role:'user',text:text}); history.push({role:'model',text:j.reply}); bump(); scroll() })
-    .catch(function(){ tb.classList.remove('typing'); tb.innerHTML='Maaf, Mochi sedang susah dihubungi. Cek koneksi internetmu, lalu coba tanya lagi ya.'; scroll() })
-    .then(function(){ busy=false });
+    .catch(function(){ tb.classList.remove('typing'); tb.innerHTML='Maaf, Mochi sedang susah dihubungi atau lama menjawab. Cek koneksi internetmu, lalu coba tanya lagi ya.'; scroll() })
+    .then(function(){ if(tm) clearTimeout(tm); busy=false });
   }
   /* Tombol tengah bar bawah (potret) */
   var qb=document.getElementById('qmBtn');
