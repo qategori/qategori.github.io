@@ -564,6 +564,146 @@ var CARSVG='<svg viewBox="0 0 90 44" aria-hidden="true"><path d="M6 30V22Q6 18 1
 var BALLSVG='<svg viewBox="0 0 30 30" aria-hidden="true"><g class="bSp"><circle cx="15" cy="15" r="13" fill="#fff" stroke="#3a3a46" stroke-width="1.6"/><path d="M15 6l6 4.4-2.3 7h-7.4L9 10.4Z" fill="#3a3a46"/><path d="M15 6V2M21 10.4l4-1.6M18.7 17.4l2.6 4.4M11.3 17.4l-2.6 4.4M9 10.4L5 8.8" stroke="#3a3a46" stroke-width="1.3"/></g></svg>';
 function lv(k){try{var a=JSON.parse(lsGet(k)||'[]');return Array.isArray(a)?a.length:0}catch(e){return 0}}
 function ago(ms){var m=Math.round((Date.now()-ms)/60000);if(m<1)return'baru saja';if(m<60)return m+' menit lalu';var h=Math.round(m/60);if(h<24)return h+' jam lalu';return Math.round(h/24)+' hari lalu'}
+
+/* ===== Hari ini (fitur beranda 1, 2, 3, 5; tanpa chip jalur belajar) ===== */
+var QH_REG=[
+ {w:'sugeng enjing',m:'selamat pagi',l:'Jawa'},
+ {w:'sugeng siang',m:'selamat siang',l:'Jawa'},
+ {w:'sugeng dalu',m:'selamat malam',l:'Jawa'},
+ {w:'matur nuwun',m:'terima kasih',l:'Jawa'},
+ {w:'sugeng rawuh',m:'selamat datang',l:'Jawa'},
+ {w:'pangapunten',m:'maaf / permisi',l:'Jawa'},
+ {w:'wilujeng enjing',m:'selamat pagi',l:'Sunda'},
+ {w:'wilujeng siang',m:'selamat siang',l:'Sunda'},
+ {w:'wilujeng wengi',m:'selamat malam',l:'Sunda'},
+ {w:'hatur nuhun',m:'terima kasih',l:'Sunda'},
+ {w:'wilujeng sumping',m:'selamat datang',l:'Sunda'},
+ {w:'punten',m:'permisi / maaf',l:'Sunda'},
+ {w:'rahajeng semeng',m:'selamat pagi',l:'Bali'},
+ {w:'rahajeng tengai',m:'selamat siang',l:'Bali'},
+ {w:'rahajeng wengi',m:'selamat malam',l:'Bali'},
+ {w:'suksma',m:'terima kasih',l:'Bali'},
+ {w:'rahajeng rauh',m:'selamat datang',l:'Bali'},
+ {w:'ampura',m:'maaf',l:'Bali'}];
+var QH_JA_FALLBACK=[
+ {front:'おはよう',read:'ohayou',mean:'selamat pagi',speak:'おはよう',lang:'ja-JP',tag:'Jepang'},
+ {front:'こんにちは',read:'konnichiwa',mean:'selamat siang',speak:'こんにちは',lang:'ja-JP',tag:'Jepang'},
+ {front:'ありがとう',read:'arigatou',mean:'terima kasih',speak:'ありがとう',lang:'ja-JP',tag:'Jepang'},
+ {front:'がんばって',read:'ganbatte',mean:'semangat!',speak:'がんばって',lang:'ja-JP',tag:'Jepang'},
+ {front:'すごい',read:'sugoi',mean:'hebat!',speak:'すごい',lang:'ja-JP',tag:'Jepang'},
+ {front:'さようなら',read:'sayounara',mean:'selamat tinggal',speak:'さようなら',lang:'ja-JP',tag:'Jepang'}];
+function qhDaySeed(){var d=new Date();return d.getFullYear()*372+(d.getMonth()+1)*31+d.getDate()}
+function qhTodayKey(){var d=new Date();return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate()}
+function qhSeeded(arr,seed){var a=arr.slice(),s=seed>>>0,i,j,t;for(i=a.length-1;i>0;i--){s=(s*1664525+1013904223)>>>0;j=s%(i+1);t=a[i];a[i]=a[j];a[j]=t}return a}
+function qhSpeak(txt,lang){try{if(!('speechSynthesis' in window))return;window.speechSynthesis.cancel();var u=new SpeechSynthesisUtterance(txt);u.lang=lang||'ja-JP';window.speechSynthesis.speak(u)}catch(e){}}
+function qhDailyReg(){return QH_REG[qhDaySeed()%QH_REG.length]}
+var qhPoolJA=null;
+function qhLoadJA(){
+ if(qhPoolJA)return Promise.resolve(qhPoolJA);
+ var jobs=[];
+ if(!window.N5_KOTOBA)jobs.push(loadScript(DATA_BASE+'n5/n5-kotoba.js'));
+ if(!window.KBQ_DATA)jobs.push(loadScript(DATA_BASE+'kanji/kanji-data.js?v=2'));
+ return Promise.all(jobs).then(function(){
+   var pool=[];
+   var L=window.N5_KOTOBA||[];
+   L.forEach(function(w){if(w&&w.arti)pool.push({front:w.kanji||w.kana,read:w.kana+' ('+w.romaji+')',mean:w.arti,speak:w.kana,lang:'ja-JP',tag:'Jepang · N5'})});
+   var K=(window.KBQ_DATA&&window.KBQ_DATA.KANJI)||[];
+   K.forEach(function(r){if((r[0]==='N5'||r[0]==='N4')&&r[1]&&r[4])pool.push({front:r[1],read:String(r[2]).split(',')[0]+(r[3]?' / '+String(r[3]).split(',')[0]:''),mean:r[4],speak:String(r[2]).split(',')[0],lang:'ja-JP',tag:'Kanji · '+r[0]})});
+   if(!pool.length)pool=QH_JA_FALLBACK;
+   qhPoolJA=pool;return pool;
+ }).catch(function(){if(!qhPoolJA)qhPoolJA=QH_JA_FALLBACK;return qhPoolJA});
+}
+function qhRenderCal(){
+ var el=document.getElementById('qhDots');if(!el)return;
+ var days={};
+ try{var a=JSON.parse(lsGet('qProgressLog')||'[]')||[];a.forEach(function(x){if(x&&x.at){var d=new Date(+x.at);days[d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate()]=1}})}catch(e){}
+ var out='',now=new Date(),i;
+ for(i=27;i>=0;i--){var d=new Date(now.getFullYear(),now.getMonth(),now.getDate()-i);var k=d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate();out+='<i class="qhDot'+(days[k]?' on':'')+(i===0?' today':'')+'" title="'+k+(days[k]?' · ada kuis':'')+'"></i>'}
+ el.innerHTML=out;
+}
+var qhTeachIdx=0;
+function qhTeachList(){
+ var list=[];
+ if(window.qhDailyJA)list.push(window.qhDailyJA);
+ if(window.qhDailyReg)list.push(window.qhDailyReg);
+ if(!list.length)list=[{front:'おはよう',read:'ohayou',mean:'Selamat pagi'},{front:'sugeng enjing',read:'Jawa',mean:'Selamat pagi'}];
+ return list;
+}
+function qhTeachNext(){var list=qhTeachList();var w=list[qhTeachIdx%list.length];qhTeachIdx++;return w}
+var qhChalTimer=0;
+function qhFinishChal(score,total,host){
+ if(qhChalTimer){clearInterval(qhChalTimer);qhChalTimer=0}
+ var today=qhTodayKey();
+ if(lsGet('qh_chal_day')!==today){
+   lsSet('qh_chal_day',today);
+   try{var a=JSON.parse(lsGet('qProgressLog')||'[]')||[];a.push({k:'tantangan-harian',n:'Tantangan 1 menit',s:score,t:total,at:Date.now(),u:0});while(a.length>100)a.shift();lsSet('qProgressLog',JSON.stringify(a))}catch(e){}
+   qhRenderCal();
+ }
+ host.innerHTML='<p class="qhQuizQ">Selesai! Skor kamu <b>'+score+'/'+total+'</b></p><p style="font-size:13px;opacity:.8">Hasilnya tersimpan di riwayat kuis. Tantangan baru tersedia besok.</p><button type="button" class="qhBtn alt" id="qhChalAgain">Main lagi (tanpa simpan skor baru)</button>';
+ var ag=document.getElementById('qhChalAgain');if(ag)ag.addEventListener('click',function(){qhStartChal()});
+ if(score>=4){mState('wave',2000);say(['すごい','sugoi','Tantangan selesai: '+score+'/'+total+'! Hebat!'])}else{mState('wave',2000);say(['がんばって','ganbatte','Tantangan selesai: '+score+'/'+total+'. Coba lagi besok ya!'])}
+}
+function qhStartChal(){
+ var host=document.getElementById('qhChal');if(!host)return;
+ if(qhChalTimer){clearInterval(qhChalTimer);qhChalTimer=0}
+ host.innerHTML='<p class="qhLoad">Memuat soal…</p>';
+ qhLoadJA().then(function(pool){
+   var ja=qhSeeded(pool,qhDaySeed()+7).slice(0,3);
+   var reg=qhSeeded(QH_REG.map(function(r){return{front:r.w,read:r.l,mean:r.m,speak:r.w,lang:'id-ID',tag:r.l}}),qhDaySeed()+11).slice(0,2);
+   var qs=qhSeeded(ja.concat(reg),qhDaySeed()+3);
+   var qi=0,score=0,left=60,ended=false;
+   var allMeans=[],seen={};
+   pool.forEach(function(x){if(x.mean&&!seen[x.mean]){seen[x.mean]=1;allMeans.push(x.mean)}});
+   QH_REG.forEach(function(r){if(!seen[r.m]){seen[r.m]=1;allMeans.push(r.m)}});
+   function fmt(t){var m=Math.floor(t/60),s=t%60;return m+':'+(s<10?'0':'')+s}
+   function renderQ(){
+     if(ended)return;
+     var q=qs[qi];
+     var dist=qhSeeded(allMeans.filter(function(m){return m!==q.mean}),qhDaySeed()+qi*13).slice(0,3);
+     var opts=qhSeeded([q.mean].concat(dist),qhDaySeed()+qi+99);
+     var kind=q.tag&&q.tag.indexOf('Kanji')>=0?'kanji':'kata';
+     host.innerHTML='<div class="qhQuiz"><div class="qhQuizTop"><span>Soal '+(qi+1)+'/'+qs.length+'</span><span id="qhTime">'+fmt(left)+'</span></div><p class="qhQuizQ">Apa arti '+kind+' “'+esc(q.front)+'”? <small style="opacity:.7;font-weight:400">('+esc(q.tag||'')+')</small></p><div class="qhOpts">'+opts.map(function(o,i){return'<button type="button" class="qhOpt" data-i="'+i+'">'+esc(o)+'</button>'}).join('')+'</div></div>';
+     Array.prototype.forEach.call(host.querySelectorAll('.qhOpt'),function(b){
+       b.addEventListener('click',function(){
+         if(ended)return;
+         var ok=b.textContent===q.mean;
+         Array.prototype.forEach.call(host.querySelectorAll('.qhOpt'),function(x){x.disabled=true;if(x.textContent===q.mean)x.classList.add('ok');else if(x===b)x.classList.add('no')});
+         if(ok)score++;
+         setTimeout(function(){qi++;if(qi>=qs.length){ended=true;qhFinishChal(score,qs.length,host)}else renderQ()},650);
+       });
+     });
+   }
+   renderQ();
+   qhChalTimer=setInterval(function(){
+     if(ended){clearInterval(qhChalTimer);qhChalTimer=0;return}
+     left--;
+     var t=document.getElementById('qhTime');if(t)t.textContent=fmt(Math.max(0,left));
+     if(left<=0){ended=true;qhFinishChal(score,qs.length,host)}
+   },1000);
+ }).catch(function(){host.innerHTML='<p class="qhLoad">Soal belum bisa dimuat. Coba lagi.</p>'});
+}
+function qhInitHari(){
+ var flip=document.getElementById('qhFlip');if(!flip)return;
+ qhRenderCal();
+ var reg=qhDailyReg();
+ window.qhDailyReg={front:reg.w,read:reg.l,mean:reg.m};
+ var regEl=document.getElementById('qhReg');if(regEl)regEl.innerHTML='Kata daerah hari ini: <b>'+esc(reg.w)+'</b> ('+esc(reg.l)+') — '+esc(reg.m);
+ var doFlip=function(){flip.classList.toggle('flipped')};
+ flip.addEventListener('click',doFlip);
+ flip.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();doFlip()}});
+ var sp=document.getElementById('qhSpeak');if(sp)sp.addEventListener('click',function(e){e.stopPropagation();var w=window.qhDailyJA;if(w)qhSpeak(w.speak,w.lang)});
+ qhLoadJA().then(function(pool){
+   var w=pool[qhDaySeed()%pool.length];
+   window.qhDailyJA={front:w.front,read:w.read,mean:w.mean,speak:w.speak,lang:w.lang};
+   var f=document.getElementById('qhCardFront');if(f)f.textContent=w.front;
+   var t=document.getElementById('qhCardTag');if(t)t.textContent='Kata hari ini · '+w.tag;
+   var t2=document.getElementById('qhCardTag2');if(t2)t2.textContent=w.tag;
+   var b=document.getElementById('qhCardBack');if(b)b.textContent=w.read;
+   var d=document.getElementById('qhCardDetail');if(d)d.textContent=w.mean;
+ });
+ var st=document.getElementById('qhChalStart');if(st)st.addEventListener('click',function(){qhStartChal()});
+}
+
 function berStats(){
   var LVS=['n5','n4','n3','n2','n1'],T={};try{T=JSON.parse(lsGet('qProgressTotals')||'{}')||{}}catch(e){}
   var d=window.qDaily?window.qDaily.get():{n:0,goal:10,streak:0,best:0,met:false},tot=0,rows='';
@@ -593,11 +733,17 @@ function renderBeranda(){
   '<div class="qbAct"><button type="button" class="qhBtn" data-go="'+cont+'">Lanjut belajar &middot; '+BER_TITLE[cont]+'</button><button type="button" class="qhBtn alt" data-go="game">Main game</button></div>'+
   '<div class="qbRiw">'+s.rows+(s.lq&&s.lq.t>0?'<p class="qbLast">Kuis terakhir: <b>'+s.lq.s+'/'+s.lq.t+'</b>'+(s.lq.at?' &middot; '+ago(+s.lq.at):'')+'</p>':'<p class="qbLast">Belum ada riwayat kuis. Ayo coba satu!</p>')+'</div>';
   B.berita='<h2 class="qhH">Berita terbaru</h2><div class="qGrid qbNews" id="qbNews"><p class="qhLoad">Memuat...</p></div>';
-  var LH=(typeof QL!=='undefined'&&QL.home)||{order:['mochi','ringkasan','berita'],off:[],news:4},h='';(LH.order||['mochi','ringkasan','berita']).forEach(function(k){if(B[k]&&(LH.off||[]).indexOf(k)<0)h+=B[k]});
+  B.hariini='<h2 class="qhH">Hari ini</h2><div class="qhHari">'+
+  '<div class="qhFlip" id="qhFlip" role="button" tabindex="0" aria-label="Kartu kata hari ini, ketuk untuk membalik"><div class="qhFlipIn"><div class="qhFace"><small id="qhCardTag">Memuat…</small><b id="qhCardFront">·</b><span>Ketuk untuk membalik</span></div><div class="qhFace qhBack"><small id="qhCardTag2"></small><b id="qhCardBack"></b><span id="qhCardDetail"></span><button type="button" class="qhSpeak" id="qhSpeak" aria-label="Dengarkan pelafalan">Dengarkan</button></div></div></div>'+
+  '<p class="qhReg" id="qhReg"></p>'+
+  '<div class="qhChal" id="qhChal"><button type="button" class="qhBtn" id="qhChalStart">Mulai tantangan 1 menit</button><span class="qhChalNote">5 soal · 60 detik</span></div>'+
+  '<div class="qhCal"><small>Kuis tercatat · 28 hari terakhir</small><div class="qhDots" id="qhDots"></div></div></div>';
+  var LH=(typeof QL!=='undefined'&&QL.home)||{order:['mochi','ringkasan','berita'],off:[],news:4},h='',hariDone=false;(LH.order||['mochi','ringkasan','berita']).forEach(function(k){if(B[k]&&(LH.off||[]).indexOf(k)<0){h+=B[k];if(k==='ringkasan'){h+=B.hariini;hariDone=true}}});if(!hariDone)h+=B.hariini;
   berEl.innerHTML=h;
   try{showGoal();loadKanji()}catch(e){}
   loadPosts(function(){var rows=postRows().slice(0,(typeof QL!=='undefined'&&QL.home&&QL.home.news)||4);var n=document.getElementById('qbNews');if(n)n.innerHTML=rows.map(function(x){return cardHtml(x)}).join('')});
   mochiInit(s);
+  try{qhInitHari()}catch(e){}
 }
 var mTimer=0,mBusy=false,mx=8;
 function sapa(){var h=new Date().getHours();
@@ -647,7 +793,8 @@ function mochiInit(s){
   var b=ballEl();b.style.left=Math.round(document.getElementById('qbStage').clientWidth*.62)+'px';
   say(L[0]);mState('wave',2200);
   var next=function(){i=(i+1)%L.length;say(L[i])};
-  var tap=function(){if(mBusy)return;if(m.className.indexOf('wave')>=0){mBusy=true;document.getElementById('qBub').classList.remove('on');mGo(mx>100?8:document.getElementById('qbStage').clientWidth-130,function(){mState('wave',1600);next();mBusy=false});return}next();mState('wave',2000)};
+  var tapNo=0;
+  var tap=function(){if(mBusy)return;tapNo++;if(tapNo%2===1&&m.className.indexOf('wave')<0){var w=qhTeachNext();if(w){say([w.front,w.read,w.mean]);mState('wave',2000);return}}if(m.className.indexOf('wave')>=0){mBusy=true;document.getElementById('qBub').classList.remove('on');mGo(mx>100?8:document.getElementById('qbStage').clientWidth-130,function(){mState('wave',1600);next();mBusy=false});return}next();mState('wave',2000)};
   m.addEventListener('click',tap);m.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();tap()}});
   ballEl().addEventListener('click',kick);document.getElementById('qbCar').addEventListener('click',drive);
   var acts=['sit','wave','kick','stand','car','run'],n=0;
