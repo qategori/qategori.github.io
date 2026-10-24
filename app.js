@@ -873,4 +873,56 @@ show();
       document.body.appendChild(d);
     },1500);
   }catch(e){}
+/* ===== Mochi AI: panel chat (Cloudflare Worker -> Gemini) ===== */
+(function(){
+  var API='https://mochi-ai.bshantoz.workers.dev/chat';
+  var headSVG='';
+  try{ headSVG=MSVG.replace('viewBox="0 0 64 64"','viewBox="13 0 38 38"').replace('<svg ','<svg class="qmHeadSvg" '); }catch(e){}
+  window.__qmHead=headSVG;
+  var wrap=null,msgsEl=null,inputEl=null,opened=false,busy=false,history=[];
+  function today(){var d=new Date();return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate()}
+  function used(){ if(lsGet('qmDay')!==today())return 0; return parseInt(lsGet('qmN')||'0',10)||0 }
+  function bump(){ lsSet('qmDay',today()); lsSet('qmN',String(used()+1)) }
+  function rich(t){ var s=esc(t); s=s.replace(/\*\*([^*]+)\*\*/g,'<b>$1</b>'); s=s.replace(/(https?:\/\/[^\s<]+)/g,'<a href="$1" target="_blank" rel="noopener">$1</a>'); return s.replace(/\n/g,'<br>') }
+  function scroll(){ if(msgsEl)msgsEl.scrollTop=msgsEl.scrollHeight }
+  function addRow(txt,me){ var r=document.createElement('div'); r.className='qmRow'+(me?' me':'');
+    if(!me){ var av=document.createElement('span'); av.className='qmAvS'; av.innerHTML=headSVG; r.appendChild(av) }
+    var b=document.createElement('div'); b.className='qmBub'; b.innerHTML=rich(txt); r.appendChild(b); msgsEl.appendChild(r); scroll(); return b }
+  function build(){ if(wrap)return;
+    wrap=document.createElement('div'); wrap.className='qmWrap'; wrap.setAttribute('aria-hidden','true');
+    wrap.innerHTML='<div class="qmOverlay"></div><section class="qmPanel" role="dialog" aria-modal="true" aria-label="Ngobrol dengan Mochi AI">'
+      +'<header class="qmHead"><span class="qmAvB">'+headSVG+'</span><div class="qmHeadT"><b>Mochi AI</b><small>Teman belajarmu \u2022 siap membantu</small></div><button type="button" class="qmX" aria-label="Tutup">\u2715</button></header>'
+      +'<div class="qmMsgs"></div>'
+      +'<div class="qmChips"><button type="button" data-q="Kuis mini dong">Kuis mini</button><button type="button" data-q="Apa kata hari ini?">Kata hari ini</button><button type="button" data-q="Ceritakan tentang kuis Tokutei Ginou">Info TG2</button></div>'
+      +'<form class="qmForm"><input maxlength="500" placeholder="Tanya Mochi\u2026" aria-label="Tulis pertanyaan" autocomplete="off"><button type="submit" aria-label="Kirim">\u2191</button></form>'
+      +'<p class="qmNote">Gratis \u2022 maks. 20 pertanyaan/hari \u2022 jawaban AI bisa keliru</p></section>';
+    document.body.appendChild(wrap);
+    msgsEl=wrap.querySelector('.qmMsgs'); inputEl=wrap.querySelector('.qmForm input');
+    wrap.querySelector('.qmOverlay').addEventListener('click',closeChat);
+    wrap.querySelector('.qmX').addEventListener('click',closeChat);
+    wrap.querySelector('.qmForm').addEventListener('submit',function(e){ e.preventDefault(); var v=inputEl.value.trim(); if(!v)return; inputEl.value=''; ask(v) });
+    wrap.querySelector('.qmChips').addEventListener('click',function(e){ var b=e.target.closest?e.target.closest('button[data-q]'):null; if(b)ask(b.getAttribute('data-q')) });
+    document.addEventListener('keydown',function(e){ if(e.key==='Escape')closeChat() });
+  }
+  function openChat(){ build(); wrap.setAttribute('aria-hidden','false'); document.body.classList.add('qmOpen');
+    if(!opened){ opened=true; addRow('Halo! Aku Mochi, teman belajarmu di Qategori. Mau belajar kata baru, kuis mini, atau tanya soal Tokutei Ginou? Tulis saja pertanyaanmu, nya~') }
+    setTimeout(function(){ try{ inputEl.focus() }catch(e){} },320) }
+  function closeChat(){ if(wrap)wrap.setAttribute('aria-hidden','true'); document.body.classList.remove('qmOpen') }
+  window.qmOpenChat=openChat;
+  function ask(text){ if(busy)return;
+    if(used()>=20){ addRow(text,true); addRow('Kuota ngobrol gratis hari ini sudah habis (20 pertanyaan). Istirahat dulu ya, besok kita lanjut lagi! Materi dan kuis di situs tetap bisa dipakai sepuasnya.'); return }
+    busy=true; addRow(text,true);
+    var tb=addRow('Mochi sedang mengetik\u2026'); tb.classList.add('typing');
+    fetch(API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({message:text,history:history.slice(-12)})})
+    .then(function(r){ return r.json() })
+    .then(function(j){ if(!j||!j.reply)throw new Error('bad');
+      tb.classList.remove('typing'); tb.innerHTML=rich(j.reply);
+      history.push({role:'user',text:text}); history.push({role:'model',text:j.reply}); bump(); scroll() })
+    .catch(function(){ tb.classList.remove('typing'); tb.innerHTML='Maaf, Mochi sedang susah dihubungi. Cek koneksi internetmu, lalu coba tanya lagi ya.'; scroll() })
+    .then(function(){ busy=false });
+  }
+  var qb=document.getElementById('qmBtn');
+  if(qb){ var av=qb.querySelector('.qmAv'); if(av)av.innerHTML=headSVG; qb.addEventListener('click',openChat) }
+})();
+
 })();
