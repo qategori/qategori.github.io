@@ -845,3 +845,32 @@ if(panes.rambu){var rbT;new MutationObserver(function(){clearTimeout(rbT);rbT=se
 show();
 })();
 
+
+/* ===== PWA: daftarkan service worker + petunjuk pasang khusus iPhone/iPad ===== */
+(function(){
+  if('serviceWorker' in navigator){
+    window.addEventListener('load',function(){
+      navigator.serviceWorker.register('/sw.js').catch(function(){});
+    });
+  }
+  try{
+    var ua=navigator.userAgent||'';
+    var ios=/iphone|ipad|ipod/i.test(ua)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+    if(!ios) return;
+    if(window.navigator.standalone) return;
+    if(window.matchMedia&&window.matchMedia('(display-mode: standalone)').matches) return;
+    if(!/safari/i.test(ua)||/crios|fxios|edgios|opios/i.test(ua)) return;
+    if(localStorage.getItem('qIosHintOff')) return;
+    setTimeout(function(){
+      if(document.querySelector('.qIosHint')) return;
+      var d=document.createElement('div');
+      d.className='qIosHint';
+      d.innerHTML='<div class="qIosHintT"><b>Pasang Qategori di layar utama</b><span>Ketuk tombol <b>Bagikan</b> di Safari, lalu pilih <b>&ldquo;Tambah ke Layar Utama&rdquo;</b> &mdash; tampilannya jadi seperti aplikasi dan materi bisa dibuka offline.</span></div><button type="button" class="qIosHintX" aria-label="Tutup">&#10005;</button>';
+      d.querySelector('.qIosHintX').addEventListener('click',function(){
+        try{localStorage.setItem('qIosHintOff','1')}catch(e){}
+        d.remove();
+      });
+      document.body.appendChild(d);
+    },1500);
+  }catch(e){}
+})();
