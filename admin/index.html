@@ -300,7 +300,7 @@ async function viewEditor(m,arg){
 /* ====================== layout ====================== */
 const DEF={home:{order:['mochi','ringkasan','berita'],off:[],news:4},sidebar:{order:['ad','traktir','info'],off:[]},info:{title:'Informasi',links:[]},traktir:{url:''},ads:{videos:[],sticky:true},social:[]};
 const HOMEN={mochi:'Panggung Mochi (animasi)',ringkasan:'Ringkasan belajar',berita:'Berita terbaru'},SIDEN={ad:'Iklan video (sidebar)',traktir:'Traktir Mochi (Saweria)',info:'Tautan Informasi'};
-const ICONS=['youtube','facebook','instagram','tiktok','twitter','whatsapp','telegram','linkedin','pinterest','line','messenger','tumblr','behance','dribbble','blogger'];
+const ICONS=['youtube','facebook','instagram','threads','tiktok','twitter','whatsapp','telegram','linkedin','pinterest','line','messenger','tumblr','behance','dribbble','blogger'];
 async function viewLayout(m){
   const box=el('div',{class:'card'},el('p',{class:'mut'},'Memuat layout…'));m.append(box);
   let L;try{await loadIdx();const f=await getFile('config/layout.json');L=f?JSON.parse(f.text):{};var sha=f&&f.sha}catch(e){box.innerHTML='';box.append(el('p',{class:'err'},e.message));return}
