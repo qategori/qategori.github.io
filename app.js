@@ -643,14 +643,20 @@ function qhFinishChal(score,total,host){
  var ag=document.getElementById('qhChalAgain');if(ag)ag.addEventListener('click',function(){qhStartChal()});
  if(score>=4){mState('wave',2000);say(['すごい','sugoi','Tantangan selesai: '+score+'/'+total+'! Hebat!'])}else{mState('wave',2000);say(['がんばって','ganbatte','Tantangan selesai: '+score+'/'+total+'. Coba lagi besok ya!'])}
 }
+function qhChalAttempt(){
+ var today=qhTodayKey(),n=0;
+ try{var raw=lsGet('qh_chal_try');if(raw){var p=JSON.parse(raw);if(p&&p.d===today)n=p.n|0}lsSet('qh_chal_try',JSON.stringify({d:today,n:n+1}))}catch(e){}
+ return n;
+}
 function qhStartChal(){
  var host=document.getElementById('qhChal');if(!host)return;
  if(qhChalTimer){clearInterval(qhChalTimer);qhChalTimer=0}
  host.innerHTML='<p class="qhLoad">Memuat soal…</p>';
  qhLoadJA().then(function(pool){
-   var ja=qhSeeded(pool,qhDaySeed()+7).slice(0,3);
-   var reg=qhSeeded(QH_REG.map(function(r){return{front:r.w,read:r.l,mean:r.m,speak:r.w,lang:'id-ID',tag:r.l}}),qhDaySeed()+11).slice(0,2);
-   var qs=qhSeeded(ja.concat(reg),qhDaySeed()+3);
+   var runSeed=qhDaySeed()+qhChalAttempt()*7919;
+   var ja=qhSeeded(pool,runSeed+7).slice(0,3);
+   var reg=qhSeeded(QH_REG.map(function(r){return{front:r.w,read:r.l,mean:r.m,speak:r.w,lang:'id-ID',tag:r.l}}),runSeed+11).slice(0,2);
+   var qs=qhSeeded(ja.concat(reg),runSeed+3);
    var qi=0,score=0,left=60,ended=false;
    var allMeans=[],seen={};
    pool.forEach(function(x){if(x.mean&&!seen[x.mean]){seen[x.mean]=1;allMeans.push(x.mean)}});
@@ -659,8 +665,8 @@ function qhStartChal(){
    function renderQ(){
      if(ended)return;
      var q=qs[qi];
-     var dist=qhSeeded(allMeans.filter(function(m){return m!==q.mean}),qhDaySeed()+qi*13).slice(0,3);
-     var opts=qhSeeded([q.mean].concat(dist),qhDaySeed()+qi+99);
+     var dist=qhSeeded(allMeans.filter(function(m){return m!==q.mean}),runSeed+qi*13).slice(0,3);
+     var opts=qhSeeded([q.mean].concat(dist),runSeed+qi+99);
      var kind=q.tag&&q.tag.indexOf('Kanji')>=0?'kanji':'kata';
      host.innerHTML='<div class="qhQuiz"><div class="qhQuizTop"><span>Soal '+(qi+1)+'/'+qs.length+'</span><span id="qhTime">'+fmt(left)+'</span></div><p class="qhQuizQ">Apa arti '+kind+' “'+esc(q.front)+'”? <small style="opacity:.7;font-weight:400">('+esc(q.tag||'')+')</small></p><div class="qhOpts">'+opts.map(function(o,i){return'<button type="button" class="qhOpt" data-i="'+i+'">'+esc(o)+'</button>'}).join('')+'</div></div>';
      Array.prototype.forEach.call(host.querySelectorAll('.qhOpt'),function(b){
