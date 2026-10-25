@@ -87,6 +87,8 @@ var GAMES=[
      ic: '<path d="M4 8.5C4 6.6 5.1 6 7 6H17C18.9 6 20 6.6 20 8.5V16.5C20 18.4 18.9 19 17 19H7C5.1 19 4 18.4 4 16.5Z"/><path d="M8 3H16"/><path d="M9 12.5H15"/>'},
     {id: 'gambar', f: 'tebak-gambar.html', t: 'Tebak Gambar', j: '\u7d75\u5f53\u3066\u30af\u30a4\u30ba', r: 'e ate kuizu', d: 'Tebak nama benda dalam bahasa Jepang.',
      ic: '<rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="1.8"/><path d="M3 17L9 12L13 15.5L16 13L21 17.5"/>'},
+    {id: 'labirin', f: 'labirin.html', t: 'Labirin Mochi', j: 'めいろ', r: 'meiro', d: 'Bantu Mochi sampai ke stasiun. Hindari serigala, api, dan jurang!',
+     ic: '<rect x="3.5" y="3.5" width="17" height="17" rx="1.5"/><path d="M3.5 9.5H14V15H9"/>'},
     {id: 'drama', f: 'drama.html', t: 'Mini Drama', j: '\u30c9\u30e9\u30de', r: 'dorama', d: 'Mochi di konbini dan tempat lain: simak dialog berfurigana, lalu kuis.',
      ic: '<path d="M4 5H20V13C20 17.4 16.4 21 12 21C7.6 21 4 17.4 4 13Z"/><path d="M8.5 10H8.51M15.5 10H15.51"/><path d="M9 14.5C10.2 16 13.8 16 15 14.5"/>'},
     {id: 'hari', f: 'hari.html', t: 'Satu Hari Mochi', j: '\u30e2\u30c1\u306e\u4e00\u65e5', r: 'mochi no ichinichi', d: 'Cerita panjang sekitar 10 menit dengan latar yang berganti: sehari berkeliling kota, atau Mochi demam dan pergi ke klinik.',
@@ -220,7 +222,7 @@ function mount(paneId,key){
 /* game */
 var gameFrame=null,gameTimer=0;
 function isDark(){var t=nB.getAttribute('data-theme');return t==='dark'||(t!=='light'&&matchMedia('(prefers-color-scheme: dark)').matches)}
-function tune(fr){try{var d=fr.contentDocument;if(!d||!d.documentElement)return;if(fr.__kana)kanaTheme(fr);var w=isDark()?'dark':'light';if(d.documentElement.getAttribute('data-theme')!==w)d.documentElement.setAttribute('data-theme',w);
+function tune(fr){try{var d=fr.contentDocument;if(!d||!d.documentElement)return;if(fr.__kana)kanaTheme(fr);if(fr.__gx)gxSync(fr);var w=isDark()?'dark':'light';if(d.documentElement.getAttribute('data-theme')!==w)d.documentElement.setAttribute('data-theme',w);
   var h=d.body?Math.ceil(d.body.getBoundingClientRect().height):0;if(!h)h=d.documentElement.scrollHeight;if(h>120&&Math.abs(fr.offsetHeight-h)>2)fr.style.height=h+'px'}catch(e){}}
 function stopT(){if(gameTimer){clearInterval(gameTimer);gameTimer=0}}
 function startT(){stopT();if(gameFrame)gameTimer=setInterval(function(){tune(gameFrame)},400)}
@@ -236,7 +238,7 @@ function showGame(sub){
   var host=panes.game.querySelector('.qhBody'),g=GAMES.filter(function(x){return x.id===sub})[0];
   if(!g){stopT();gkey='';gameFrame=null;host.innerHTML='<div class="qhGameGrid">'+GAMES.filter(function(x){return x.id!=='kana'}).map(function(g){return'<button type="button" class="qhGameCard" data-go="game-'+g.id+'"><svg viewBox="0 0 24 24" aria-hidden="true">'+g.ic+'</svg><b>'+esc(g.t)+'</b><i>'+g.j+' &middot; '+esc(g.r)+'</i><small>'+esc(g.d)+'</small></button>'}).join('')+'</div>';return}
   if(gkey===g.id&&gameFrame&&host.contains(gameFrame)){startT();return}
-  gkey=g.id;gameFrame=null;frame(host,g.f,g.t,'<div class="qhBar"><button type="button" class="qhBtn alt" data-go="game">&larr; Semua game</button></div>');
+  gkey=g.id;gameFrame=null;frame(host,g.f,g.t,'<div class="qhBar"><button type="button" class="qhBtn alt" data-go="game">&larr; Semua game</button></div>',function(fr){gameInit(fr,g.id)});
 }
 function kanaPick(fr,mode){var n=0;
   (function t(){try{var d=fr.contentDocument,b=d&&d.querySelector('[data-sc="'+(mode==='katakana'?'k':'h')+'"]');if(b){if(b.getAttribute('aria-pressed')!=='true')b.click();return}}catch(x){}
@@ -272,6 +274,57 @@ function showKana(sub){var host=panes.kana.querySelector('.qhBody');
     kanaPick(gameFrame,sub);startT();return}
   gkey='kana';gameFrame=null;
   frame(host,'kana.html','Hapalan Kana',kanaRow(sub),function(fr){kanaInit(fr,sub)})}
+/* game lain: padatkan tampilan + grup chip pilihan jadi dropdown (mengikuti pola kana & rambu) */
+var GX_CSS='.wrap{padding:10px 10px 16px!important}'+
+'.wrap h1{font-size:1.5rem!important;margin:2px 0 4px!important}.wrap h2{font-size:1.12rem!important}'+
+'.grp{gap:6px!important;margin:6px 0!important}.chip{padding:6px 11px!important;font-size:.86rem!important}'+
+'.foot{font-size:.78rem!important;line-height:1.45!important}'+
+'.grp.gxSel>.chip,.levels.gxSel>.lv{display:none!important}.grp.gxSel,.levels.gxSel{display:flex!important;align-items:center;gap:8px}'+
+'select.qkSel{width:100%;height:44px;padding:0 12px;border:1px solid var(--line);border-radius:12px;background:var(--surface);color:var(--ink);font:inherit;font-size:.95rem;font-weight:700}'+
+'.gxSel select.qkSel{flex:1;min-width:0;width:auto}';
+var GX_EXTRA={
+ gambar:'.big svg{max-height:170px!important}.ask{font-size:1rem!important}.opts{gap:8px!important}',
+ kanji:'.ctl{gap:6px!important}.stats{margin:6px 0!important;font-size:.88rem!important}',
+ trivia:'.q{font-size:1.08rem!important}.opts{gap:8px!important}',
+ tts:'.pad{gap:3px!important;padding:6px!important}.pad .k{padding:7px 0!important;font-size:.95rem!important;min-height:0!important}.stats{margin:4px 0!important;font-size:.88rem!important}'};
+var GX_LABELS=['Mode','Level','Jumlah pasangan','Pilih kategori','Pilih level JLPT'];
+function gxConvert(fr,box,itemSel){
+  var d=fr.contentDocument;if(!d||box.querySelector('select.qkSel'))return;
+  var items=[].slice.call(box.querySelectorAll(itemSel));if(items.length<2)return;
+  var sel=d.createElement('select');sel.className='qkSel';sel.setAttribute('aria-label',box.getAttribute('aria-label')||'Pilihan');
+  sel.innerHTML=items.map(function(c,i){return'<option value="'+i+'">'+c.textContent.trim()+'</option>'}).join('');
+  sel.addEventListener('change',function(){var c=items[+sel.value];if(c)c.click();setTimeout(function(){gxSync(fr)},80)});
+  box.appendChild(sel);box.classList.add('gxSel');(fr.__gxBoxes=fr.__gxBoxes||[]).push([items,sel]);
+}
+function gxApply(fr){
+  var d=fr.contentDocument;if(!d)return;
+  [].slice.call(d.querySelectorAll('.grp')).forEach(function(g){if(GX_LABELS.indexOf(g.getAttribute('aria-label'))>=0)gxConvert(fr,g,'.chip')});
+  [].slice.call(d.querySelectorAll('.levels')).forEach(function(g){gxConvert(fr,g,'.lv')});
+  if(fr.__gxId==='tts')gxRomaji(fr);
+}
+function gxSync(fr){
+  if(fr.__gxBoxes)fr.__gxBoxes=fr.__gxBoxes.filter(function(t){return t[1].isConnected});
+  (fr.__gxBoxes||[]).forEach(function(t){var items=t[0],sel=t[1],on=0;items.forEach(function(c,i){if(c.getAttribute('aria-pressed')==='true'||c.classList.contains('on')||c.classList.contains('act'))on=i});if(sel.selectedIndex!==on)sel.selectedIndex=on});
+  gxApply(fr);
+}
+function gameInit(fr,id){try{var d=fr.contentDocument;if(!d||fr.__gxDone)return;fr.__gxDone=1;fr.__gxId=id;
+  var st=d.createElement('style');st.textContent=GX_CSS+(GX_EXTRA[id]||'');(d.head||d.documentElement).appendChild(st);
+  fr.__gx=1;gxApply(fr);gxSync(fr)}catch(e){}}
+var GX_ROMA={a:'あ',i:'い',u:'う',e:'え',o:'お',ka:'か',ki:'き',ku:'く',ke:'け',ko:'こ',sa:'さ',shi:'し',si:'し',su:'す',se:'せ',so:'そ',ta:'た',chi:'ち',ti:'ち',tsu:'つ',tu:'つ',te:'て',to:'と',na:'な',ni:'に',nu:'ぬ',ne:'ね',no:'の',ha:'は',hi:'ひ',fu:'ふ',hu:'ふ',he:'へ',ho:'ほ',ma:'ま',mi:'み',mu:'む',me:'め',mo:'も',ya:'や',yu:'ゆ',yo:'よ',ra:'ら',ri:'り',ru:'る',re:'れ',ro:'ろ',wa:'わ',wo:'を',ga:'が',gi:'ぎ',gu:'ぐ',ge:'げ',go:'ご',za:'ざ',ji:'じ',zi:'じ',zu:'ず',ze:'ぜ',zo:'ぞ',da:'だ',di:'ぢ',du:'づ',de:'で',do:'ど',ba:'ば',bi:'び',bu:'ぶ',be:'べ',bo:'ぼ',pa:'ぱ',pi:'ぴ',pu:'ぷ',pe:'ぺ',po:'ぽ',kya:'きゃ',kyu:'きゅ',kyo:'きょ',sha:'しゃ',shu:'しゅ',sho:'しょ',sya:'しゃ',syu:'しゅ',syo:'しょ',cha:'ちゃ',chu:'ちゅ',cho:'ちょ',tya:'ちゃ',tyu:'ちゅ',tyo:'ちょ',ja:'じゃ',ju:'じゅ',jo:'じょ',jya:'じゃ',jyu:'じゅ',jyo:'じょ',nya:'にゃ',nyu:'にゅ',nyo:'にょ',hya:'ひゃ',hyu:'ひゅ',hyo:'ひょ',mya:'みゃ',myu:'みゅ',myo:'みょ',rya:'りゃ',ryu:'りゅ',ryo:'りょ',gya:'ぎゃ',gyu:'ぎゅ',gyo:'ぎょ',bya:'びゃ',byu:'びゅ',byo:'びょ',pya:'ぴゃ',pyu:'ぴゅ',pyo:'ぴょ'};
+function gxKana(s){s=(s||'').toLowerCase();var out='',i=0;while(i<s.length){var ch=s[i];
+  if(ch==='-'){out+='ー';i++;continue}
+  if(ch==='n'&&(i+1>=s.length||'aeiouy'.indexOf(s[i+1])<0)){out+='ん';i++;continue}
+  if(i+1<s.length&&ch===s[i+1]&&'bcdfghjkmprstvwz'.indexOf(ch)>=0){out+='っ';i++;continue}
+  var hit='';for(var L=3;L>=1;L--){var sub=s.substr(i,L);if(GX_ROMA[sub]){hit=sub;break}}
+  if(hit){out+=GX_ROMA[hit];i+=hit.length}else i++}
+  return out}
+function gxRomaji(fr){var d=fr.contentDocument,pad=d.querySelector('.pad');if(!pad||d.getElementById('gxRom'))return;
+  var inp=d.createElement('input');inp.id='gxRom';inp.type='text';inp.setAttribute('aria-label','Ketik romaji');
+  inp.placeholder='Ketik romaji lalu Enter — mis. sakura, neko, yama';
+  inp.style.cssText='width:100%;box-sizing:border-box;margin:0 0 8px;padding:11px 13px;border:1px solid var(--line);border-radius:12px;background:var(--surface);color:var(--ink);font:inherit;font-size:.95rem';
+  pad.parentNode.insertBefore(inp,pad);
+  inp.addEventListener('keydown',function(e){if(e.key!=='Enter')return;e.preventDefault();var kana=gxKana(inp.value);inp.value='';
+    kana.split('').forEach(function(ch){var b=pad.querySelector('[data-ch="'+ch+'"]');if(b)b.click()})})}
 /* berita */
 var posts=null,lab='',shown=20,qs0=root.querySelector('#qList');
 var listEl=qs0;
@@ -460,7 +513,7 @@ function addHits(q,into){
       for(var j=0;j<L.length&&kt.length<16;j++){var w=L[j];if(has(w.kanji)||has(w.kana)||has(w.romaji)||has(w.arti))kt.push([n,w])}});
     var h='';
     if(kj.length)h+='<h4>Kanji Bushu</h4><div class="qhHL">'+kj.map(function(r){return'<a class="qhHit" href="'+P+'materi-dan-kuis-kanji-metode-bushu.html?q='+encodeURIComponent(r[1])+'&tab=asal"><b>'+esc(r[1])+'</b><span>'+esc(r[0])+' '+esc(r[2])+' - '+esc(r[4])+'</span></a>'}).join('')+'</div>';
-    if(kt.length)h+='<h4>Kotoba JLPT</h4><div class="qhHL">'+kt.map(function(p){var w=p[1];return'<a class="qhHit" href="'+P+'materi-jlpt-'+p[0]+'.html"><b>'+esc(w.kanji||w.kana)+'</b><span>'+esc(p[0].toUpperCase())+' '+esc(w.kana)+' ('+esc(w.romaji)+') - '+esc(w.arti)+'</span></a>'}).join('')+'</div>';
+    if(kt.length)h+='<h4>Kotoba JLPT</h4><div class="qhHL">'+kt.map(function(p){var w=p[1];return'<a class="qhHit" href="'+P+'materi-jlpt-'+p[0]+'.html?q='+encodeURIComponent(w.kanji||w.kana)+'&tab=daftar"><b>'+esc(w.kanji||w.kana)+'</b><span>'+esc(p[0].toUpperCase())+' '+esc(w.kana)+' ('+esc(w.romaji)+') - '+esc(w.arti)+'</span></a>'}).join('')+'</div>';
     if(!h){if(box.parentNode)box.parentNode.removeChild(box);return}
     box.innerHTML=h});
 }
@@ -827,6 +880,7 @@ function show(){
   else mount(r.tab,r.sub?r.tab+'-'+r.sub:r.tab);
   if(r.tab!=='berita'&&readKey){readKey='';document.title=document.title}
   if(r.tab==='bushu'){var bq=new URLSearchParams(r.qs);if(bq.get('q')||bq.get('tab')){var ap=function(){if(window.kbqOpen)window.kbqOpen(bq.get('q')||'',bq.get('tab')||'asal')};if(mounted.bushu&&document.getElementById('kuis-kanji'))setTimeout(ap,50);else panes.bushu.__after=ap}}
+  if(r.tab==='jlpt'){var jq=new URLSearchParams(r.qs);if(jq.get('q')){var jqq=jq.get('q'),jqt=jq.get('tab')||'daftar',jap=function(){var n=0,iv=setInterval(function(){n++;var pn=panes.jlpt,btn=pn.querySelector('button[data-panel="'+jqt+'"]'),inp=pn.querySelector('#daftarSearch'),bd=pn.querySelector('#daftarBody'),sel=pn.querySelector('#daftarKategori');if(btn&&inp&&bd&&(bd.children.length||(sel&&sel.options.length>1))){clearInterval(iv);btn.click();inp.value=jqq;inp.dispatchEvent(new Event('input',{bubbles:true}));setTimeout(function(){var pp=pn.querySelector('#panel-'+jqt);if(pp)pp.scrollIntoView({block:'start'})},150)}if(n>48)clearInterval(iv)},250)};if(mounted.jlpt)setTimeout(jap,60);else panes.jlpt.__after=jap}}
   first=false;
 }
 /* navigasi atas/bawah */
