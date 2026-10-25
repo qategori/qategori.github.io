@@ -313,6 +313,28 @@ iframe.qhGame{width:100%;border:0;min-height:480px;display:block}
 .qhGameCard b{font-size:.95rem;line-height:1.25}
 .qhGameCard i{font-size:11px!important}
 .qhGameCard small{font-size:11.5px!important;line-height:1.35;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+/* Kartu hub TG2 (bidang) & hub JLPT: grid 2 kolom minimalis seperti daftar game.
+   Menimpa <style> bawaan halaman (di content/pages) tanpa mengubah file konten. */
+#nav-bidang-qategori .nb-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:10px!important}
+#jlptHub .jh-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:10px!important}
+@media(min-width:760px){
+ #nav-bidang-qategori .nb-grid{grid-template-columns:repeat(3,minmax(0,1fr))!important}
+ #jlptHub .jh-grid{grid-template-columns:repeat(3,minmax(0,1fr))!important}
+}
+#nav-bidang-qategori .nb-card{padding:13px 12px!important;min-height:0!important;border-radius:14px!important}
+#nav-bidang-qategori .nb-card::after{width:96px!important;height:96px!important;right:-24px!important;bottom:-24px!important}
+#nav-bidang-qategori .nb-icon{font-size:1.35rem!important;margin:0 0 7px!important}
+#nav-bidang-qategori .nb-title{font-size:.98rem!important;line-height:1.3!important;margin:0 0 4px!important}
+#nav-bidang-qategori .nb-desc{font-size:.76rem!important;line-height:1.4!important;margin:0 0 8px!important;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+#nav-bidang-qategori .nb-tags{gap:4px!important;margin:0 0 8px!important}
+#nav-bidang-qategori .nb-tag{font-size:.64rem!important;padding:2px 7px!important}
+#nav-bidang-qategori .nb-cta{font-size:.78rem!important}
+#nav-bidang-qategori .nb-soon{min-height:0!important;padding:13px 12px!important;border-radius:14px!important}
+#jlptHub .jh-card{padding:13px 12px!important;border-radius:14px!important}
+#jlptHub .jh-level{font-size:1.45rem!important;line-height:1.15!important}
+#jlptHub .jh-label{font-size:.74rem!important;margin-top:1px!important}
+#jlptHub .jh-feat{font-size:.7rem!important;line-height:1.45!important;margin-top:7px!important;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+#jlptHub .jh-cta{font-size:.76rem!important;margin-top:9px!important}
 /* Kana: kartu pilih aksara, gaya sama seperti bidang TG2 */
 .qkH{font-size:1.5rem;margin:4px 0 4px}.qkS{opacity:.75;margin:0 0 18px;font-size:.92rem}
 .qkGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px}
