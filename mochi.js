@@ -20,6 +20,8 @@
     if(u.indexOf('materi-dan-soal-tg2')>-1) return 'https://www.qategori.com/#tg2-semua';
     return u;
   }
+  function isSite(u){ try{ var x=new URL(u,location.href); return x.hostname===location.hostname||/(^|\.)qategori\.com$/.test(x.hostname) }catch(e){ return false } }
+  function aTag(f,label){ return isSite(f)? '<a href="'+f+'">'+label+'</a>' : '<a href="'+f+'" target="_blank" rel="noopener">'+label+'</a>' }
   function fmtInline(x){
     x=x.replace(/\*\*([^*]+)\*\*/g,'<b>$1</b>');
     x=x.replace(/\*([^\*\n ](?:[^\*\n]*[^\*\n ])?)\*/g,'<i>$1</i>');
@@ -31,14 +33,14 @@
     x=x.replace(/(https?:\/\/[^\s<]+)/g,function(u){
       var trail=''; while(u.length && /[).,;:!?]$/.test(u)){ trail=u.slice(-1)+trail; u=u.slice(0,-1); }
       var f=fixUrl(u);
-      return '<a href="'+f+'" target="_blank" rel="noopener">'+f+'</a>'+trail;
+      return aTag(f,f)+trail;
     });
     return x.replace(/\n/g,'<br>');
   }
   function rich(t){
     var s=esc(t), out='', last=0, m;
     var re=/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g;
-    while((m=re.exec(s))){ out+=fmt(s.slice(last,m.index)); var f=fixUrl(m[2]); out+='<a href="'+f+'" target="_blank" rel="noopener">'+fmtInline(m[1])+'</a>'; last=m.index+m[0].length; }
+    while((m=re.exec(s))){ out+=fmt(s.slice(last,m.index)); var f=fixUrl(m[2]); out+=aTag(f,fmtInline(m[1])); last=m.index+m[0].length; }
     out+=fmt(s.slice(last));
     return out;
   }
@@ -60,6 +62,7 @@
     wrap.querySelector('.qmX').addEventListener('click',closeChat);
     wrap.querySelector('.qmForm').addEventListener('submit',function(e){ e.preventDefault(); var v=inputEl.value.trim(); if(!v) return; inputEl.value=''; ask(v) });
     wrap.querySelector('.qmChips').addEventListener('click',function(e){ var b=e.target.closest?e.target.closest('button[data-q]'):null; if(b) ask(b.getAttribute('data-q')) });
+    wrap.addEventListener('click',function(e){ var a=e.target.closest?e.target.closest('a[href]'):null; if(a&&isSite(a.getAttribute('href'))) closeChat() });
     document.addEventListener('keydown',function(e){ if(e.key==='Escape') closeChat() });
   }
   function openChat(){ build(); wrap.setAttribute('aria-hidden','false'); document.body.classList.add('qmOpen');
