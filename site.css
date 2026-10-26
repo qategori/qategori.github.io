@@ -520,7 +520,8 @@ body.qmOpen .qmPanel{transform:none}
 .qtChips button{border:1px solid var(--themeBd-color);background:var(--themeBg-alt);color:inherit;border-radius:999px;padding:5px 10px;font:inherit;font-size:.78rem;font-weight:700;cursor:pointer}
 .qtChips button[aria-pressed=true]{background:var(--themeLink);border-color:var(--themeLink);color:#fff}
 .qtCtl select{height:36px;border:1px solid var(--themeBd-color);border-radius:8px;background:var(--themeBg-alt);color:inherit;font:inherit;padding:0 8px}
-.qtCaps{margin-top:8px;display:flex;flex-direction:column;gap:6px;max-height:62vh;overflow:auto;padding:2px}
+.qtStick{position:sticky;top:56px;z-index:40;background:var(--themeBg)}
+.qtCaps{margin-top:8px;display:flex;flex-direction:column;gap:6px;max-height:54vh;overflow:auto;padding:2px;position:relative}
 .qtCap{display:flex;gap:10px;align-items:flex-start;text-align:left;border:1px solid var(--themeBd-color);border-radius:10px;background:var(--themeBg-alt);padding:9px 11px;cursor:pointer}
 .qtCap.on{border-color:var(--themeLink);box-shadow:0 0 0 1px var(--themeLink) inset}
 .qtTime{font-size:.74rem;font-weight:700;opacity:.6;padding-top:3px;min-width:34px}
