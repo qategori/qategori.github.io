@@ -250,7 +250,7 @@ function showGame(sub){
 }
 /* ===== Terjemah Video (putar YouTube + subtitle JP/ID sinkron) ===== */
 var QTW='https://qategori-terjemah.bshantoz.workers.dev';
-var qtBuilt=false,qtPlayer=null,qtReady=false,qtCues=[],qtVid='',qtTimer=0,qtActive=-1,qtLastTouch=0,qtMode='both',qtWordOn=false,qtBank=null,qtBankBusy=false;
+var qtBuilt=false,qtPlayer=null,qtReady=false,qtCues=[],qtVid='',qtTimer=0,qtActive=-1,qtLastTouch=0,qtMode='both',qtWordOn=true,qtBank=null,qtBankBusy=false;
 function qtEl(id){return document.getElementById(id)}
 function qtMsg(t,cls){var m=qtEl('qtMsg');if(m){m.textContent=t||'';m.className='qtMsg'+(cls?' '+cls:'')}}
 function qtFmt(t){t=Math.max(0,Math.floor(t||0));var m=Math.floor(t/60),s=t%60;return m+':'+(s<10?'0':'')+s}
@@ -497,19 +497,19 @@ function showTerjemah(r){
     qtBuilt=true;
     host.innerHTML='<div class="qtWrap">'
       +'<div class="qtHead"><h2 class="qtH">🎬 Terjemah Video</h2><button type="button" class="qtBtn sm" id="qtHelpBtn" aria-expanded="false">❓ Petunjuk</button></div>'
-      +'<p class="qtSub" id="qtHelp" hidden>Tempel tautan video YouTube, lalu putar sambil membaca subtitle bahasa Jepangnya beserta terjemahan Indonesianya — seperti aplikasi belajar dari podcast, tapi untuk video. Ketuk satu baris subtitle untuk melompat ke detik tersebut. Aktifkan mode “Ketuk kata → Arti kata” di bawah video untuk mengetuk kata dan melihat arti tango/kotobanya. Bila subtitle otomatis tidak bisa diambil, gunakan tombol “Tempel transkrip manual”.</p>'
+      +'<p class="qtSub" id="qtHelp" hidden>Tempel tautan video YouTube, lalu putar sambil membaca subtitle bahasa Jepangnya beserta terjemahan Indonesianya — seperti aplikasi belajar dari podcast, tapi untuk video. Ketuk satu baris subtitle untuk melompat ke detik tersebut. Ketuk satu kata pada baris Jepang untuk melihat arti tango/kotobanya. Bila subtitle otomatis tidak bisa diambil, gunakan tombol “Tempel transkrip”. Khusus YouTube dulu: TikTok/Facebook/Instagram tidak menyediakan transkrip dan pemutar tanamnya tidak bisa disinkronkan. Subtitle otomatis diambil dari subtitle resmi/otomatis milik video; bila server tidak mendapatkannya, gunakan tempel transkrip. Terjemahan disimpan di perangkat ini, jadi video yang sama tidak diterjemahkan dua kali.</p>'
       +'<div class="qtRow"><input type="url" id="qtUrl" placeholder="Tempel tautan YouTube di sini…" aria-label="Tautan video YouTube"><button type="button" class="qtBtn pri" id="qtGo">Putar</button></div>'
-      +'<div class="qtRow qtGap"><button type="button" class="qtBtn sm" id="qtAuto">Ambil subtitle otomatis</button><label class="qtBtn sm qtFile">Unggah .srt / .vtt<input type="file" id="qtFile" accept=".srt,.vtt,.txt" style="display:none"></label><button type="button" class="qtBtn sm" id="qtTr" hidden>Terjemahkan ke Indonesia</button></div>'
-      +'<details class="qtKey" id="qtPasteBox"><summary>✏️ Tempel transkrip manual</summary><div class="qtKeyBody"><p>Untuk video yang subtitle otomatisnya tidak berhasil diambil. Caranya: buka video di aplikasi YouTube → ketuk judul/deskripsi → “Buka transkrip” → salin semua teksnya → tempel di sini.</p><textarea id="qtPaste" rows="4" placeholder="Tempel transkrip di sini…"></textarea><div class="qtRow"><button type="button" class="qtBtn pri sm" id="qtProc">Proses transkrip</button></div></div></details>'
-      +'<details class="qtKey" id="qtKeyBox"><summary>🔑 Kunci Supadata saya — agar subtitle otomatis selalu berhasil (opsional)</summary><div class="qtKeyBody"><p>Pengambilan subtitle otomatis memakai layanan Supadata. Jatah bersama dari Qategori terbatas; dengan kunci sendiri kamu tidak berbagi jatah (gratis 100 video/bulan, tanpa kartu kredit):</p><ol><li>Buka <a href="https://supadata.ai" target="_blank" rel="noopener">supadata.ai</a> → <b>Sign up / Get started</b> → <b>Continue with Google</b>.</li><li>Di Dashboard, cari bagian <b>API Key</b> lalu salin kuncinya.</li><li>Tempel di sini lalu tekan Simpan. Kunci hanya tersimpan di perangkat ini.</li></ol><div class="qtRow"><input type="text" id="qtSdKey" placeholder="Tempel kunci API Supadata di sini" aria-label="Kunci API Supadata"><button type="button" class="qtBtn" id="qtSdSave">Simpan</button></div><p class="qtKeyStat" id="qtSdStat"></p></div></details>'
+      +'<div class="qtRow qtGap qtBtnRow"><button type="button" class="qtBtn sm" id="qtAuto">Ambil otomatis</button><label class="qtBtn sm qtFile">Upload<input type="file" id="qtFile" accept=".srt,.vtt,.txt" style="display:none"></label><button type="button" class="qtBtn sm" id="qtPasteBtn" aria-expanded="false" aria-controls="qtPasteBox">Tempel transkrip</button></div>'
+      +'<div class="qtKey" id="qtPasteBox" hidden><div class="qtKeyBody"><p>Untuk video yang subtitle otomatisnya tidak berhasil diambil. Caranya: buka video di aplikasi YouTube → ketuk judul/deskripsi → “Buka transkrip” → salin semua teksnya → tempel di sini.</p><textarea id="qtPaste" rows="4" placeholder="Tempel transkrip di sini…"></textarea><div class="qtRow"><button type="button" class="qtBtn pri sm" id="qtProc">Proses transkrip</button></div></div></div>'
+      +'<div class="qtRow qtGap"><button type="button" class="qtBtn sm qtKeyBtn" id="qtKeyBtn" aria-expanded="false" aria-controls="qtKeyBox">🔑 Kunci Supadata saya — agar subtitle otomatis selalu berhasil (opsional)</button></div>'
+      +'<div class="qtKey" id="qtKeyBox" hidden><div class="qtKeyBody"><p>Pengambilan subtitle otomatis memakai layanan Supadata. Jatah bersama dari Qategori terbatas; dengan kunci sendiri kamu tidak berbagi jatah (gratis 100 video/bulan, tanpa kartu kredit):</p><ol><li>Buka <a href="https://supadata.ai" target="_blank" rel="noopener">supadata.ai</a> → <b>Sign up / Get started</b> → <b>Continue with Google</b>.</li><li>Di Dashboard, cari bagian <b>API Key</b> lalu salin kuncinya.</li><li>Tempel di sini lalu tekan Simpan. Kunci hanya tersimpan di perangkat ini.</li></ol><div class="qtRow"><input type="text" id="qtSdKey" placeholder="Tempel kunci API Supadata di sini" aria-label="Kunci API Supadata"><button type="button" class="qtBtn" id="qtSdSave">Simpan</button></div><p class="qtKeyStat" id="qtSdStat"></p></div></div>'
       +'<div class="qtStick">'
       +'<div class="qtPlayer" id="qtPlayerWrap" hidden><div class="qtFrame"><div id="qtYt"></div></div></div>'
       +'<p class="qtMsg" id="qtMsg" aria-live="polite"></p>'
-      +'<div class="qtCtl" id="qtCtl" hidden><span class="qtCtlLab">Tampilan</span><span class="qtChips" id="qtModeChips" role="group" aria-label="Mode subtitle"><button type="button" data-m="both" aria-pressed="true">Jepang + Indo</button><button type="button" data-m="jp" aria-pressed="false">Jepang saja</button><button type="button" data-m="id" aria-pressed="false">Indo saja</button></span><span class="qtCtlLab">Ketuk kata</span><span class="qtChips" id="qtWordChips" role="group" aria-label="Mode ketuk kata"><button type="button" data-wm="0" aria-pressed="true">Mati</button><button type="button" data-wm="1" aria-pressed="false">Arti kata</button></span><label class="qtCtlLab" for="qtSpeed">Kecepatan</label><select id="qtSpeed"><option value="0.5">0.5×</option><option value="0.75">0.75×</option><option value="1" selected>1×</option><option value="1.25">1.25×</option><option value="1.5">1.5×</option></select></div>'
+      +'<div class="qtCtl" id="qtCtl" hidden><button type="button" class="qtBtn pri sm" id="qtTr" hidden>Terjemahkan ke Indonesia</button><select id="qtModeSel" aria-label="Tampilan subtitle"><option value="both" selected>Semua</option><option value="jp">Jepang</option><option value="id">Indonesia</option></select><select id="qtSpeed" aria-label="Kecepatan putar"><option value="0.5">0.5×</option><option value="0.75">0.75×</option><option value="1" selected>1×</option><option value="1.25">1.25×</option><option value="1.5">1.5×</option></select></div>'
       +'</div>'
       +'<div class="qtCaps qt-both" id="qtCaps"></div>'
       +'<div class="qtPop" id="qtPop" hidden></div>'
-      +'<p class="qtFoot">Khusus YouTube dulu: TikTok/Facebook/Instagram tidak menyediakan transkrip dan pemutar tanamnya tidak bisa disinkronkan. Subtitle otomatis diambil dari subtitle resmi/otomatis milik video; bila server tidak mendapatkannya, gunakan tempel transkrip. Terjemahan disimpan di perangkat ini, jadi video yang sama tidak diterjemahkan dua kali.</p>'
       +'</div>';
     qtEl('qtHelpBtn').addEventListener('click',function(){
       var h=qtEl('qtHelp');var open=h.hidden;h.hidden=!open;
@@ -518,11 +518,19 @@ function showTerjemah(r){
     qtEl('qtGo').addEventListener('click',qtStart);
     qtEl('qtUrl').addEventListener('keydown',function(e){if(e.key==='Enter')qtStart()});
     qtEl('qtAuto').addEventListener('click',qtAutoFetch);
+    qtEl('qtPasteBtn').addEventListener('click',function(){
+      var b=qtEl('qtPasteBox');var open=b.hidden;b.hidden=!open;
+      this.setAttribute('aria-expanded',open?'true':'false');
+    });
+    qtEl('qtKeyBtn').addEventListener('click',function(){
+      var b=qtEl('qtKeyBox');var open=b.hidden;b.hidden=!open;
+      this.setAttribute('aria-expanded',open?'true':'false');
+    });
     qtEl('qtTr').addEventListener('click',qtTranslate);
     qtEl('qtProc').addEventListener('click',function(){
       var cues=qtParse(qtEl('qtPaste').value);
       if(!cues.length){qtMsg('Transkrip tidak terbaca. Pastikan ada baris waktu seperti “0:05 …” atau format .srt/.vtt.','bad');return}
-      qtEl('qtPasteBox').open=false;
+      qtEl('qtPasteBox').hidden=true;qtEl('qtPasteBtn').setAttribute('aria-expanded','false');
       qtSetCues(cues,'tempel manual');
     });
     qtEl('qtFile').addEventListener('change',function(){
@@ -545,28 +553,11 @@ function showTerjemah(r){
       if(qtPlayer&&qtReady){try{qtPlayer.seekTo(c.t,true);qtPlayer.playVideo()}catch(err){}}
     });
     ['scroll','touchstart','wheel'].forEach(function(ev){qtEl('qtCaps').addEventListener(ev,function(){qtLastTouch=Date.now()},{passive:true})});
-    [].slice.call(document.querySelectorAll('#qtModeChips button')).forEach(function(b){
-      b.addEventListener('click',function(){
-        [].slice.call(document.querySelectorAll('#qtModeChips button')).forEach(function(x){x.setAttribute('aria-pressed','false')});
-        b.setAttribute('aria-pressed','true');qtMode=b.getAttribute('data-m');
-        qtEl('qtCaps').className='qtCaps qt-'+qtMode;
-      });
+    qtEl('qtModeSel').addEventListener('change',function(){
+      qtMode=this.value;
+      qtEl('qtCaps').className='qtCaps qt-'+qtMode;
     });
-    var wSaved='0';try{wSaved=lsGet('qtWordMode')||'0'}catch(e){}
-    if(wSaved==='1'){
-      qtWordOn=true;
-      [].slice.call(document.querySelectorAll('#qtWordChips button')).forEach(function(x){x.setAttribute('aria-pressed',x.getAttribute('data-wm')==='1'?'true':'false')});
-      qtEnsureBank();
-    }
-    [].slice.call(document.querySelectorAll('#qtWordChips button')).forEach(function(b){
-      b.addEventListener('click',function(){
-        [].slice.call(document.querySelectorAll('#qtWordChips button')).forEach(function(x){x.setAttribute('aria-pressed','false')});
-        b.setAttribute('aria-pressed','true');qtWordOn=b.getAttribute('data-wm')==='1';
-        try{lsSet('qtWordMode',qtWordOn?'1':'0')}catch(e){}
-        if(qtWordOn)qtEnsureBank();
-        qtRender();
-      });
-    });
+    qtEnsureBank();
     qtEl('qtSpeed').addEventListener('change',function(){if(qtPlayer&&qtReady){try{qtPlayer.setPlaybackRate(parseFloat(this.value))}catch(e){}}});
     var sdInp=qtEl('qtSdKey'),savedSd='';try{savedSd=lsGet('qtSdKey')||''}catch(e){}
     if(sdInp&&savedSd){sdInp.value=savedSd;qtEl('qtSdStat').textContent='Kunci tersimpan di perangkat ini — subtitle otomatis memakai kuncimu.'}

@@ -514,12 +514,15 @@ body.qmOpen .qmPanel{transform:none}
 #qtPaste{width:100%;margin-top:6px;border:1px solid var(--themeBd-color);border-radius:10px;background:var(--themeBg-alt);color:inherit;padding:10px 12px;font:inherit;font-size:.88rem;line-height:1.5;box-sizing:border-box}
 .qtMsg{font-size:.85rem;line-height:1.45;min-height:1.25em;margin:8px 0 0}
 .qtMsg.bad{color:#c0392b;font-weight:700}
-.qtCtl{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:6px 0 2px}
+.qtCtl{display:flex;gap:8px;align-items:center;flex-wrap:nowrap;margin:6px 0 2px}
+.qtCtl #qtTr{flex:1 1 auto;min-width:0;justify-content:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.qtBtnRow .qtBtn{flex:1;justify-content:center;min-width:0;padding:0 6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.qtKeyBtn{width:100%;height:auto;min-height:38px;justify-content:flex-start;text-align:left;line-height:1.35;padding:7px 11px;white-space:normal}
 .qtCtlLab{font-size:.74rem;letter-spacing:.06em;text-transform:uppercase;opacity:.65}
 .qtChips{display:inline-flex;gap:5px}
 .qtChips button{border:1px solid var(--themeBd-color);background:var(--themeBg-alt);color:inherit;border-radius:999px;padding:5px 10px;font:inherit;font-size:.78rem;font-weight:700;cursor:pointer}
 .qtChips button[aria-pressed=true]{background:var(--themeLink);border-color:var(--themeLink);color:#fff}
-.qtCtl select{height:36px;border:1px solid var(--themeBd-color);border-radius:8px;background:var(--themeBg-alt);color:inherit;font:inherit;padding:0 8px}
+.qtCtl select{height:34px;flex:none;border:1px solid var(--themeBd-color);border-radius:9px;background:var(--themeBg-alt);color:inherit;font:inherit;font-size:.85rem;padding:0 6px}
 .qtStick{position:sticky;top:56px;z-index:40;background:var(--themeBg)}
 .qtCaps{margin-top:8px;display:flex;flex-direction:column;gap:6px;max-height:54vh;overflow:auto;padding:2px;position:relative}
 .qtCap{display:flex;gap:10px;align-items:flex-start;text-align:left;border:1px solid var(--themeBd-color);border-radius:10px;background:var(--themeBg-alt);padding:9px 11px;cursor:pointer}
