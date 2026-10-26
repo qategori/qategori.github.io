@@ -553,6 +553,21 @@ body.qmOpen .qmPanel{transform:none}
 .qtKeyBody input[type=text]{flex:1;min-width:180px;height:44px;border:1px solid var(--themeBd-color);border-radius:10px;background:var(--themeBg);color:inherit;padding:0 12px;font:inherit;font-size:.9rem}
 .qtKeyStat{font-size:.8rem;opacity:.75;margin:8px 0 0}
 
+/* ===== Nav bawah kaca transparan (ala X) =====
+   Latar bar dibuat tembus + blur; lapisan musim .qsBot (rumput/bintang) dan
+   partikel musim di belakang bar tidak diubah. Ikon Mochi tetap padat. */
+html body .qBottom,body .mainM,body #qnvBar{
+  background-color:rgba(140,140,140,.30);
+  -webkit-backdrop-filter:blur(16px) saturate(170%);
+  backdrop-filter:blur(16px) saturate(170%)}
+html body .qBottom{background-color:color-mix(in srgb,var(--themeBg) 62%,transparent)}
+body .mainM{background-color:color-mix(in srgb,var(--mobileBg) 62%,transparent)}
+body #qnvBar{background-color:color-mix(in srgb,var(--themeBg) 62%,transparent)}
+html body .qBottom .qmBtn .qmAv,body #qnvBar .qmQnvAv{
+  background:var(--themeBg-alt);
+  -webkit-backdrop-filter:none;
+  backdrop-filter:none}
+
 .leftF{justify-content:flex-start!important}
 .leftF label{min-width:56px!important;justify-content:flex-start!important;padding-inline:var(--contentPadding,16px)!important}
 .leftF label::before{content:''!important;display:block;width:24px;height:24px;background:currentColor;-webkit-mask:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%221.5%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22M15%2019.9201L8.47997%2013.4001C7.70997%2012.6301%207.70997%2011.3701%208.47997%2010.6001L15%204.08008%22/%3E%3C/svg%3E") center/contain no-repeat;mask:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%221.5%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22M15%2019.9201L8.47997%2013.4001C7.70997%2012.6301%207.70997%2011.3701%208.47997%2010.6001L15%204.08008%22/%3E%3C/svg%3E") center/contain no-repeat}
