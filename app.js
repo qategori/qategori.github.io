@@ -1288,3 +1288,23 @@ show();
   }
   window.addEventListener('scroll', function(){ if (!tick) { tick = true; requestAnimationFrame(upd); } }, {passive: true});
 })();
+
+/* Persetujuan cookie — dulu widget Blogger "Cookie consent", tidak terbawa
+   saat pindah ke situs statis. Tampilan memakai CSS tema .nJ.cookie yang
+   memang sudah ada di base.css; di sini markup + logikanya dipulihkan. */
+(function(){
+  try{
+    if(document.cookie.indexOf('qCookieConsent=1')>-1) return;
+    try{ if(localStorage.getItem('qCookieConsent')==='1') return; }catch(e){}
+    if(document.querySelector('.nJ.cookie')) return;
+    var d=document.createElement('div'); d.className='nJ cookie';
+    d.innerHTML='<p><span class="opacity">Kami menggunakan cookie untuk memahami bagaimana Anda menggunakan situs kami dan meningkatkan pengalaman Anda. Ini termasuk konten dan iklan yang dipersonalisasi...</span> <a class="extL opacity" aria-label="Pelajari" data-text="Pelajari" href="/p/privacy-policy.html" rel="noreferrer" target="_blank">Pelajari</a></p><div class="flex ft"><span class="acc">Terima</span></div>';
+    document.body.appendChild(d);
+    d.querySelector('.acc').addEventListener('click',function(){
+      var exp=new Date(Date.now()+30*24*60*60*1000).toUTCString();
+      document.cookie='qCookieConsent=1; expires='+exp+'; path=/; SameSite=Lax';
+      try{ localStorage.setItem('qCookieConsent','1'); }catch(e){}
+      d.classList.add('hidden');
+    });
+  }catch(e){}
+})();
