@@ -1269,3 +1269,22 @@ show();
 
 
 })();
+
+/* Nav dinamis ala X: gulir ke bawah = header sembunyi + nav bawah kaca;
+   gulir ke atas / dekat puncak = header tampil + nav bawah pekat lagi. */
+(function(){
+  var lastY = window.scrollY || 0, tick = false;
+  function blocked(){
+    return document.querySelector('#forNav:checked,#forJepang:checked,#forProfil:checked,#forBook:checked,#forShare:checked')
+      || document.body.classList.contains('qmOpen') || document.body.classList.contains('qSrh');
+  }
+  function upd(){
+    tick = false;
+    var y = window.scrollY || 0, de = document.documentElement;
+    if (blocked()) { de.classList.remove('qScDown'); lastY = y; return; }
+    if (y > 140 && y > lastY + 4) de.classList.add('qScDown');
+    else if (y < lastY - 4 || y <= 60) de.classList.remove('qScDown');
+    lastY = y;
+  }
+  window.addEventListener('scroll', function(){ if (!tick) { tick = true; requestAnimationFrame(upd); } }, {passive: true});
+})();

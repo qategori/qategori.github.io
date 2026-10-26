@@ -553,20 +553,35 @@ body.qmOpen .qmPanel{transform:none}
 .qtKeyBody input[type=text]{flex:1;min-width:180px;height:44px;border:1px solid var(--themeBd-color);border-radius:10px;background:var(--themeBg);color:inherit;padding:0 12px;font:inherit;font-size:.9rem}
 .qtKeyStat{font-size:.8rem;opacity:.75;margin:8px 0 0}
 
-/* ===== Nav bawah kaca transparan (ala X) =====
-   Latar bar dibuat tembus + blur; lapisan musim .qsBot (rumput/bintang) dan
-   partikel musim di belakang bar tidak diubah. Ikon Mochi tetap padat. */
-html body .qBottom,body .mainM,body #qnvBar{
-  background-color:rgba(140,140,140,.30);
+/* ===== Nav & header dinamis ala X =====
+   Diam / gulir ke atas: header tampil, nav bawah pekat.
+   Gulir ke bawah: header sembunyi, nav bawah jadi kaca transparan.
+   Kelas .qScDown di <html> diatur skrip gulir di app.js.
+   Lapisan musim .qsBot & partikel musim tidak diubah; ikon Mochi tetap padat. */
+.qHead,header.mainH{transition:transform .28s ease}
+html.qScDown .qHead,html.qScDown header.mainH{transform:translateY(-103%)}
+html body .qBottom,body .mainM{transition:background-color .28s ease}
+html.qScDown body .qBottom{
+  background-color:rgba(140,140,140,.26);
+  background-color:color-mix(in srgb,var(--themeBg) 34%,transparent);
   -webkit-backdrop-filter:blur(16px) saturate(170%);
   backdrop-filter:blur(16px) saturate(170%)}
-html body .qBottom{background-color:color-mix(in srgb,var(--themeBg) 62%,transparent)}
-body .mainM{background-color:color-mix(in srgb,var(--mobileBg) 62%,transparent)}
-body #qnvBar{background-color:color-mix(in srgb,var(--themeBg) 62%,transparent)}
+html.qScDown body .mainM{
+  background-color:rgba(140,140,140,.26);
+  background-color:color-mix(in srgb,var(--mobileBg) 34%,transparent);
+  -webkit-backdrop-filter:blur(16px) saturate(170%);
+  backdrop-filter:blur(16px) saturate(170%)}
+body #qnvBar{
+  background-color:rgba(140,140,140,.30);
+  background-color:color-mix(in srgb,var(--themeBg) 62%,transparent);
+  -webkit-backdrop-filter:blur(16px) saturate(170%);
+  backdrop-filter:blur(16px) saturate(170%)}
 html body .qBottom .qmBtn .qmAv,body #qnvBar .qmQnvAv{
   background:var(--themeBg-alt);
   -webkit-backdrop-filter:none;
   backdrop-filter:none}
+.qtStick{transition:top .28s ease}
+html.qScDown .qtStick{top:8px}
 
 .leftF{justify-content:flex-start!important}
 .leftF label{min-width:56px!important;justify-content:flex-start!important;padding-inline:var(--contentPadding,16px)!important}
