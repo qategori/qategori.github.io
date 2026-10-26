@@ -41,7 +41,7 @@ var isHome=!!root;
 var DATA_BASE='https://bshantoz.github.io/nihongo/';
 function loadScript(src){return new Promise(function(res){var x=document.createElement('script');x.src=src;x.onload=x.onerror=function(){res()};document.head.appendChild(x)})}
 var BEL=['jlpt','tg2','jawa','sunda','bali','kana','rambu'];
-var PANES=['beranda','bushu','jlpt','tg2','jawa','sunda','bali','kana','rambu','podcast','game','berita'];
+var PANES=['beranda','bushu','jlpt','tg2','jawa','sunda','bali','kana','rambu','podcast','game','berita','terjemah'];
 var URL_OF={jlpt:P+'level-materi-jlpt.html',rambu:P+'rambu-jepang.html',podcast:P+'podcast.html',bushu:P+'materi-dan-kuis-kanji-metode-bushu.html',game:P+'permainan.html',
  jawa:P+'jawa.html','jawa-l5':P+'jawa-level5.html','jawa-l4':P+'jawa-level4.html','jawa-l3':P+'jawa-level3.html','jawa-l2':P+'jawa-level2.html','jawa-l1':P+'jawa-level1.html',
  sunda:P+'sunda.html','sunda-l5':P+'sunda-level5.html','sunda-l4':P+'sunda-level4.html','sunda-l3':P+'sunda-level3.html','sunda-l2':P+'sunda-level2.html','sunda-l1':P+'sunda-level1.html',
@@ -248,6 +248,187 @@ function showGame(sub){
   if(gkey===g.id&&gameFrame&&host.contains(gameFrame)){startT();return}
   gkey=g.id;gameFrame=null;frame(host,g.f,g.t,'<div class="qhBar"><button type="button" class="qhBtn alt" data-go="game">&larr; Semua game</button></div>',function(fr){gameInit(fr,g.id)});
 }
+/* ===== Terjemah Video (putar YouTube + subtitle JP/ID sinkron) ===== */
+var QTW='https://qategori-terjemah.bshantoz.workers.dev';
+var qtBuilt=false,qtPlayer=null,qtReady=false,qtCues=[],qtVid='',qtTimer=0,qtActive=-1,qtLastTouch=0,qtMode='both';
+function qtEl(id){return document.getElementById(id)}
+function qtMsg(t,cls){var m=qtEl('qtMsg');if(m){m.textContent=t||'';m.className='qtMsg'+(cls?' '+cls:'')}}
+function qtFmt(t){t=Math.max(0,Math.floor(t||0));var m=Math.floor(t/60),s=t%60;return m+':'+(s<10?'0':'')+s}
+function qtVideoId(u){if(!u)return'';u=(''+u).trim();var m=u.match(/(?:youtube\.com\/(?:watch\?[^#]*v=|shorts\/|embed\/|live\/|v\/)|youtu\.be\/)([A-Za-z0-9_-]{11})/);if(m)return m[1];if(/^[A-Za-z0-9_-]{11}$/.test(u))return u;return''}
+function qtParseTime(s){var p=(''+s).replace(',','.').split(':');var n=p.length;var sec=parseFloat(p[n-1])||0;var min=parseInt(p[n-2]||'0',10)||0;var hr=n>=3?(parseInt(p[n-3]||'0',10)||0):0;return hr*3600+min*60+sec}
+function qtParse(text){
+  text=(''+(text||'')).replace(/\r/g,'').trim();if(!text)return[];
+  var cues=[];
+  if(text.indexOf('-->')>=0){
+    text.split(/\n\s*\n/).forEach(function(block){
+      var lines=block.split('\n').filter(function(x){return x.trim()});
+      var ti=-1;lines.forEach(function(x,i){if(ti<0&&x.indexOf('-->')>=0)ti=i});
+      if(ti<0)return;
+      var body=lines.slice(ti+1).join(' ').replace(/<[^>]+>/g,'').replace(/&amp;/g,'&').trim();
+      if(body)cues.push({t:qtParseTime(lines[ti].split('-->')[0].trim()),jp:body});
+    });
+  }else{
+    var cur=null;
+    text.split('\n').forEach(function(raw){
+      var line=raw.trim();if(!line)return;
+      var m=line.match(/^(\d{1,2}:\d{2}(?::\d{2})?)\s*(.*)$/);
+      if(m){cur={t:qtParseTime(m[1]),jp:(m[2]||'').trim()};cues.push(cur)}
+      else if(cur){cur.jp=(cur.jp+' '+line).trim()}
+      else{cur={t:0,jp:line};cues.push(cur)}
+    });
+    cues=cues.filter(function(c){return c.jp});
+  }
+  cues.sort(function(a,b){return a.t-b.t});
+  return cues;
+}
+function qtRender(){
+  var box=qtEl('qtCaps');if(!box)return;
+  box.className='qtCaps qt-'+qtMode;
+  box.innerHTML=qtCues.map(function(c,i){return '<div class="qtCap" data-i="'+i+'"><span class="qtTime">'+qtFmt(c.t)+'</span><span class="qtTxt"><span class="qtJp">'+esc(c.jp)+'</span>'+(c.id?'<span class="qtId">'+esc(c.id)+'</span>':'')+'</span></div>'}).join('');
+  qtEl('qtCtl').hidden=!qtCues.length;
+  var tr=qtEl('qtTr');tr.hidden=!qtCues.length||qtCues.every(function(c){return !!c.id});
+  qtActive=-1;
+}
+function qtSetCues(cues,src){
+  qtCues=cues||[];qtRender();
+  if(!qtCues.length){qtMsg('Tidak ada subtitle yang terbaca. Coba tempel transkrip secara manual lewat kotak teks.','bad');return}
+  qtMsg('Subtitle dimuat: '+qtCues.length+' baris ('+src+'). Menerjemahkan…');
+  qtTranslate();
+}
+function qtCacheKey(){return 'qtCache:'+qtVid+':'+qtCues.length+':'+(qtCues[0]?qtCues[0].jp.slice(0,24):'')}
+function qtTranslate(){
+  if(!qtCues.length)return;
+  var ck=qtCacheKey(),cached=null;
+  try{cached=JSON.parse(lsGet(ck)||'null')}catch(e){}
+  if(cached&&cached.length===qtCues.length){qtCues.forEach(function(c,i){c.id=cached[i]});qtRender();qtMsg('Terjemahan dimuat dari simpanan perangkat ini. Selamat belajar!');return}
+  var idx=0,B=40,btn=qtEl('qtTr');btn.hidden=false;btn.disabled=true;
+  function step(){
+    if(idx>=qtCues.length){btn.disabled=false;qtRender();try{lsSet(ck,JSON.stringify(qtCues.map(function(c){return c.id||''})))}catch(e){}qtMsg('Selesai diterjemahkan. Ketuk baris subtitle untuk melompat ke detik itu.');return}
+    var part=qtCues.slice(idx,idx+B);
+    qtMsg('Menerjemahkan baris '+(idx+1)+'–'+Math.min(idx+B,qtCues.length)+' dari '+qtCues.length+'…');
+    fetch(QTW+'/translate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({lines:part.map(function(c){return c.jp})})})
+      .then(function(r){return r.json()})
+      .then(function(d){
+        if(!d||!d.lines||d.lines.length!==part.length)throw new Error('mismatch');
+        part.forEach(function(c,i){c.id=d.lines[i]});
+        idx+=B;qtRender();step();
+      })
+      .catch(function(){btn.disabled=false;qtRender();qtMsg('Terjemahan terhenti di baris '+(idx+1)+'. Tekan tombol “Terjemahkan ke Indonesia” untuk melanjutkan.','bad')});
+  }
+  step();
+}
+function qtAutoFetch(){
+  if(!qtVid){qtMsg('Putar dulu videonya: tempel tautan YouTube lalu tekan Putar.','bad');return}
+  qtMsg('Mengambil subtitle dari YouTube…');
+  var hdr={},sdk='';try{sdk=lsGet('qtSdKey')||''}catch(e){}
+  if(sdk)hdr['x-sd-key']=sdk;
+  fetch(QTW+'/captions?v='+qtVid,{headers:hdr}).then(function(r){return r.json()}).then(function(d){
+    if(d&&d.ok&&d.segments&&d.segments.length){qtSetCues(d.segments.map(function(s){return{t:s.t,jp:s.text}}),'otomatis'+(d.via==='supadata'?' via Supadata':' dari YouTube'))}
+    else if(d&&d.error==='need_key'){qtMsg('Subtitle otomatis butuh kunci Supadata karena YouTube menolak diambil langsung dari server. Buka bagian “🔑 Kunci Supadata saya” di bawah untuk memasang kunci gratis milikmu — atau pakai tempel transkrip manual.','bad')}
+    else if(d&&d.error==='quota_shared'){qtMsg('Jatah subtitle otomatis bersama hari ini sudah habis. Pasang kunci Supadatamu sendiri (gratis) lewat bagian 🔑 di bawah, atau pakai tempel transkrip manual.','bad')}
+    else{qtMsg('Subtitle otomatis tidak tersedia untuk video ini. Pakai cara tempel transkrip: buka video di YouTube → “Buka transkrip” → salin → tempel di kotak teks → Proses transkrip.','bad')}
+  }).catch(function(){qtMsg('Gagal menghubungi server subtitle. Coba lagi, atau pakai tempel transkrip manual.','bad')});
+}
+function qtLoadApi(cb){
+  if(window.YT&&YT.Player){cb();return}
+  var old=window.onYouTubeIframeAPIReady;
+  window.onYouTubeIframeAPIReady=function(){if(old)old();cb()};
+  if(!document.querySelector('script[src*="iframe_api"]')){var s=document.createElement('script');s.src='https://www.youtube.com/iframe_api';document.head.appendChild(s)}
+}
+function qtSyncStart(){
+  if(qtTimer)return;
+  qtTimer=setInterval(function(){
+    if(!qtPlayer||!qtReady||!qtCues.length)return;
+    var t;try{t=qtPlayer.getCurrentTime()}catch(e){return}
+    var i=-1;for(var k=0;k<qtCues.length;k++){if(qtCues[k].t<=t+0.05)i=k;else break}
+    if(i===qtActive)return;
+    qtActive=i;
+    var box=qtEl('qtCaps');if(!box)return;
+    [].slice.call(box.children).forEach(function(el,j){el.classList.toggle('on',j===i)});
+    if(i>=0&&Date.now()-qtLastTouch>4000){var el=box.children[i];if(el){try{el.scrollIntoView({block:'center',behavior:'smooth'})}catch(e){}}}
+  },300);
+}
+function qtPlay(id){
+  qtEl('qtPlayerWrap').hidden=false;
+  qtLoadApi(function(){
+    try{
+      if(qtPlayer&&qtPlayer.loadVideoById){qtPlayer.loadVideoById(id)}
+      else{qtPlayer=new YT.Player('qtYt',{videoId:id,playerVars:{rel:0,playsinline:1,modestbranding:1},events:{onReady:function(){qtReady=true;qtSyncStart()}}})}
+      qtSyncStart();
+    }catch(e){qtMsg('Pemutar YouTube gagal dimuat. Periksa koneksi lalu coba lagi.','bad')}
+  });
+}
+function qtStart(){
+  var u=qtEl('qtUrl').value,id=qtVideoId(u);
+  if(!id){
+    if(u&&/tiktok\.com|facebook\.com|instagram\.com/.test(u)){qtMsg('Itu tautan TikTok/Facebook/Instagram. Platform tersebut tidak menyediakan transkrip dan pemutarnya tidak bisa disinkronkan, jadi fitur ini khusus YouTube dulu ya.','bad')}
+    else{qtMsg('Tautan tidak dikenali. Tempel tautan video YouTube (youtube.com/watch…, youtu.be/…, atau Shorts).','bad')}
+    return;
+  }
+  qtVid=id;qtCues=[];qtRender();qtPlay(id);
+  qtMsg('Video dimuat. Mengambil subtitle…');
+  setTimeout(qtAutoFetch,600);
+}
+function showTerjemah(r){
+  var host=panes.terjemah.querySelector('.qhBody');
+  if(!qtBuilt){
+    qtBuilt=true;
+    host.innerHTML='<div class="qtWrap">'
+      +'<h2 class="qtH">🎬 Terjemah Video</h2>'
+      +'<p class="qtSub">Tempel tautan video YouTube, lalu putar sambil membaca subtitle bahasa Jepangnya beserta terjemahan Indonesianya — seperti aplikasi belajar dari podcast, tapi untuk video. Ketuk satu baris subtitle untuk melompat ke detik tersebut.</p>'
+      +'<div class="qtRow"><input type="url" id="qtUrl" placeholder="Tempel tautan YouTube di sini…" aria-label="Tautan video YouTube"><button type="button" class="qtBtn pri" id="qtGo">Putar</button></div>'
+      +'<div class="qtPlayer" id="qtPlayerWrap" hidden><div class="qtFrame"><div id="qtYt"></div></div></div>'
+      +'<div class="qtRow qtGap"><button type="button" class="qtBtn" id="qtAuto">Ambil subtitle otomatis</button><label class="qtBtn qtFile">Unggah .srt / .vtt<input type="file" id="qtFile" accept=".srt,.vtt,.txt" style="display:none"></label><button type="button" class="qtBtn" id="qtTr" hidden>Terjemahkan ke Indonesia</button></div>'
+      +'<textarea id="qtPaste" rows="4" placeholder="Atau tempel transkrip di sini. Caranya: buka video di aplikasi YouTube → ketuk judul/deskripsi → “Buka transkrip” → salin semua teksnya → tempel di sini → tekan Proses transkrip."></textarea>'
+      +'<div class="qtRow"><button type="button" class="qtBtn pri" id="qtProc">Proses transkrip</button></div>'
+      +'<details class="qtKey" id="qtKeyBox"><summary>🔑 Kunci Supadata saya — agar subtitle otomatis selalu berhasil (opsional)</summary><div class="qtKeyBody"><p>Pengambilan subtitle otomatis memakai layanan Supadata. Jatah bersama dari Qategori terbatas; dengan kunci sendiri kamu tidak berbagi jatah (gratis 100 video/bulan, tanpa kartu kredit):</p><ol><li>Buka <a href="https://supadata.ai" target="_blank" rel="noopener">supadata.ai</a> → <b>Sign up / Get started</b> → <b>Continue with Google</b>.</li><li>Di Dashboard, cari bagian <b>API Key</b> lalu salin kuncinya.</li><li>Tempel di sini lalu tekan Simpan. Kunci hanya tersimpan di perangkat ini.</li></ol><div class="qtRow"><input type="text" id="qtSdKey" placeholder="Tempel kunci API Supadata di sini" aria-label="Kunci API Supadata"><button type="button" class="qtBtn" id="qtSdSave">Simpan</button></div><p class="qtKeyStat" id="qtSdStat"></p></div></details>'
+      +'<p class="qtMsg" id="qtMsg" aria-live="polite"></p>'
+      +'<div class="qtCtl" id="qtCtl" hidden><span class="qtCtlLab">Tampilan</span><span class="qtChips" role="group" aria-label="Mode subtitle"><button type="button" data-m="both" aria-pressed="true">Jepang + Indo</button><button type="button" data-m="jp" aria-pressed="false">Jepang saja</button><button type="button" data-m="id" aria-pressed="false">Indo saja</button></span><label class="qtCtlLab" for="qtSpeed">Kecepatan</label><select id="qtSpeed"><option value="0.5">0.5×</option><option value="0.75">0.75×</option><option value="1" selected>1×</option><option value="1.25">1.25×</option><option value="1.5">1.5×</option></select></div>'
+      +'<div class="qtCaps qt-both" id="qtCaps"></div>'
+      +'<p class="qtFoot">Khusus YouTube dulu: TikTok/Facebook/Instagram tidak menyediakan transkrip dan pemutar tanamnya tidak bisa disinkronkan. Subtitle otomatis diambil dari subtitle resmi/otomatis milik video; bila server tidak mendapatkannya, gunakan tempel transkrip. Terjemahan disimpan di perangkat ini, jadi video yang sama tidak diterjemahkan dua kali.</p>'
+      +'</div>';
+    qtEl('qtGo').addEventListener('click',qtStart);
+    qtEl('qtUrl').addEventListener('keydown',function(e){if(e.key==='Enter')qtStart()});
+    qtEl('qtAuto').addEventListener('click',qtAutoFetch);
+    qtEl('qtTr').addEventListener('click',qtTranslate);
+    qtEl('qtProc').addEventListener('click',function(){
+      var cues=qtParse(qtEl('qtPaste').value);
+      if(!cues.length){qtMsg('Transkrip tidak terbaca. Pastikan ada baris waktu seperti “0:05 …” atau format .srt/.vtt.','bad');return}
+      qtSetCues(cues,'tempel manual');
+    });
+    qtEl('qtFile').addEventListener('change',function(){
+      var f=this.files&&this.files[0];if(!f)return;
+      var rd=new FileReader();
+      rd.onload=function(){qtEl('qtPaste').value=String(rd.result||'');var cues=qtParse(rd.result);if(cues.length)qtSetCues(cues,'file '+f.name);else qtMsg('Isi file tidak terbaca sebagai subtitle.','bad')};
+      rd.readAsText(f);
+    });
+    qtEl('qtCaps').addEventListener('click',function(e){
+      var cap=e.target.closest&&e.target.closest('.qtCap');if(!cap)return;
+      var c=qtCues[+cap.getAttribute('data-i')];if(!c)return;
+      qtLastTouch=Date.now();
+      if(qtPlayer&&qtReady){try{qtPlayer.seekTo(c.t,true);qtPlayer.playVideo()}catch(err){}}
+    });
+    ['scroll','touchstart','wheel'].forEach(function(ev){qtEl('qtCaps').addEventListener(ev,function(){qtLastTouch=Date.now()},{passive:true})});
+    [].slice.call(document.querySelectorAll('.qtChips button')).forEach(function(b){
+      b.addEventListener('click',function(){
+        [].slice.call(document.querySelectorAll('.qtChips button')).forEach(function(x){x.setAttribute('aria-pressed','false')});
+        b.setAttribute('aria-pressed','true');qtMode=b.getAttribute('data-m');
+        qtEl('qtCaps').className='qtCaps qt-'+qtMode;
+      });
+    });
+    qtEl('qtSpeed').addEventListener('change',function(){if(qtPlayer&&qtReady){try{qtPlayer.setPlaybackRate(parseFloat(this.value))}catch(e){}}});
+    var sdInp=qtEl('qtSdKey'),savedSd='';try{savedSd=lsGet('qtSdKey')||''}catch(e){}
+    if(sdInp&&savedSd){sdInp.value=savedSd;qtEl('qtSdStat').textContent='Kunci tersimpan di perangkat ini — subtitle otomatis memakai kuncimu.'}
+    qtEl('qtSdSave').addEventListener('click',function(){
+      var val=sdInp.value.trim();try{lsSet('qtSdKey',val)}catch(e){}
+      qtEl('qtSdStat').textContent=val?'Kunci tersimpan di perangkat ini.':'Kunci dihapus dari perangkat ini.';
+      qtMsg(val?'Kunci Supadata disimpan. Subtitle otomatis berikutnya memakai kuncimu.':'Kunci Supadata dihapus.');
+    });
+  }
+  var q=new URLSearchParams((r&&r.qs)||''),u=q.get('url');
+  if(u){var inp=qtEl('qtUrl');if(inp&&inp.value!==u){inp.value=u;qtStart()}}
+}
+
 function kanaPick(fr,mode){var n=0;
   (function t(){try{var d=fr.contentDocument,b=d&&d.querySelector('[data-sc="'+(mode==='katakana'?'k':'h')+'"]');if(b){if(b.getAttribute('aria-pressed')!=='true')b.click();return}}catch(x){}
     if(++n<20)setTimeout(t,200)})()}
@@ -879,9 +1060,10 @@ function show(){
   document.querySelectorAll('a[data-tab]').forEach(function(a){a.classList.toggle('on',a.getAttribute('data-tab')===act)});
   if(BEL.indexOf(r.tab)>=0){lsSet('qh_bel',r.tab);panes[r.tab].querySelectorAll('.qhSeg button').forEach(function(b){b.setAttribute('aria-pressed',b.getAttribute('data-go').split('-')[0]===r.tab?'true':'false')})}
   if(r.tab!=='game'&&r.tab!=='kana')stopT();
-  var T={beranda:'Qategori',bushu:'Bushu',jlpt:'Materi JLPT',tg2:'Materi TG2',jawa:'Bahasa Jawa',sunda:'Bahasa Sunda',bali:'Bahasa Bali',kana:'Hapalan Kana',rambu:'Rambu-rambu Jepang',podcast:'Podcast',game:'Game',berita:'Berita'};
+  var T={beranda:'Qategori',bushu:'Bushu',jlpt:'Materi JLPT',tg2:'Materi TG2',jawa:'Bahasa Jawa',sunda:'Bahasa Sunda',bali:'Bahasa Bali',kana:'Hapalan Kana',rambu:'Rambu-rambu Jepang',podcast:'Podcast',game:'Game',berita:'Berita',terjemah:'Terjemah Video'};
   document.title=(T[r.tab]||'')+' | Qategori';
   if(r.tab==='game')showGame(r.sub);
+  else if(r.tab==='terjemah')showTerjemah(r);
   else if(r.tab==='kana')showKana(r.sub);
   else if(r.tab==='berita'){showBerita(r.qs)}
   else if(r.tab==='beranda'){showBeranda();var mh=mEl();if(mh){mh.classList.add('qcHop');setTimeout(function(){mh.classList.remove('qcHop')},700)}}
@@ -889,6 +1071,7 @@ function show(){
   if(r.tab!=='berita'&&readKey){readKey='';document.title=document.title}
   if(r.tab==='bushu'){var bq=new URLSearchParams(r.qs);if(bq.get('q')||bq.get('tab')){var ap=function(){if(window.kbqOpen)window.kbqOpen(bq.get('q')||'',bq.get('tab')||'asal')};if(mounted.bushu&&document.getElementById('kuis-kanji'))setTimeout(ap,50);else panes.bushu.__after=ap}}
   if(r.tab==='jlpt'){var jq=new URLSearchParams(r.qs);if(jq.get('q')){var jqq=jq.get('q'),jqt=jq.get('tab')||'daftar',jap=function(){var n=0,iv=setInterval(function(){n++;var pn=panes.jlpt,btn=pn.querySelector('button[data-panel="'+jqt+'"]'),inp=pn.querySelector('#daftarSearch'),bd=pn.querySelector('#daftarBody'),sel=pn.querySelector('#daftarKategori');if(btn&&inp&&bd&&(bd.children.length||(sel&&sel.options.length>1))){clearInterval(iv);btn.click();inp.value=jqq;inp.dispatchEvent(new Event('input',{bubbles:true}));setTimeout(function(){var pp=pn.querySelector('#panel-'+jqt);if(pp)pp.scrollIntoView({block:'start'})},150)}if(n>48)clearInterval(iv)},250)};if(mounted.jlpt)setTimeout(jap,60);else panes.jlpt.__after=jap}}
+  if(r.tab==='podcast'){var pc=function(){var pn=panes.podcast,bd=pn.querySelector('.qhBody');if(bd&&bd.children.length&&!pn.querySelector('#qtCard')){var dv=document.createElement('div');dv.id='qtCard';dv.className='qtCard';dv.innerHTML='<b>🎬 Terjemah Video</b><span>Putar video YouTube sambil membaca subtitle bahasa Jepang + terjemahan Indonesianya.</span><button type="button" class="qhBtn" data-go="terjemah">Buka Terjemah Video</button>';bd.insertBefore(dv,bd.firstChild)}};if(mounted.podcast)setTimeout(pc,120);else panes.podcast.__after=function(){setTimeout(pc,120)}}
   first=false;
 }
 /* navigasi atas/bawah */
