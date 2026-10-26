@@ -562,15 +562,15 @@ body.qmOpen .qmPanel{transform:none}
 html.qScDown .qHead,html.qScDown header.mainH{transform:translateY(-103%)}
 html body .qBottom,body .mainM{transition:background-color .28s ease}
 html.qScDown body .qBottom{
-  background-color:rgba(140,140,140,.26);
-  background-color:color-mix(in srgb,var(--themeBg) 34%,transparent);
-  -webkit-backdrop-filter:blur(16px) saturate(170%);
-  backdrop-filter:blur(16px) saturate(170%)}
+  background-color:rgba(140,140,140,.10);
+  background-color:color-mix(in srgb,var(--themeBg) 15%,transparent);
+  -webkit-backdrop-filter:blur(7px) saturate(150%);
+  backdrop-filter:blur(7px) saturate(150%)}
 html.qScDown body .mainM{
-  background-color:rgba(140,140,140,.26);
-  background-color:color-mix(in srgb,var(--mobileBg) 34%,transparent);
-  -webkit-backdrop-filter:blur(16px) saturate(170%);
-  backdrop-filter:blur(16px) saturate(170%)}
+  background-color:rgba(140,140,140,.10);
+  background-color:color-mix(in srgb,var(--mobileBg) 15%,transparent);
+  -webkit-backdrop-filter:blur(7px) saturate(150%);
+  backdrop-filter:blur(7px) saturate(150%)}
 body #qnvBar{
   background-color:rgba(140,140,140,.30);
   background-color:color-mix(in srgb,var(--themeBg) 62%,transparent);
