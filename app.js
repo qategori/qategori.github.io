@@ -250,7 +250,7 @@ function showGame(sub){
 }
 /* ===== Terjemah Video (putar YouTube + subtitle JP/ID sinkron) ===== */
 var QTW='https://qategori-terjemah.bshantoz.workers.dev';
-var qtBuilt=false,qtPlayer=null,qtReady=false,qtCues=[],qtVid='',qtTimer=0,qtActive=-1,qtLastTouch=0,qtMode='both';
+var qtBuilt=false,qtPlayer=null,qtReady=false,qtCues=[],qtVid='',qtTimer=0,qtActive=-1,qtLastTouch=0,qtMode='both',qtWordOn=false,qtBank=null,qtBankBusy=false;
 function qtEl(id){return document.getElementById(id)}
 function qtMsg(t,cls){var m=qtEl('qtMsg');if(m){m.textContent=t||'';m.className='qtMsg'+(cls?' '+cls:'')}}
 function qtFmt(t){t=Math.max(0,Math.floor(t||0));var m=Math.floor(t/60),s=t%60;return m+':'+(s<10?'0':'')+s}
@@ -284,10 +284,131 @@ function qtParse(text){
 function qtRender(){
   var box=qtEl('qtCaps');if(!box)return;
   box.className='qtCaps qt-'+qtMode;
-  box.innerHTML=qtCues.map(function(c,i){return '<div class="qtCap" data-i="'+i+'"><span class="qtTime">'+qtFmt(c.t)+'</span><span class="qtTxt"><span class="qtJp">'+esc(c.jp)+'</span>'+(c.id?'<span class="qtId">'+esc(c.id)+'</span>':'')+'</span></div>'}).join('');
+  box.innerHTML=qtCues.map(function(c,i){return '<div class="qtCap" data-i="'+i+'"><span class="qtTime">'+qtFmt(c.t)+'</span><span class="qtTxt"><span class="qtJp">'+qtJpHtml(c.jp)+'</span>'+(c.id?'<span class="qtId">'+esc(c.id)+'</span>':'')+'</span></div>'}).join('');
   qtEl('qtCtl').hidden=!qtCues.length;
   var tr=qtEl('qtTr');tr.hidden=!qtCues.length||qtCues.every(function(c){return !!c.id});
   qtActive=-1;
+}
+/* ===== Ketuk kata -> arti (tango/kotoba) ===== */
+function qtJpHtml(jp){
+  if(!qtWordOn)return esc(jp);
+  return qtSeg(jp).map(function(s){return s.w?'<span class="qtW" data-w="'+esc(s.s)+'">'+esc(s.s)+'</span>':esc(s.s)}).join('');
+}
+function qtSeg(text){
+  text=''+(text||'');
+  var out=[];
+  if(typeof Intl!=='undefined'&&Intl.Segmenter){
+    try{
+      var sg=new Intl.Segmenter('ja',{granularity:'word'});
+      var iter=sg.segment(text)[Symbol.iterator](),nx;
+      while(!(nx=iter.next()).done)out.push({w:!!nx.value.isWordLike,s:nx.value.segment});
+      return out;
+    }catch(e){}
+  }
+  var parts=text.match(/[一-鿿]+|[ぁ-ゟ]+|[゠-ヿ]+|[^一-鿿ぁ-ゟ゠-ヿ]+/g)||[];
+  parts.forEach(function(p){
+    if(/^[ぁ-ゟ]+$/.test(p)&&p.length>1){
+      var buf='';
+      for(var i=0;i<p.length;i++){
+        var ch=p.charAt(i);
+        if('はがをにへとのもでやかねよわ'.indexOf(ch)>=0){if(buf){out.push({w:true,s:buf});buf=''}out.push({w:true,s:ch})}
+        else buf+=ch;
+      }
+      if(buf)out.push({w:true,s:buf});
+    }
+    else if(/^[^一-鿿ぁ-ゟ゠-ヿ]+$/.test(p))out.push({w:false,s:p});
+    else out.push({w:true,s:p});
+  });
+  return out;
+}
+var QT_GODAN={'き':'く','ぎ':'ぐ','し':'す','ち':'つ','に':'ぬ','び':'ぶ','み':'む','り':'る','い':'う'};
+var QT_POT={'え':'う','け':'く','げ':'ぐ','せ':'す','て':'つ','ね':'ぬ','べ':'ぶ','め':'む','れ':'る'};
+function qtCands(w){
+  var seen={},out=[];
+  function add(x){if(x&&x.length&&!seen[x]){seen[x]=1;out.push(x)}}
+  add(w);
+  var ENDS=['ませんでした','ません','ました','ましょう','なかった','なくて','ないで','なければ','すぎた','すぎる','すぎ','ている','ていた','ない','たい','たく','たかった','かった','くない','くて','て','で','た','だ','ます','く'];
+  var stems=[w];
+  ENDS.forEach(function(e){if(w.length>e.length&&w.slice(w.length-e.length)===e)stems.push(w.slice(0,w.length-e.length))});
+  stems.forEach(function(st){
+    add(st);add(st+'る');add(st+'する');add(st+'い');
+    var last=st.charAt(st.length-1);
+    if(QT_GODAN[last])add(st.slice(0,-1)+QT_GODAN[last]);
+    if(QT_POT[last])add(st.slice(0,-1)+QT_POT[last]);
+    if(last==='っ'){add(st.slice(0,-1)+'う');add(st.slice(0,-1)+'つ');add(st.slice(0,-1)+'る');if(st==='行っ')add('行く')}
+    if(last==='ん'){add(st.slice(0,-1)+'む');add(st.slice(0,-1)+'ぶ');add(st.slice(0,-1)+'ぬ')}
+    if(last==='い'){add(st.slice(0,-1)+'く');add(st.slice(0,-1)+'ぐ')}
+    if(last==='て'||last==='で'){
+      var st2=st.slice(0,-1),l2=st2.charAt(st2.length-1);
+      add(st2);add(st2+'る');add(st2+'する');
+      if(QT_GODAN[l2])add(st2.slice(0,-1)+QT_GODAN[l2]);
+      if(QT_POT[l2])add(st2.slice(0,-1)+QT_POT[l2]);
+    }
+  });
+  return out;
+}
+function qtEnsureBank(){
+  if(qtBank||qtBankBusy)return;
+  qtBankBusy=true;
+  var lv=['n5','n4','n3','n2','n1'];
+  Promise.all(lv.map(function(n){return window[n.toUpperCase()+'_KOTOBA']?Promise.resolve():loadScript(DATA_BASE+n+'/'+n+'-kotoba.js')})).then(function(){
+    var map={};
+    lv.forEach(function(n){
+      (window[n.toUpperCase()+'_KOTOBA']||[]).forEach(function(e){
+        if(!e||!(e.kanji||e.kana))return;
+        var rec={jisho:e.kanji||e.kana,reading:e.kana||'',romaji:e.romaji||'',arti:e.arti||'',contoh:e.contohJp||'',contohId:e.contohId||'',src:'Bank kata JLPT '+n.toUpperCase()};
+        if(e.kanji&&!map[e.kanji])map[e.kanji]=rec;
+        if(e.kana&&!map[e.kana])map[e.kana]=rec;
+      });
+    });
+    qtBank=map;qtBankBusy=false;
+  });
+}
+function qtBankFind(w){
+  if(!qtBank)return null;
+  var cs=qtCands(w);
+  for(var i=0;i<cs.length;i++){if(qtBank[cs[i]])return qtBank[cs[i]]}
+  return null;
+}
+function qtPopShow(html){var p=qtEl('qtPop');if(!p)return;p.innerHTML=html;p.hidden=false}
+function qtPopHide(){var p=qtEl('qtPop');if(p)p.hidden=true}
+function qtSpeak(t){try{var u=new SpeechSynthesisUtterance(t);u.lang='ja-JP';u.rate=.9;window.speechSynthesis.cancel();window.speechSynthesis.speak(u)}catch(e){}}
+function qtPopWire(word){
+  var x=qtEl('qtPopX');if(x)x.addEventListener('click',qtPopHide);
+  var s=qtEl('qtPopSay');if(s)s.addEventListener('click',function(){qtSpeak(word)});
+}
+function qtPopHtml(d,word){
+  var h='<div class="qtPopTop"><div><div class="qtPopWord">'+esc(d.jisho||word)+'</div>'
+    +((d.reading||d.romaji)?'<div class="qtPopRead">'+esc(d.reading||'')+(d.romaji?' ・ '+esc(d.romaji):'')+'</div>':'')
+    +'</div><button type="button" class="qtPopSay" id="qtPopSay" aria-label="Dengarkan pelafalan">🔊</button><button type="button" class="qtPopX" id="qtPopX" aria-label="Tutup">✕</button></div>'
+    +'<div class="qtPopArti">'+esc(d.arti||'')+'</div>'
+    +(d.contoh?'<div class="qtPopEx">'+esc(d.contoh)+(d.contohId?'<i>'+esc(d.contohId)+'</i>':'')+'</div>':'')
+    +((d.jisho&&d.jisho!==word)?'<div class="qtPopSrc">Kamu mengetuk: '+esc(word)+'</div>':'')
+    +'<div class="qtPopSrc">'+esc(d.src||'')+'</div>';
+  return h;
+}
+function qtWordOpen(word,sentence){
+  if(!word)return;
+  qtPopShow('<div class="qtPopTop"><div class="qtPopWord">'+esc(word)+'</div><button type="button" class="qtPopX" id="qtPopX" aria-label="Tutup">✕</button></div><div class="qtPopArti">Mencari arti…</div>');
+  qtPopWire(word);
+  var ck='qtWord:'+word,cached=null;
+  try{cached=JSON.parse(lsGet(ck)||'null')}catch(e){}
+  if(cached&&cached.arti){qtPopShow(qtPopHtml(cached,word));qtPopWire(word);return}
+  var rec=qtBankFind(word);
+  if(rec){try{lsSet(ck,JSON.stringify(rec))}catch(e){}qtPopShow(qtPopHtml(rec,word));qtPopWire(word);return}
+  qtEnsureBank();
+  fetch(QTW+'/word',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({word:word,sentence:sentence||''})})
+    .then(function(r){return r.json()})
+    .then(function(d){
+      if(!d||!d.ok||!d.arti)throw new Error('x');
+      d.src='Penjelasan AI';
+      try{lsSet(ck,JSON.stringify(d))}catch(e){}
+      qtPopShow(qtPopHtml(d,word));qtPopWire(word);
+    })
+    .catch(function(){
+      qtPopShow('<div class="qtPopTop"><div class="qtPopWord">'+esc(word)+'</div><button type="button" class="qtPopX" id="qtPopX" aria-label="Tutup">✕</button></div><div class="qtPopArti">Arti belum ketemu. Periksa koneksi internet, lalu ketuk lagi kata ini.</div>');
+      qtPopWire(word);
+    });
 }
 function qtSetCues(cues,src){
   qtCues=cues||[];qtRender();
@@ -309,11 +430,12 @@ function qtTranslate(){
     fetch(QTW+'/translate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({lines:part.map(function(c){return c.jp})})})
       .then(function(r){return r.json()})
       .then(function(d){
+        if(d&&d.error)throw new Error(d.detail||d.error);
         if(!d||!d.lines||d.lines.length!==part.length)throw new Error('mismatch');
         part.forEach(function(c,i){c.id=d.lines[i]});
         idx+=B;qtRender();step();
       })
-      .catch(function(){btn.disabled=false;qtRender();qtMsg('Terjemahan terhenti di baris '+(idx+1)+'. Tekan tombol “Terjemahkan ke Indonesia” untuk melanjutkan.','bad')});
+      .catch(function(err){btn.disabled=false;qtRender();qtMsg('Terjemahan terhenti di baris '+(idx+1)+'. Tekan tombol “Terjemahkan ke Indonesia” untuk melanjutkan.'+((err&&err.message&&err.message!=='mismatch')?' (Info server: '+err.message+')':''),'bad')});
   }
   step();
 }
@@ -375,7 +497,7 @@ function showTerjemah(r){
     qtBuilt=true;
     host.innerHTML='<div class="qtWrap">'
       +'<h2 class="qtH">🎬 Terjemah Video</h2>'
-      +'<p class="qtSub">Tempel tautan video YouTube, lalu putar sambil membaca subtitle bahasa Jepangnya beserta terjemahan Indonesianya — seperti aplikasi belajar dari podcast, tapi untuk video. Ketuk satu baris subtitle untuk melompat ke detik tersebut.</p>'
+      +'<p class="qtSub">Tempel tautan video YouTube, lalu putar sambil membaca subtitle bahasa Jepangnya beserta terjemahan Indonesianya — seperti aplikasi belajar dari podcast, tapi untuk video. Ketuk satu baris subtitle untuk melompat ke detik tersebut. Aktifkan mode “Ketuk kata → Arti kata” di bawah video untuk mengetuk kata dan melihat arti tango/kotobanya.</p>'
       +'<div class="qtRow"><input type="url" id="qtUrl" placeholder="Tempel tautan YouTube di sini…" aria-label="Tautan video YouTube"><button type="button" class="qtBtn pri" id="qtGo">Putar</button></div>'
       +'<div class="qtPlayer" id="qtPlayerWrap" hidden><div class="qtFrame"><div id="qtYt"></div></div></div>'
       +'<div class="qtRow qtGap"><button type="button" class="qtBtn" id="qtAuto">Ambil subtitle otomatis</button><label class="qtBtn qtFile">Unggah .srt / .vtt<input type="file" id="qtFile" accept=".srt,.vtt,.txt" style="display:none"></label><button type="button" class="qtBtn" id="qtTr" hidden>Terjemahkan ke Indonesia</button></div>'
@@ -383,8 +505,9 @@ function showTerjemah(r){
       +'<div class="qtRow"><button type="button" class="qtBtn pri" id="qtProc">Proses transkrip</button></div>'
       +'<details class="qtKey" id="qtKeyBox"><summary>🔑 Kunci Supadata saya — agar subtitle otomatis selalu berhasil (opsional)</summary><div class="qtKeyBody"><p>Pengambilan subtitle otomatis memakai layanan Supadata. Jatah bersama dari Qategori terbatas; dengan kunci sendiri kamu tidak berbagi jatah (gratis 100 video/bulan, tanpa kartu kredit):</p><ol><li>Buka <a href="https://supadata.ai" target="_blank" rel="noopener">supadata.ai</a> → <b>Sign up / Get started</b> → <b>Continue with Google</b>.</li><li>Di Dashboard, cari bagian <b>API Key</b> lalu salin kuncinya.</li><li>Tempel di sini lalu tekan Simpan. Kunci hanya tersimpan di perangkat ini.</li></ol><div class="qtRow"><input type="text" id="qtSdKey" placeholder="Tempel kunci API Supadata di sini" aria-label="Kunci API Supadata"><button type="button" class="qtBtn" id="qtSdSave">Simpan</button></div><p class="qtKeyStat" id="qtSdStat"></p></div></details>'
       +'<p class="qtMsg" id="qtMsg" aria-live="polite"></p>'
-      +'<div class="qtCtl" id="qtCtl" hidden><span class="qtCtlLab">Tampilan</span><span class="qtChips" role="group" aria-label="Mode subtitle"><button type="button" data-m="both" aria-pressed="true">Jepang + Indo</button><button type="button" data-m="jp" aria-pressed="false">Jepang saja</button><button type="button" data-m="id" aria-pressed="false">Indo saja</button></span><label class="qtCtlLab" for="qtSpeed">Kecepatan</label><select id="qtSpeed"><option value="0.5">0.5×</option><option value="0.75">0.75×</option><option value="1" selected>1×</option><option value="1.25">1.25×</option><option value="1.5">1.5×</option></select></div>'
+      +'<div class="qtCtl" id="qtCtl" hidden><span class="qtCtlLab">Tampilan</span><span class="qtChips" id="qtModeChips" role="group" aria-label="Mode subtitle"><button type="button" data-m="both" aria-pressed="true">Jepang + Indo</button><button type="button" data-m="jp" aria-pressed="false">Jepang saja</button><button type="button" data-m="id" aria-pressed="false">Indo saja</button></span><span class="qtCtlLab">Ketuk kata</span><span class="qtChips" id="qtWordChips" role="group" aria-label="Mode ketuk kata"><button type="button" data-wm="0" aria-pressed="true">Mati</button><button type="button" data-wm="1" aria-pressed="false">Arti kata</button></span><label class="qtCtlLab" for="qtSpeed">Kecepatan</label><select id="qtSpeed"><option value="0.5">0.5×</option><option value="0.75">0.75×</option><option value="1" selected>1×</option><option value="1.25">1.25×</option><option value="1.5">1.5×</option></select></div>'
       +'<div class="qtCaps qt-both" id="qtCaps"></div>'
+      +'<div class="qtPop" id="qtPop" hidden></div>'
       +'<p class="qtFoot">Khusus YouTube dulu: TikTok/Facebook/Instagram tidak menyediakan transkrip dan pemutar tanamnya tidak bisa disinkronkan. Subtitle otomatis diambil dari subtitle resmi/otomatis milik video; bila server tidak mendapatkannya, gunakan tempel transkrip. Terjemahan disimpan di perangkat ini, jadi video yang sama tidak diterjemahkan dua kali.</p>'
       +'</div>';
     qtEl('qtGo').addEventListener('click',qtStart);
@@ -403,17 +526,39 @@ function showTerjemah(r){
       rd.readAsText(f);
     });
     qtEl('qtCaps').addEventListener('click',function(e){
+      var wEl=e.target.closest&&e.target.closest('.qtW');
+      if(qtWordOn&&wEl){
+        qtLastTouch=Date.now();
+        var cap0=e.target.closest('.qtCap');var c0=cap0?qtCues[+cap0.getAttribute('data-i')]:null;
+        qtWordOpen(wEl.getAttribute('data-w'),c0?c0.jp:'');
+        return;
+      }
       var cap=e.target.closest&&e.target.closest('.qtCap');if(!cap)return;
       var c=qtCues[+cap.getAttribute('data-i')];if(!c)return;
       qtLastTouch=Date.now();
       if(qtPlayer&&qtReady){try{qtPlayer.seekTo(c.t,true);qtPlayer.playVideo()}catch(err){}}
     });
     ['scroll','touchstart','wheel'].forEach(function(ev){qtEl('qtCaps').addEventListener(ev,function(){qtLastTouch=Date.now()},{passive:true})});
-    [].slice.call(document.querySelectorAll('.qtChips button')).forEach(function(b){
+    [].slice.call(document.querySelectorAll('#qtModeChips button')).forEach(function(b){
       b.addEventListener('click',function(){
-        [].slice.call(document.querySelectorAll('.qtChips button')).forEach(function(x){x.setAttribute('aria-pressed','false')});
+        [].slice.call(document.querySelectorAll('#qtModeChips button')).forEach(function(x){x.setAttribute('aria-pressed','false')});
         b.setAttribute('aria-pressed','true');qtMode=b.getAttribute('data-m');
         qtEl('qtCaps').className='qtCaps qt-'+qtMode;
+      });
+    });
+    var wSaved='0';try{wSaved=lsGet('qtWordMode')||'0'}catch(e){}
+    if(wSaved==='1'){
+      qtWordOn=true;
+      [].slice.call(document.querySelectorAll('#qtWordChips button')).forEach(function(x){x.setAttribute('aria-pressed',x.getAttribute('data-wm')==='1'?'true':'false')});
+      qtEnsureBank();
+    }
+    [].slice.call(document.querySelectorAll('#qtWordChips button')).forEach(function(b){
+      b.addEventListener('click',function(){
+        [].slice.call(document.querySelectorAll('#qtWordChips button')).forEach(function(x){x.setAttribute('aria-pressed','false')});
+        b.setAttribute('aria-pressed','true');qtWordOn=b.getAttribute('data-wm')==='1';
+        try{lsSet('qtWordMode',qtWordOn?'1':'0')}catch(e){}
+        if(qtWordOn){qtEnsureBank();qtMsg('Mode arti kata aktif: ketuk satu kata di subtitle untuk melihat arti tango/kotobanya. Ketuk stempel waktunya untuk melompat ke detik itu.')}
+        qtRender();
       });
     });
     qtEl('qtSpeed').addEventListener('change',function(){if(qtPlayer&&qtReady){try{qtPlayer.setPlaybackRate(parseFloat(this.value))}catch(e){}}});

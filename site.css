@@ -525,6 +525,18 @@ body.qmOpen .qmPanel{transform:none}
 .qtId{font-size:.86rem;opacity:.75}
 .qtCaps.qt-jp .qtId{display:none}
 .qtCaps.qt-id .qtJp{display:none}
+.qtW{border-bottom:1px dotted var(--themeLink);border-radius:3px;padding:0 1px;cursor:pointer}
+.qtW:active{background:var(--themeLink);color:#fff}
+.qtPop{position:fixed;left:10px;right:10px;bottom:88px;z-index:1300;max-width:520px;margin:0 auto;background:var(--themeBg);border:1px solid var(--themeBd-color);border-radius:14px;box-shadow:0 12px 34px rgba(0,0,0,.35);padding:14px 16px}
+.qtPopTop{display:flex;align-items:flex-start;gap:8px}
+.qtPopWord{font-size:1.28rem;font-weight:800;line-height:1.3}
+.qtPopRead{font-size:.85rem;opacity:.7;margin-top:2px}
+.qtPopSay,.qtPopX{border:1px solid var(--themeBd-color);background:var(--themeBg-alt);color:inherit;border-radius:999px;width:34px;height:34px;font-size:.95rem;cursor:pointer;flex:none}
+.qtPopSay{margin-left:auto}
+.qtPopArti{font-size:.98rem;line-height:1.55;margin-top:8px}
+.qtPopEx{font-size:.88rem;line-height:1.55;margin-top:8px;opacity:.9}
+.qtPopEx i{display:block;opacity:.75}
+.qtPopSrc{font-size:.72rem;opacity:.55;margin-top:8px}
 .qtFoot{font-size:.78rem;opacity:.65;line-height:1.55;margin-top:16px}
 .qtKey{border:1px solid var(--themeBd-color);border-radius:10px;background:var(--themeBg-alt);padding:10px 12px;margin-top:10px}
 .qtKey summary{cursor:pointer;font-weight:700;font-size:.9rem}
