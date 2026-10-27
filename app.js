@@ -231,7 +231,7 @@ function mount(paneId,key){
 var gameFrame=null,gameTimer=0;
 function isDark(){var t=nB.getAttribute('data-theme');return t==='dark'||(t!=='light'&&matchMedia('(prefers-color-scheme: dark)').matches)}
 function tune(fr){try{var d=fr.contentDocument;if(!d||!d.documentElement)return;if(fr.__kana)kanaTheme(fr);if(fr.__gx)gxSync(fr);var w=isDark()?'dark':'light';if(d.documentElement.getAttribute('data-theme')!==w)d.documentElement.setAttribute('data-theme',w);
-  var h=d.body?Math.ceil(d.body.getBoundingClientRect().height):0;if(!h)h=d.documentElement.scrollHeight;if(h>120&&Math.abs(fr.offsetHeight-h)>2)fr.style.height=h+'px'}catch(e){}}
+  if(!fr.__full){var h=d.body?Math.ceil(d.body.getBoundingClientRect().height):0;if(!h)h=d.documentElement.scrollHeight;if(h>120&&Math.abs(fr.offsetHeight-h)>2)fr.style.height=h+'px'}}catch(e){}}
 function stopT(){if(gameTimer){clearInterval(gameTimer);gameTimer=0}}
 function startT(){stopT();if(gameFrame)gameTimer=setInterval(function(){tune(gameFrame)},400)}
 function frame(host,file,title,bar,onload){
@@ -241,12 +241,43 @@ function frame(host,file,title,bar,onload){
     fr.addEventListener('load',function(){tune(fr);if(onload)onload(fr)});fr.srcdoc=html;host.appendChild(fr);gameFrame=fr;startT();
   }).catch(function(err){host.innerHTML=(bar||'')+'<div class="qhErr"><p>Belum bisa dimuat ('+esc(err&&err.message)+').</p><a class="qhBtn alt" target="_blank" rel="noopener" href="'+GAME_BASE+file+'">Buka di tab baru</a></div>'});
 }
+/* player layar penuh ala Poki: laman dikunci, usap jadi milik game, ada tombol kembali */
+var playEl=null,playHost=null,playTitle=null,playId='';
+function playBuild(){
+  playEl=document.createElement('div');playEl.className='qhPlay';playEl.id='qhPlay';playEl.hidden=true;
+  playEl.innerHTML='<div class="qhPlayBar"><button type="button" class="qhPlayBack" aria-label="Kembali ke daftar game">&larr; Kembali</button><b class="qhPlayT"></b><button type="button" class="qhPlayFs" aria-label="Layar penuh">&#9974;</button></div><div class="qhPlayHost"></div>';
+  document.body.appendChild(playEl);
+  playHost=playEl.querySelector('.qhPlayHost');playTitle=playEl.querySelector('.qhPlayT');
+  playEl.querySelector('.qhPlayBack').addEventListener('click',function(){go('game')});
+  var fsb=playEl.querySelector('.qhPlayFs');
+  if(!playEl.requestFullscreen&&!playEl.webkitRequestFullscreen)fsb.style.display='none';
+  fsb.addEventListener('click',function(){try{
+    if(document.fullscreenElement){document.exitFullscreen()}
+    else if(playEl.requestFullscreen){playEl.requestFullscreen()}
+    else if(playEl.webkitRequestFullscreen){playEl.webkitRequestFullscreen()}
+  }catch(e){}});
+  playEl.addEventListener('touchmove',function(e){e.preventDefault()},{passive:false});
+}
+function openPlay(g){
+  if(!playEl)playBuild();
+  playEl.hidden=false;playEl.classList.add('open');
+  document.documentElement.classList.add('qLock');
+  playTitle.textContent=g.t;
+  if(playId===g.id&&gameFrame&&playHost.contains(gameFrame)){startT();return}
+  playId=g.id;gameFrame=null;
+  frame(playHost,g.f,g.t,'',function(fr){fr.__full=1;fr.setAttribute('scrolling','auto');gameInit(fr,g.id)});
+}
+function closePlay(){
+  if(!playEl||playEl.hidden)return;
+  playEl.hidden=true;playEl.classList.remove('open');
+  document.documentElement.classList.remove('qLock');
+  if(document.fullscreenElement){try{document.exitFullscreen()}catch(e){}}
+}
 var gkey='';
 function showGame(sub){
   var host=panes.game.querySelector('.qhBody'),g=GAMES.filter(function(x){return x.id===sub})[0];
-  if(!g){stopT();gkey='';gameFrame=null;host.innerHTML='<div class="qhGameGrid">'+GAMES.filter(function(x){return x.id!=='kana'}).map(function(g){return'<button type="button" class="qhGameCard" data-go="game-'+g.id+'"><svg viewBox="0 0 24 24" aria-hidden="true">'+g.ic+'</svg><b>'+esc(g.t)+'</b><i>'+g.j+' &middot; '+esc(g.r)+'</i><small>'+esc(g.d)+'</small></button>'}).join('')+'</div>';return}
-  if(gkey===g.id&&gameFrame&&host.contains(gameFrame)){startT();return}
-  gkey=g.id;gameFrame=null;frame(host,g.f,g.t,'<div class="qhBar"><button type="button" class="qhBtn alt" data-go="game">&larr; Semua game</button></div>',function(fr){gameInit(fr,g.id)});
+  if(!g){closePlay();stopT();gkey='';gameFrame=null;host.innerHTML='<div class="qhGameGrid">'+GAMES.filter(function(x){return x.id!=='kana'}).map(function(g){return'<button type="button" class="qhGameCard" data-go="game-'+g.id+'"><svg viewBox="0 0 24 24" aria-hidden="true">'+g.ic+'</svg><b>'+esc(g.t)+'</b><i>'+g.j+' &middot; '+esc(g.r)+'</i><small>'+esc(g.d)+'</small></button>'}).join('')+'</div>';return}
+  gkey=g.id;openPlay(g);
 }
 /* ===== Terjemah Video (putar YouTube + subtitle JP/ID sinkron) ===== */
 var QTW='https://qategori-terjemah.bshantoz.workers.dev';
@@ -1202,6 +1233,7 @@ function show(){
   document.querySelectorAll('a[data-tab]').forEach(function(a){a.classList.toggle('on',a.getAttribute('data-tab')===act)});
   if(BEL.indexOf(r.tab)>=0){lsSet('qh_bel',r.tab);panes[r.tab].querySelectorAll('.qhSeg button').forEach(function(b){b.setAttribute('aria-pressed',b.getAttribute('data-go').split('-')[0]===r.tab?'true':'false')})}
   if(r.tab!=='game'&&r.tab!=='kana')stopT();
+  if(r.tab!=='game')closePlay();
   var T={beranda:'Qategori',bushu:'Bushu',jlpt:'Materi JLPT',tg2:'Materi TG2',jawa:'Bahasa Jawa',sunda:'Bahasa Sunda',bali:'Bahasa Bali',kana:'Hapalan Kana',rambu:'Rambu-rambu Jepang',podcast:'Podcast',game:'Game',berita:'Berita',terjemah:'Terjemah Video'};
   document.title=(T[r.tab]||'')+' | Qategori';
   if(r.tab==='game')showGame(r.sub);
