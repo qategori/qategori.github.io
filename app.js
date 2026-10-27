@@ -830,7 +830,7 @@ function renderList(){
   for(var i=0;i<rows.length;i++){if(rows[i].th){feat=rows[i];break}}
   var rest=rows.filter(function(d){return d!==feat});
   qs0.innerHTML=(feat?'<h2 class="qhH">Sorotan</h2>'+cardHtml(feat,true):'')+'<h2 class="qhH">Semua Postingan</h2><div class="qGrid">'+rest.slice(0,shown).map(function(d){return cardHtml(d)}).join('')+'</div>';
-  var m=document.getElementById('qMore');m.hidden=rest.length<=shown;
+  var m=document.getElementById('qMore');m.hidden=qfCommActive||rest.length<=shown;
   renderExtra(rows,feat);extraEl.hidden=false;
 }
 function renderExtra(rows,feat){
@@ -904,7 +904,7 @@ function qhToc(body){
 function showBerita(qs){
   var q=new URLSearchParams(qs),u=q.get('u'),l=q.get('l'),more=document.getElementById('qMore');
   if(u&&ART_RE.test(u)){
-    listEl.hidden=true;more.hidden=true;extraEl.hidden=true;readEl.hidden=false;todayEl.hidden=true;
+    listEl.hidden=true;more.hidden=true;extraEl.hidden=true;readEl.hidden=false;todayEl.hidden=true;var qw0=document.getElementById('qfWrap');if(qw0)qw0.hidden=true;
     if(readKey!==u){readKey=u;
       readEl.innerHTML='<div class="qhBar"><button type="button" class="qhBtn alt" data-go="berita'+(curL?'?l='+encodeURIComponent(curL):'')+'">&larr; Kembali</button></div><div class="qhArt pE postBody"><p class="qhLoad">Memuat...</p></div>';
       var body=readEl.querySelector('.qhArt'),my=u;
@@ -923,12 +923,69 @@ function showBerita(qs){
     }
     return;
   }
-  readKey='';readEl.hidden=true;readEl.innerHTML='';listEl.hidden=false;document.title='Berita | Qategori';
+  readKey='';readEl.hidden=true;readEl.innerHTML='';if(l)qfCommActive=false;listEl.hidden=qfCommActive;document.title='Forum | Qategori';var qw1=document.getElementById('qfWrap');if(qw1)qw1.hidden=false;qfSync();
   loadPosts(function(){
     if(l&&l.charAt(0)==='/'&&l.charAt(1)!=='/'){todayEl.hidden=true;more.hidden=true;extraEl.hidden=true;if(curL!==l){curL=l;renderQuery(l)}}
-    else{todayEl.hidden=false;refreshToday();if(curL){curL='';lab=''}renderList()}
+    else{todayEl.hidden=qfCommActive;refreshToday();if(curL){curL='';lab=''}renderList()}
   });
 }
+
+/* ===== Forum: chip Komunitas (papan sapa) + Berita ===== */
+var QF_API='https://qategori-forum.bshantoz.workers.dev';
+var qfCommActive=(localStorage.getItem('qfView')!=='berita');
+var qfMsgs=null,qfBuilt=false;
+function qfAgo(ts){var s=Math.max(1,((Date.now()-ts)/1000)|0);if(s<60)return'baru saja';var m=(s/60)|0;if(m<60)return m+' mnt lalu';var j=(m/60)|0;if(j<24)return j+' jam lalu';return ((j/24)|0)+' hari lalu'}
+function qfCard(m){var nm=String(m.name||'Tamu').slice(0,30);
+  return '<article class="qfPost"><div class="qfWho"><span class="qfAv">'+esc((nm.charAt(0)||'T').toUpperCase())+'</span><span class="qfNm">'+esc(nm)+'</span><span class="qfTm">'+qfAgo(m.ts)+'</span></div><p class="qfTx">'+esc(m.text)+'</p><div class="qfActs"><button type="button" class="qfReply" data-nm="'+esc(nm)+'">Balas</button><button type="button" class="qfRep" data-id="'+m.id+'">Laporkan</button></div></article>'}
+function qfRender(){var box=document.getElementById('qfFeed');if(!box)return;
+  if(qfMsgs===null){box.innerHTML='<p class="qhLoad">Memuat pesan komunitas...</p>';return}
+  if(qfMsgs==='err'){box.innerHTML='<p class="qhLoad">Forum belum bisa dimuat. Coba lagi sebentar lagi ya.</p>';return}
+  box.innerHTML=qfMsgs.length?qfMsgs.map(qfCard).join(''):'<p class="qhLoad">Belum ada pesan. Jadilah yang pertama menyapa!</p>'}
+function qfLoad(){fetch(QF_API+'/list').then(function(r){return r.json()}).then(function(j){qfMsgs=(j&&j.messages)||[];qfRender()}).catch(function(){qfMsgs='err';qfRender()})}
+function qfSync(){var w=document.getElementById('qfWrap');if(!w)return;
+  w.querySelectorAll('.qfChip').forEach(function(c){c.classList.toggle('on',(c.getAttribute('data-v')==='komunitas')===qfCommActive)});
+  var cm=document.getElementById('qfComm');if(cm)cm.hidden=!qfCommActive;
+  if(qfCommActive&&qfMsgs===null)qfLoad()}
+function qfSetView(comm){qfCommActive=comm;try{localStorage.setItem('qfView',comm?'komunitas':'berita')}catch(e){}
+  listEl.hidden=comm;extraEl.hidden=comm;todayEl.hidden=comm;
+  var more=document.getElementById('qMore');
+  if(comm){if(more)more.hidden=true}else if(posts){renderList()}else if(more){more.hidden=false}
+  qfSync();window.scrollTo(0,0)}
+function qfBuild(){if(qfBuilt)return;qfBuilt=true;
+  var w=document.createElement('div');w.id='qfWrap';
+  w.innerHTML='<div class="qfChips"><button type="button" class="qfChip" data-v="komunitas">Komunitas</button><button type="button" class="qfChip" data-v="berita">Berita</button></div>'
+   +'<div id="qfComm" hidden><div class="qfPin"><span class="qfPinTag">Disematkan</span><div class="qfWho"><span class="qfAv qfAdm">B</span><span class="qfNm">Ben</span><span class="qfTm">Admin</span></div><p class="qfTx">Selamat datang di Forum Qategori! Silakan saling sapa, tanya jawab soal belajar bahasa Jepang, bahasa daerah, dan kehidupan di Jepang. Jaga sopan santun ya — pesan berisi tautan akan ditinjau admin dulu sebelum tampil.</p></div>'
+   +'<form class="qfForm" id="qfForm"><div class="qfWho"><span class="qfAv" id="qfMyAv">?</span><input class="qfIn" id="qfName" maxlength="30" placeholder="Nama kamu" autocomplete="name"></div><textarea class="qfIn qfTa" id="qfText" rows="3" maxlength="400" placeholder="Tulis sapaan atau pertanyaan..."></textarea><input type="text" id="qfHp" name="website" autocomplete="off" tabindex="-1" aria-hidden="true" style="display:none"><p class="qfNote" id="qfNote" hidden></p><button type="submit" class="qfSend" id="qfSend">Kirim</button></form>'
+   +'<div id="qfFeed"></div></div>';
+  panes.berita.insertBefore(w,panes.berita.firstChild);
+  var nm=document.getElementById('qfName');try{nm.value=localStorage.getItem('qfName')||''}catch(e){}
+  var av=document.getElementById('qfMyAv');function upd(){av.textContent=(nm.value.trim().charAt(0)||'?').toUpperCase()}nm.addEventListener('input',upd);upd();
+  w.querySelectorAll('.qfChip').forEach(function(c){c.addEventListener('click',function(){qfSetView(c.getAttribute('data-v')==='komunitas')})});
+  document.getElementById('qfForm').addEventListener('submit',function(e){e.preventDefault();
+    var name=nm.value.trim(),text=document.getElementById('qfText').value.trim(),note=document.getElementById('qfNote'),btn=document.getElementById('qfSend');
+    if(name.length<2||text.length<2){note.hidden=false;note.textContent='Isi nama dan pesan dulu ya (masing-masing minimal 2 huruf).';return}
+    btn.disabled=true;btn.textContent='Mengirim...';
+    fetch(QF_API+'/post',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:name,text:text,hp:document.getElementById('qfHp').value})})
+    .then(function(r){return r.json().then(function(j){return{st:r.status,j:j}})})
+    .then(function(x){btn.disabled=false;btn.textContent='Kirim';
+      if(x.st===429){note.hidden=false;note.textContent='Terlalu cepat — tunggu beberapa menit sebelum mengirim lagi ya.';return}
+      if(!x.j||!x.j.ok){note.hidden=false;note.textContent='Pesan belum terkirim. Coba lagi ya.';return}
+      try{localStorage.setItem('qfName',name)}catch(e2){}document.getElementById('qfText').value='';
+      if(x.j.held){note.hidden=false;note.textContent='Pesanmu terkirim dan sedang menunggu persetujuan admin (biasanya karena mengandung tautan atau kata tertentu).';return}
+      note.hidden=true;
+      if(Object.prototype.toString.call(qfMsgs)==='[object Array]'){qfMsgs.unshift({id:x.j.id,name:name,text:text,ts:x.j.ts||Date.now()});qfRender()}
+    }).catch(function(){btn.disabled=false;btn.textContent='Kirim';note.hidden=false;note.textContent='Pesan belum terkirim. Periksa koneksi lalu coba lagi.'});
+  });
+  document.getElementById('qfFeed').addEventListener('click',function(e){
+    var rp=e.target.closest&&e.target.closest('.qfReply');
+    if(rp){var ta=document.getElementById('qfText');ta.value='@'+rp.getAttribute('data-nm')+' ';ta.focus();if(ta.scrollIntoView)ta.scrollIntoView({block:'center'});return}
+    var rl=e.target.closest&&e.target.closest('.qfRep');
+    if(rl&&!rl.disabled){rl.disabled=true;rl.textContent='Dilaporkan';
+      fetch(QF_API+'/report',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:+rl.getAttribute('data-id')})}).catch(function(){})}
+  });
+  qfSync();
+}
+qfBuild();
 function loadPosts(cb){if(posts)return cb();fetch('/search.json').then(function(r){return r.json()}).then(function(j){posts=j;cb()}).catch(function(){})}
 root.addEventListener('click',function(e){
   var c=e.target.closest&&e.target.closest('.qChip');
@@ -1223,7 +1280,7 @@ function show(){
   if(BEL.indexOf(r.tab)>=0){lsSet('qh_bel',r.tab);panes[r.tab].querySelectorAll('.qhSeg button').forEach(function(b){b.setAttribute('aria-pressed',b.getAttribute('data-go').split('-')[0]===r.tab?'true':'false')})}
   if(r.tab!=='game'&&r.tab!=='kana')stopT();
   if(r.tab!=='game')closePlay();
-  var T={beranda:'Qategori',bushu:'Bushu',jlpt:'Materi JLPT',tg2:'Materi TG2',jawa:'Bahasa Jawa',sunda:'Bahasa Sunda',bali:'Bahasa Bali',kana:'Hapalan Kana',rambu:'Rambu-rambu Jepang',podcast:'Podcast',game:'Game',berita:'Berita',terjemah:'Terjemah Video'};
+  var T={beranda:'Qategori',bushu:'Bushu',jlpt:'Materi JLPT',tg2:'Materi TG2',jawa:'Bahasa Jawa',sunda:'Bahasa Sunda',bali:'Bahasa Bali',kana:'Hapalan Kana',rambu:'Rambu-rambu Jepang',podcast:'Podcast',game:'Game',berita:'Forum',terjemah:'Terjemah Video'};
   document.title=(T[r.tab]||'')+' | Qategori';
   if(r.tab==='game')showGame(r.sub);
   else if(r.tab==='terjemah')showTerjemah(r);
