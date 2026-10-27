@@ -596,6 +596,7 @@ html.qScDown .qtStick{top:8px}
 .nB:has(#forNav:checked) .qtStick,.nB:has(#forJepang:checked) .qtStick,
 .nB:has(#forProfil:checked) .qtStick,.nB:has(#forBook:checked) .qtStick,
 .nB:has(#forShare:checked) .qtStick,.nB:has(.navi:checked) .qtStick{visibility:hidden}
+html.qOv .qtStick{visibility:hidden}
 
 .leftF{justify-content:flex-start!important}
 .leftF label{min-width:56px!important;justify-content:flex-start!important;padding-inline:var(--contentPadding,16px)!important}

@@ -65,10 +65,18 @@
     wrap.addEventListener('click',function(e){ var a=e.target.closest?e.target.closest('a[href]'):null; if(a&&isSite(a.getAttribute('href'))) closeChat() });
     document.addEventListener('keydown',function(e){ if(e.key==='Escape') closeChat() });
   }
-  function openChat(){ build(); wrap.setAttribute('aria-hidden','false'); document.body.classList.add('qmOpen');
+  /* Ikuti viewport visual: di WebView TikTok/Instagram jendela tidak menyusut
+     saat keyboard muncul, jadi tinggi panel disesuaikan manual agar kolom
+     ketik tidak tertutup keyboard. */
+  var vv=window.visualViewport||null;
+  function qmFit(){ if(!wrap) return; var st=wrap.style, pn=wrap.querySelector('.qmPanel'); if(!pn) return; var ps=pn.style;
+    if(!document.body.classList.contains('qmOpen')||!vv){ st.height=''; st.top=''; ps.maxHeight=''; return }
+    st.height=vv.height+'px'; st.top=vv.offsetTop+'px'; ps.maxHeight=Math.max(200,Math.round(vv.height*0.94))+'px' }
+  if(vv){ vv.addEventListener('resize',qmFit); vv.addEventListener('scroll',qmFit) }
+  function openChat(){ build(); wrap.setAttribute('aria-hidden','false'); document.body.classList.add('qmOpen'); qmFit();
     if(!opened){ opened=true; addRow('Halo! Aku Mochi, teman belajarmu di Qategori. Mau belajar kata baru, kuis mini, atau tanya soal Tokutei Ginou? Tulis saja pertanyaanmu, nya~') }
     setTimeout(function(){ try{ inputEl.focus() }catch(e){} },320) }
-  function closeChat(){ if(wrap) wrap.setAttribute('aria-hidden','true'); document.body.classList.remove('qmOpen') }
+  function closeChat(){ if(wrap) wrap.setAttribute('aria-hidden','true'); document.body.classList.remove('qmOpen'); qmFit() }
   window.qmOpenChat = openChat;
   function ask(text){ if(busy) return;
     if(used()>=20){ addRow(text,true); addRow('Kuota ngobrol gratis hari ini sudah habis (20 pertanyaan). Istirahat dulu ya, besok kita lanjut lagi! Materi dan kuis di situs tetap bisa dipakai sepuasnya.'); return }

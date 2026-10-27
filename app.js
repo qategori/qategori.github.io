@@ -1329,3 +1329,20 @@ show();
     });
   }catch(e){}
 })();
+
+/* Sembunyikan bar tempel Terjemah (.qtStick) selama laci menu / overlay tema
+   terbuka. Penanda kelas qOv di <html> digerakkan JS (pendengar change +
+   pengamat kelas body) supaya tetap bekerja di WebView TikTok/Instagram
+   yang belum mendukung pemilih :has(). */
+(function(){
+  var IDS=['forNav','forJepang','forTg2','forSearch','forProfil','forBook','forShare'];
+  function sync(){
+    var open=false;
+    try{ open=!!(document.body&&document.body.classList.contains('qmOpen')); }catch(e){}
+    for(var i=0;i<IDS.length&&!open;i++){ var c=document.getElementById(IDS[i]); if(c&&c.checked) open=true; }
+    document.documentElement.classList.toggle('qOv',open);
+  }
+  document.addEventListener('change',sync,true);
+  if(window.MutationObserver&&document.body) new MutationObserver(sync).observe(document.body,{attributes:true,attributeFilter:['class']});
+  sync();
+})();
