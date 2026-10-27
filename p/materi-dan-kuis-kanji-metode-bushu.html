@@ -179,10 +179,17 @@
 #kuis-kanji .kbq-pick{-webkit-appearance:none;appearance:none;padding:9px 32px 9px 12px;font-size:.92rem;line-height:1.3;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%23888' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center}
 </style>
 <div class="kbq-title">Kuis Kanji Metode Bushu (部首)</div>
+
 <div class="kbq-sub">Materi bushu, latihan bushu, posisi bushu, bagian bunyi, dan asal-usul kanji untuk level N5 sampai N1.</div>
+
 <div class="kbq-tabs" id="kbq-tabs"></div>
+
 <div id="kbq-app"></div>
-<div class="kbq-foot">Sumber data: daftar kanji per level JLPT dari Jonathan Waller (tanos.co.uk); bacaan dan arti dari KANJIDIC (EDRDG, lisensi CC BY-SA 4.0); komponen dan posisi bushu dari KanjiVG (CC BY-SA 3.0); dihimpun dalam dataset kanji-data karya David Gouveia (lisensi MIT). Arti bahasa Indonesia diterjemahkan dari arti bahasa Inggris KANJIDIC dan bisa keliru. Data turunan di halaman ini dibagikan dengan lisensi yang sama (CC BY-SA).</div>
+
+<div class="kbq-foot">
+
+</div>
+
 <script>
 (function () {
   "use strict";
@@ -191,7 +198,8 @@
   root.setAttribute("data-ready", "1");
   var BASE = root.getAttribute("data-base") || "https://bshantoz.github.io/nihongo/kanji/";
   var app0 = document.getElementById("kbq-app");
-  function fail() { app0.innerHTML = '<p>Data kuis gagal dimuat. Coba muat ulang halaman.</p>'; }
+  function fail() { app0.innerHTML = '<p>Data kuis gagal dimuat. Coba muat ulang halaman.</p>
+'; }
   function boot(D) {
     var LEVELS = D.LEVELS, LEVEL_INFO = D.LEVEL_INFO, RADS = D.RADS, KANJI = D.KANJI;
   var LV = ["N5", "N4", "N3", "N2", "N1"];
@@ -241,9 +249,14 @@
     return '<svg viewBox="0 0 109 109" role="img" aria-label="Urutan goresan kanji ' + esc(k) + '"><g class="g guide">' + guide + '</g><g class="g">' + g + "</g>" + n + "</svg>";
   }
   function strokePanel(e, ctx) {
-    return '<div class="kbq-stroke" data-ctx="' + ctx + '" data-k="' + escA(e.k) + '"><div class="kbq-stbody"><p class="kbq-note">Memuat urutan goresan...</p></div>' +
-      '<p class="kbq-cnt"></p><div class="kbq-row"><button type="button" class="kbq-sm" data-act="sthide">Sembunyikan</button>' +
-      '<button type="button" class="kbq-sm" data-act="streplay">Replay</button></div></div>';
+    return '<div class="kbq-stroke" data-ctx="' + ctx + '" data-k="' + escA(e.k) + '"><div class="kbq-stbody"><p class="kbq-note">Memuat urutan goresan...</p>
+</div>
+' +
+      '<p class="kbq-cnt"></p>
+<div class="kbq-row"><button type="button" class="kbq-sm" data-act="sthide">Sembunyikan</button>' +
+      '<button type="button" class="kbq-sm" data-act="streplay">Replay</button></div>
+</div>
+';
   }
   function playStrokes(box) {
     var svg = box.querySelector("svg");
@@ -267,7 +280,8 @@
       if (!box.isConnected) return;
       var sv = ok ? strokeSvg(e.k) : "";
       var body = box.querySelector(".kbq-stbody");
-      if (!sv) { body.innerHTML = '<p class="kbq-note">Data cara menulis untuk kanji ini belum tersedia.</p>'; return; }
+      if (!sv) { body.innerHTML = '<p class="kbq-note">Data cara menulis untuk kanji ini belum tersedia.</p>
+'; return; }
       body.innerHTML = sv;
       box.querySelector(".kbq-cnt").textContent = e.k + ": " + (window.KBQ_STROKES[e.k][0].length) + " goresan";
       playStrokes(box);
@@ -357,19 +371,24 @@
   }
   function renderManage() {
     var lv = manage.level;
-    var h = homeBtn() + "<h2>Kelola soal</h2>";
-    if (manage.msg) h += '<div class="kbq-msg' + (manage.err ? " err" : "") + '">' + esc(manage.msg) + "</div>";
+    var h = homeBtn() + "<h2>Kelola soal</h2>
+";
+    if (manage.msg) h += '<div class="kbq-msg' + (manage.err ? " err" : "") + '">' + esc(manage.msg) + "</div>
+";
     if (manage.editing !== null) {
       var d = manage.draft;
-      h += "<h2>" + (manage.editing === "new" ? "Soal baru" : "Edit soal") + " (" + lv + ")</h2>" +
+      h += "<h2>" + (manage.editing === "new" ? "Soal baru" : "Edit soal") + " (" + lv + ")</h2>
+" +
         '<label for="kbq-f-p">Pertanyaan</label><textarea id="kbq-f-p" rows="2">' + esc(d.p) + "</textarea>" +
         "<label>Pilihan jawaban (pilih bulatan di sebelah jawaban yang benar)</label>";
       for (var i = 0; i < 4; i++) {
         h += '<div class="kbq-radio"><input type="radio" name="kbq-f-a" value="' + i + '"' + (d.a === i ? " checked" : "") +
-          '><input type="text" id="kbq-f-o' + i + '" value="' + escA(d.o[i]) + '"></div>';
+          '><input type="text" id="kbq-f-o' + i + '" value="' + escA(d.o[i]) + '"></div>
+';
       }
       h += '<label for="kbq-f-e">Penjelasan (tampil setelah menjawab)</label><textarea id="kbq-f-e" rows="3">' + esc(d.e) + "</textarea>" +
-        '<div class="kbq-row"><button class="kbq-btn" data-act="msave">Simpan</button><button class="kbq-btn alt" data-act="mcancel">Batal</button></div>';
+        '<div class="kbq-row"><button class="kbq-btn" data-act="msave">Simpan</button><button class="kbq-btn alt" data-act="mcancel">Batal</button></div>
+';
       app.innerHTML = h;
       return;
     }
@@ -377,9 +396,11 @@
     LV.forEach(function (l) {
       h += '<button class="kbq-tab' + (l === lv ? " on" : "") + '" data-act="mlevel" data-v="' + l + '">' + l + " (" + LEVELS[l].length + ")</button>";
     });
-    h += "</div>";
+    h += "</div>
+";
     var qs = LEVELS[lv];
-    if (!qs.length) h += "<p>Belum ada soal di level ini.</p>";
+    if (!qs.length) h += "<p>Belum ada soal di level ini.</p>
+";
     qs.forEach(function (q, i) {
       h += '<div class="kbq-item"><span>' + (i + 1) + ". " + esc(q[0]) + '</span><div class="kbq-row" style="margin:0">';
       if (manage.delIdx === i) {
@@ -387,11 +408,16 @@
       } else {
         h += '<button class="kbq-sm" data-act="medit" data-v="' + i + '">Edit</button><button class="kbq-sm del" data-act="mdel" data-v="' + i + '">Hapus</button>';
       }
-      h += "</div></div>";
+      h += "</div>
+</div>
+";
     });
-    h += '<div class="kbq-row"><button class="kbq-btn" data-act="madd">Tambah soal ke ' + lv + "</button></div>" +
-      '<h2 style="margin-top:24px">Simpan dan bagikan</h2>' +
-      '<p class="kbq-note">Perubahan tersimpan di browser ini saja. Agar semua pengunjung melihat soal terbaru, tekan Ekspor JSON, lalu upload file soal-kanji.json ke folder yang sama dengan halaman ini di GitHub. Halaman akan membacanya otomatis.</p>' +
+    h += '<div class="kbq-row"><button class="kbq-btn" data-act="madd">Tambah soal ke ' + lv + "</button></div>
+" +
+      '<h2 style="margin-top:24px">Simpan dan bagikan</h2>
+' +
+      '<p class="kbq-note">Perubahan tersimpan di browser ini saja. Agar semua pengunjung melihat soal terbaru, tekan Ekspor JSON, lalu upload file soal-kanji.json ke folder yang sama dengan halaman ini di GitHub. Halaman akan membacanya otomatis.</p>
+' +
       '<div class="kbq-row"><button class="kbq-btn" data-act="export">Ekspor JSON</button>' +
       '<button class="kbq-btn alt" data-act="import">Impor JSON</button>' +
       '<input type="file" id="kbq-imp" accept=".json,application/json" style="display:none">';
@@ -400,7 +426,8 @@
     } else {
       h += '<button class="kbq-btn alt" data-act="reset">Reset ke bawaan</button>';
     }
-    h += "</div>";
+    h += "</div>
+";
     app.innerHTML = h;
   }
   function readDraft() {
@@ -446,38 +473,52 @@
   function infoTable() {
     var cnt = {};
     DB.forEach(function (e) { cnt[e.lv] = (cnt[e.lv] || 0) + 1; });
-    var t = '<div class="kbq-wrap" style="margin-top:16px"><table><thead><tr><th>Level</th><th>Kanji baru</th><th>Kumulatif</th><th>Data kanji</th><th>Soal</th></tr></thead><tbody>';
+    var t = '<div class="kbq-wrap" style="margin-top:16px"><table><thead><tr><th>Level</th><th>Kanji baru</th><th>Kumulatif</th><th>Data kanji</th><th>Soal</th></tr>
+</thead><tbody>';
     LV.forEach(function (l) {
       t += "<tr><td>" + l + "</td><td>sekitar " + LEVEL_INFO[l].baru.toLocaleString("id-ID") + "</td><td>sekitar " + LEVEL_INFO[l].kum.toLocaleString("id-ID") +
-        "</td><td>" + (cnt[l] || 0).toLocaleString("id-ID") + "</td><td>" + LEVELS[l].length + "</td></tr>";
+        "</td><td>" + (cnt[l] || 0).toLocaleString("id-ID") + "</td><td>" + LEVELS[l].length + "</td></tr>
+";
     });
-    return t + "</tbody></table></div>";
+    return t + "</tbody></table>
+</div>
+";
   }
   function renderQuiz() {
     if (!quiz.level) {
-      var h = "<h2>Pilih level</h2><div class=\"kbq-levels\">";
+      var h = "<h2>Pilih level</h2>
+<div class=\"kbq-levels\">";
       ["N5", "N4", "N3", "N2", "N1"].forEach(function (l) {
         h += '<button class="kbq-level" data-act="level" data-v="' + l + '"' + (LEVELS[l].length ? "" : " disabled") + "><b>" + l + "</b><span>" + LEVELS[l].length + " soal</span><span>&plusmn; " + LEVEL_INFO[l].baru.toLocaleString("id-ID") + " kanji baru</span></button>";
       });
-      h += "</div>" + infoTable() + "<p class=\"kbq-note\">Jumlah kanji per level adalah perkiraan. JLPT tidak lagi menerbitkan daftar kanji resmi, jadi pembagian level bisa sedikit berbeda dari daftar lain. Kolom Data kanji adalah jumlah kanji yang tersedia di tab Kartu hapalan dan Asal-usul kanji (mengikuti daftar JLPT dari Jonathan Waller). Setiap level berisi 50 soal yang diambil dari kanji level itu.</p>";
+      h += "</div>
+" + infoTable() + "<p class=\"kbq-note\">Jumlah kanji per level adalah perkiraan. JLPT tidak lagi menerbitkan daftar kanji resmi, jadi pembagian level bisa sedikit berbeda dari daftar lain. Kolom Data kanji adalah jumlah kanji yang tersedia di tab Kartu hapalan dan Asal-usul kanji (mengikuti daftar JLPT dari Jonathan Waller). Setiap level berisi 50 soal yang diambil dari kanji level itu.</p>
+";
       app.innerHTML = h;
       return;
     }
     var total = quiz.qs.length;
     if (quiz.idx >= total) {
       var pct = Math.round(quiz.score / total * 100);
-      app.innerHTML = "<h2>Hasil kuis " + quiz.level + "</h2>" +
-        '<div class="kbq-score">' + quiz.score + " / " + total + "</div>" +
-        "<p>Skor kamu " + pct + " persen. " + (pct >= 80 ? "Bagus sekali." : pct >= 50 ? "Lumayan, coba ulangi untuk memantapkan." : "Baca lagi tabel bushu, lalu coba lagi.") + "</p>" +
+      app.innerHTML = "<h2>Hasil kuis " + quiz.level + "</h2>
+" +
+        '<div class="kbq-score">' + quiz.score + " / " + total + "</div>
+" +
+        "<p>Skor kamu " + pct + " persen. " + (pct >= 80 ? "Bagus sekali." : pct >= 50 ? "Lumayan, coba ulangi untuk memantapkan." : "Baca lagi tabel bushu, lalu coba lagi.") + "</p>
+" +
         '<div class="kbq-row"><button class="kbq-btn" data-act="level" data-v="' + quiz.level + '">Ulangi ' + quiz.level + '</button>' +
-        '<button class="kbq-btn alt" data-act="menu">Pilih level lain</button></div>';
+        '<button class="kbq-btn alt" data-act="menu">Pilih level lain</button></div>
+';
       return;
     }
     var q = quiz.qs[quiz.idx];
     var answered = quiz.picked >= 0;
-    var h2 = homeBtn() + '<div class="kbq-meta"><span>' + quiz.level + " &middot; Soal " + (quiz.idx + 1) + " dari " + total + "</span><span>Skor " + quiz.score + "</span></div>" +
-      '<div class="kbq-bar"><i style="width:' + (quiz.idx / total * 100) + '%"></i></div>' +
-      '<p class="kbq-q">' + esc(q.p) + "</p>";
+    var h2 = homeBtn() + '<div class="kbq-meta"><span>' + quiz.level + " &middot; Soal " + (quiz.idx + 1) + " dari " + total + "</span><span>Skor " + quiz.score + "</span></div>
+" +
+      '<div class="kbq-bar"><i style="width:' + (quiz.idx / total * 100) + '%"></i></div>
+' +
+      '<p class="kbq-q">' + esc(q.p) + "</p>
+";
     q.o.forEach(function (o, i) {
       var cls = "kbq-opt";
       if (answered) {
@@ -488,8 +529,10 @@
     });
     if (answered) {
       var right = q.o[quiz.picked].c;
-      h2 += '<div class="kbq-exp"><b>' + (right ? "Benar." : "Belum tepat.") + "</b> " + esc(q.e) + "</div>" +
-        '<div class="kbq-row"><button class="kbq-btn" data-act="next">' + (quiz.idx + 1 >= total ? "Lihat hasil" : "Lanjut") + "</button></div>";
+      h2 += '<div class="kbq-exp"><b>' + (right ? "Benar." : "Belum tepat.") + "</b> " + esc(q.e) + "</div>
+" +
+        '<div class="kbq-row"><button class="kbq-btn" data-act="next">' + (quiz.idx + 1 >= total ? "Lihat hasil" : "Lanjut") + "</button></div>
+";
     }
     app.innerHTML = h2;
   }
@@ -539,7 +582,8 @@
   function searchBar() {
     return '<div class="kbq-search"><input type="search" id="kbq-q" placeholder="Cari kanji, arti, bacaan..." value="' + escA(S.q) +
       '" autocomplete="off" aria-label="Cari kanji atau arti"><button class="kbq-btn" data-act="dosearch">Cari</button>' +
-      '<button class="kbq-btn alt" data-act="clearq">Hapus</button></div>';
+      '<button class="kbq-btn alt" data-act="clearq">Hapus</button></div>
+';
   }
   function selHtml(act, opts, active, label) {
     return '<select class="kbq-sel kbq-pick" data-sel="' + act + '" aria-label="' + label + '">' + opts.map(function (o) {
@@ -550,7 +594,8 @@
     return selHtml(act, ["ALL"].concat(LV).map(function (l) { return [l, (l === "ALL" ? "Semua" : l) + " (" + filtered(l).length + ")"]; }), active, "Pilih level");
   }
   function levelChips(active, act) {
-    return '<div class="kbq-selrow">' + levelSel(active, act) + "</div>";
+    return '<div class="kbq-selrow">' + levelSel(active, act) + "</div>
+";
   }
   // ---------- Asal-usul kanji ----------
   function rowHtml(e, no) {
@@ -559,12 +604,17 @@
     if (e.kun.length) rd.push("kun'yomi: " + hl(e.kun.join(", ")));
     var bushu = e.rc ? esc(e.rc) + " " + hl(e.rn) + '<span class="sub">' + hl(e.rm) + (e.pos ? ", posisi " + hl(e.pos) : "") + "</span>" : '<span class="sub">-</span>';
     var st = "";
-    if (e.combo) st += "<div>Susunan: " + hl(e.combo) + "</div>";
-    if (e.origin) st += "<div>" + (e.kind === "a" ? "Asal: " : "Cerita: ") + hl(e.origin) + "</div>";
-    if (e.note) st += '<div class="sub">' + esc(e.note) + "</div>";
+    if (e.combo) st += "<div>Susunan: " + hl(e.combo) + "</div>
+";
+    if (e.origin) st += "<div>" + (e.kind === "a" ? "Asal: " : "Cerita: ") + hl(e.origin) + "</div>
+";
+    if (e.note) st += '<div class="sub">' + esc(e.note) + "</div>
+";
     if (!st) st = '<span class="sub">-</span>';
     return "<tr><td>" + no + '</td><td class="kbq-kj">' + hl(e.k) + '<span class="kbq-lv">' + e.lv + "</span>" + favBtn(e, "rfav", ' data-v="' + e.i + '"', "sm") + "</td>" +
-      "<td data-l=\"Arti dan bacaan\"><b>" + hl(e.arti) + '</b><span class="sub">' + rd.join("<br>") + '</span><button type="button" class="kbq-stlink" data-act="rstroke" data-v="' + e.i + '">Tampilkan cara menulis</button></td>' + "<td data-l=\"Bushu\">" + bushu + "</td><td data-l=\"Susunan dan cerita\">" + st + "</td></tr>";
+      "<td data-l=\"Arti dan bacaan\"><b>" + hl(e.arti) + '</b><span class="sub">' + rd.join("<br>
+") + '</span><button type="button" class="kbq-stlink" data-act="rstroke" data-v="' + e.i + '">Tampilkan cara menulis</button></td>' + "<td data-l=\"Bushu\">" + bushu + "</td><td data-l=\"Susunan dan cerita\">" + st + "</td></tr>
+";
   }
   function pager(list, page, act) {
     var pages = Math.ceil(list.length / PAGE);
@@ -582,11 +632,14 @@
       h += '</select><button class="kbq-chip" data-act="' + act + '" data-v="' + Math.min(pages, page + 1) + '">Berikutnya &rsaquo;</button>' +
         '<span class="kbq-pn">Halaman ' + page + " dari " + pages + "</span>";
     }
-    return h + "</div>";
+    return h + "</div>
+";
   }
   function renderExplore() {
-    app.innerHTML = "<h2>Asal-usul kanji (語源)</h2>" +
-      searchBar() + '<div id="kbq-body"></div>';
+    app.innerHTML = "<h2>Asal-usul kanji (語源)</h2>
+" +
+      searchBar() + '<div id="kbq-body"></div>
+';
     renderExploreBody();
   }
   function renderExploreBody() {
@@ -601,18 +654,27 @@
     var from = (ex.page - 1) * PAGE;
     var slice = list.slice(from, from + PAGE);
     var h = levelChips(ex.level, "olevel") +
-      '<div class="kbq-chips"><button class="kbq-chip' + (ex.fav ? " on" : "") + '" data-act="ofav" aria-pressed="' + ex.fav + '">Favorit saja (' + favN + ")</button></div>";
-    if (S.q) h += '<p class="kbq-note" style="margin-top:0">' + list.length + ' hasil untuk "' + esc(S.q) + '"' + (ex.level === "ALL" ? "" : " di " + ex.level) + ".</p>";
+      '<div class="kbq-chips"><button class="kbq-chip' + (ex.fav ? " on" : "") + '" data-act="ofav" aria-pressed="' + ex.fav + '">Favorit saja (' + favN + ")</button></div>
+";
+    if (S.q) h += '<p class="kbq-note" style="margin-top:0">' + list.length + ' hasil untuk "' + esc(S.q) + '"' + (ex.level === "ALL" ? "" : " di " + ex.level) + ".</p>
+";
     if (!list.length) {
-      body.innerHTML = h + (ex.fav ? '<p>Belum ada favorit di sini. Tandai kanji dengan ikon bookmark di tabel.</p>' : '<p>Tidak ada kanji yang cocok. Coba kata lain, misalnya arti dalam bahasa Indonesia ("air", "pohon"), bacaan romaji ("kiku"), atau satu kanji (氵).</p>');
+      body.innerHTML = h + (ex.fav ? '<p>Belum ada favorit di sini. Tandai kanji dengan ikon bookmark di tabel.</p>
+' : '<p>Tidak ada kanji yang cocok. Coba kata lain, misalnya arti dalam bahasa Indonesia ("air", "pohon"), bacaan romaji ("kiku"), atau satu kanji (氵).</p>
+');
       return;
     }
     h += pager(list, ex.page, "opage") +
-      '<p class="kbq-note" style="margin-top:0">Menampilkan ' + (from + 1) + "-" + (from + slice.length) + " dari " + list.length + " kanji.</p>" +
-      '<div class="kbq-wrap"><table class="kbq-data"><thead><tr><th>No</th><th>Kanji</th><th>Arti dan bacaan</th><th>Bushu</th><th>Susunan dan cerita</th></tr></thead><tbody>';
+      '<p class="kbq-note" style="margin-top:0">Menampilkan ' + (from + 1) + "-" + (from + slice.length) + " dari " + list.length + " kanji.</p>
+" +
+      '<div class="kbq-wrap"><table class="kbq-data"><thead><tr><th>No</th><th>Kanji</th><th>Arti dan bacaan</th><th>Bushu</th><th>Susunan dan cerita</th></tr>
+</thead><tbody>';
     slice.forEach(function (e, i) { h += rowHtml(e, from + i + 1); });
-    h += "</tbody></table></div>" + pager(list, ex.page, "opage") +
-      '<p class="kbq-note">Susunan menunjukkan komponen kanji menurut KanjiVG, dengan arti tiap komponen di dalam kurung. Bagian bunyi (fonetik) menandai komponen yang memberi bacaan. Cerita adalah pengingat dan hanya tersedia untuk sebagian kanji, bukan selalu asal-usul resmi. Pada 聞, cerita gerbang adalah mnemonik, sedangkan etimologinya menganggap 門 juga memberi bunyi.</p>';
+    h += "</tbody></table>
+</div>
+" + pager(list, ex.page, "opage") +
+      '<p class="kbq-note">Susunan menunjukkan komponen kanji menurut KanjiVG, dengan arti tiap komponen di dalam kurung. Bagian bunyi (fonetik) menandai komponen yang memberi bacaan. Cerita adalah pengingat dan hanya tersedia untuk sebagian kanji, bukan selalu asal-usul resmi. Pada 聞, cerita gerbang adalah mnemonik, sedangkan etimologinya menganggap 門 juga memberi bunyi.</p>
+';
     body.innerHTML = h;
   }
   // ---------- Kartu hapalan ----------
@@ -635,7 +697,9 @@
     cd.flipped = false;
   }
   function renderCards() {
-    app.innerHTML = "<h2>Kartu hapalan</h2>" + searchBar() + '<div id="kbq-body"></div>';
+    app.innerHTML = "<h2>Kartu hapalan</h2>
+" + searchBar() + '<div id="kbq-body"></div>
+';
     renderCardsBody();
   }
   function renderCardsBody() {
@@ -646,43 +710,62 @@
     var h = '<div class="kbq-selrow">' + levelSel(cd.level, "clevel") +
       selHtml("cdeck", [["belum", "Belum (" + nb + ")"], ["hapal", "Hapal (" + nh + ")"], ["fav", "Favorit (" + nf + ")"]], cd.deck, "Tampilkan kartu") +
       selHtml("cmode", [["kanji", "Kanji dulu"], ["arti", "Arti dulu"]], cd.mode, "Sisi depan kartu") +
-      '<button class="kbq-chip kbq-shuf' + (cd.shuf ? " on" : "") + '" data-act="cshuf" aria-pressed="' + cd.shuf + '">Acak</button></div>';
+      '<button class="kbq-chip kbq-shuf' + (cd.shuf ? " on" : "") + '" data-act="cshuf" aria-pressed="' + cd.shuf + '">Acak</button></div>
+';
     var n = cd.order.length;
     if (!n) {
       var em = base.length === 0 ? "Tidak ada kartu yang cocok. Coba kata lain atau tekan Hapus."
         : cd.deck === "belum" ? "Semua kanji di sini sudah kamu hapal. Bagus sekali."
         : cd.deck === "hapal" ? "Belum ada kanji yang ditandai hapal. Tekan Tandai hapal di kartu."
         : "Belum ada favorit. Tekan ikon bookmark di kartu untuk menandai.";
-      body.innerHTML = h + "<p>" + em + "</p>";
+      body.innerHTML = h + "<p>" + em + "</p>
+";
       return;
     }
     var e = cd.list[cd.order[cd.pos]];
     var face;
     if (!cd.flipped) {
       face = '<div class="kbq-card" data-act="flip"><span class="kbq-lv">' + e.lv + "</span>" +
-        (cd.mode === "kanji" ? '<div class="big">' + esc(e.k) + "</div>" : '<div class="big2">' + esc(e.arti) + "</div>") +
-        '<div class="hint">Ketuk kartu untuk melihat jawabannya</div></div>';
+        (cd.mode === "kanji" ? '<div class="big">' + esc(e.k) + "</div>
+" : '<div class="big2">' + esc(e.arti) + "</div>
+") +
+        '<div class="hint">Ketuk kartu untuk melihat jawabannya</div>
+</div>
+';
     } else {
       var rd = [];
       if (e.on.length) rd.push("on'yomi: " + esc(e.on.join(", ")));
       if (e.kun.length) rd.push("kun'yomi: " + esc(e.kun.join(", ")));
-      face = '<div class="kbq-card back" data-act="flip"><span class="kbq-lv">' + e.lv + '</span><div class="parts">' + esc(e.k) + " &middot; " + esc(e.arti) + "</div>" +
-        '<div class="story">' + rd.join("; ") + "</div>" +
-        (e.rc ? '<div class="story">Bushu: ' + esc(e.rc) + " " + esc(e.rn) + " (" + esc(e.rm) + ")" + (e.pos ? ", posisi " + esc(e.pos) : "") + "</div>" : "") +
-        (e.combo ? '<div class="story">Susunan: ' + esc(e.combo) + "</div>" : "") +
-        (e.origin ? '<div class="story">' + (e.kind === "a" ? "Asal: " : "Cerita: ") + esc(e.origin) + "</div>" : "") +
-        (e.note ? '<div class="note">' + esc(e.note) + "</div>" : "") +
-        '<div class="hint">Ketuk untuk kembali</div></div>';
+      face = '<div class="kbq-card back" data-act="flip"><span class="kbq-lv">' + e.lv + '</span><div class="parts">' + esc(e.k) + " &middot; " + esc(e.arti) + "</div>
+" +
+        '<div class="story">' + rd.join("; ") + "</div>
+" +
+        (e.rc ? '<div class="story">Bushu: ' + esc(e.rc) + " " + esc(e.rn) + " (" + esc(e.rm) + ")" + (e.pos ? ", posisi " + esc(e.pos) : "") + "</div>
+" : "") +
+        (e.combo ? '<div class="story">Susunan: ' + esc(e.combo) + "</div>
+" : "") +
+        (e.origin ? '<div class="story">' + (e.kind === "a" ? "Asal: " : "Cerita: ") + esc(e.origin) + "</div>
+" : "") +
+        (e.note ? '<div class="note">' + esc(e.note) + "</div>
+" : "") +
+        '<div class="hint">Ketuk untuk kembali</div>
+</div>
+';
     }
     var hap = isMk(e, "archived");
-    body.innerHTML = h + '<div class="kbq-meta"><span>Kartu ' + (cd.pos + 1) + " dari " + n + "</span><span>" + (hap ? "Sudah hapal" : e.lv) + "</span></div>" +
-      '<div class="kbq-bar"><i style="width:' + ((cd.pos + 1) / n * 100) + '%"></i></div>' +
-      '<div class="kbq-stage">' + face + favBtn(e, "cfav") + "</div>" +
+    body.innerHTML = h + '<div class="kbq-meta"><span>Kartu ' + (cd.pos + 1) + " dari " + n + "</span><span>" + (hap ? "Sudah hapal" : e.lv) + "</span></div>
+" +
+      '<div class="kbq-bar"><i style="width:' + ((cd.pos + 1) / n * 100) + '%"></i></div>
+' +
+      '<div class="kbq-stage">' + face + favBtn(e, "cfav") + "</div>
+" +
       (cd.stroke ? strokePanel(e, "card") : "") +
       '<div class="kbq-duo">' + (cd.stroke ? "" : '<button class="kbq-btn alt" data-act="cstroke">Cara menulis</button>') +
-      '<button class="kbq-btn alt" data-act="chapal">' + (hap ? "Batal hapal" : "Tandai hapal") + "</button></div>" +
+      '<button class="kbq-btn alt" data-act="chapal">' + (hap ? "Batal hapal" : "Tandai hapal") + "</button></div>
+" +
       '<div class="kbq-nav"><button class="kbq-btn alt" data-act="prev">Sebelumnya</button>' +
-      '<button class="kbq-btn" data-act="nextcard">Berikutnya</button></div>';
+      '<button class="kbq-btn" data-act="nextcard">Berikutnya</button></div>
+';
     if (cd.stroke) mountStroke(body.querySelector(".kbq-stroke"), e);
   }
   // ---------- Materi bushu (modul terpisah: materi-bushu.js) ----------
@@ -699,10 +782,13 @@
   }
   var bushuOpen = "";
   function renderMateri() {
-    app.innerHTML = homeBtn() + "<h2>Materi bushu (部首)</h2>" + '<p class="kbq-note">Memuat materi bushu...</p>';
+    app.innerHTML = homeBtn() + "<h2>Materi bushu (部首)</h2>
+" + '<p class="kbq-note">Memuat materi bushu...</p>
+';
     loadMateri(function (ok) {
       if (tab !== "materi") return;
-      if (!ok) { app.innerHTML = homeBtn() + "<p>Materi bushu gagal dimuat. Coba muat ulang halaman.</p>"; return; }
+      if (!ok) { app.innerHTML = homeBtn() + "<p>Materi bushu gagal dimuat. Coba muat ulang halaman.</p>
+"; return; }
       var bo = bushuOpen; bushuOpen = "";
       window.KBQ_MATERI.mount(app, {
         DB: DB,
@@ -972,7 +1058,8 @@
   };
   }
   if (window.KBQ_DATA) { boot(window.KBQ_DATA); return; }
-  app0.innerHTML = '<p>Memuat data kanji...</p>';
+  app0.innerHTML = '<p>Memuat data kanji...</p>
+';
   var s = document.createElement("script");
   s.src = BASE + "kanji-data.js?v=2";
   s.onload = function () { if (window.KBQ_DATA) boot(window.KBQ_DATA); else fail(); };
@@ -980,7 +1067,8 @@
   document.head.appendChild(s);
 })();
 </script>
-</div></div></article></main>
+</div>
+</div></article></main>
 <aside class="sideB"><div class="qSideIn"><div class="sideSticky flex column"><div id="HTML95" class="widget HTML"><iframe width="560" height="315"
  src="https://www.youtube.com/embed/mlNky0LI8Jc"
  data-videos="mlNky0LI8Jc"
