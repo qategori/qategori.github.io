@@ -87,8 +87,6 @@ var GAMES=[
      ic: '<path d="M4 8.5C4 6.6 5.1 6 7 6H17C18.9 6 20 6.6 20 8.5V16.5C20 18.4 18.9 19 17 19H7C5.1 19 4 18.4 4 16.5Z"/><path d="M8 3H16"/><path d="M9 12.5H15"/>'},
     {id: 'gambar', f: 'tebak-gambar.html', t: 'Tebak Gambar', j: '\u7d75\u5f53\u3066\u30af\u30a4\u30ba', r: 'e ate kuizu', d: 'Tebak nama benda dalam bahasa Jepang.',
      ic: '<rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="1.8"/><path d="M3 17L9 12L13 15.5L16 13L21 17.5"/>'},
-    {id: 'labirin', f: 'labirin.html', t: 'Labirin Mochi', j: 'めいろ', r: 'meiro', d: 'Bantu Mochi sampai ke stasiun. Hindari serigala, api, dan jurang!',
-     ic: '<rect x="3.5" y="3.5" width="17" height="17" rx="1.5"/><path d="M3.5 9.5H14V15H9"/>'},
     {id: 'shiritori', f: 'shiritori.html', t: 'Shiritori', j: 'しりとり', r: 'shiritori', d: 'Sambung kata Jepang melawan Mochi. Kata berakhiran ん kalah!',
      ic: '<path d="M9 15l6-6"/><path d="M10.5 5.5H18a3.5 3.5 0 0 1 0 7h-2.5M13.5 18.5H6a3.5 3.5 0 0 1 0-7H8.5"/>'},
     {id: 'balap', f: 'balap.html', t: 'Balap Romaji', j: 'カナレース', r: 'kana reesu', d: 'Ketik romaji dari kana yang muncul. 60 detik, secepatnya!',
@@ -242,27 +240,19 @@ function frame(host,file,title,bar,onload){
   }).catch(function(err){host.innerHTML=(bar||'')+'<div class="qhErr"><p>Belum bisa dimuat ('+esc(err&&err.message)+').</p><a class="qhBtn alt" target="_blank" rel="noopener" href="'+GAME_BASE+file+'">Buka di tab baru</a></div>'});
 }
 /* player layar penuh ala Poki: laman dikunci, usap jadi milik game, ada tombol kembali */
-var playEl=null,playHost=null,playTitle=null,playId='';
+var playEl=null,playHost=null,playId='';
 function playBuild(){
   playEl=document.createElement('div');playEl.className='qhPlay';playEl.id='qhPlay';playEl.hidden=true;
-  playEl.innerHTML='<div class="qhPlayBar"><button type="button" class="qhPlayBack" aria-label="Kembali ke daftar game">&larr; Kembali</button><b class="qhPlayT"></b><button type="button" class="qhPlayFs" aria-label="Layar penuh">&#9974;</button></div><div class="qhPlayHost"></div>';
+  playEl.innerHTML='<button type="button" class="qhPlayBack" aria-label="Kembali ke daftar game">&#8592;</button><div class="qhPlayHost"></div>';
   document.body.appendChild(playEl);
-  playHost=playEl.querySelector('.qhPlayHost');playTitle=playEl.querySelector('.qhPlayT');
+  playHost=playEl.querySelector('.qhPlayHost');
   playEl.querySelector('.qhPlayBack').addEventListener('click',function(){go('game')});
-  var fsb=playEl.querySelector('.qhPlayFs');
-  if(!playEl.requestFullscreen&&!playEl.webkitRequestFullscreen)fsb.style.display='none';
-  fsb.addEventListener('click',function(){try{
-    if(document.fullscreenElement){document.exitFullscreen()}
-    else if(playEl.requestFullscreen){playEl.requestFullscreen()}
-    else if(playEl.webkitRequestFullscreen){playEl.webkitRequestFullscreen()}
-  }catch(e){}});
-  playEl.addEventListener('touchmove',function(e){e.preventDefault()},{passive:false});
+  playEl.addEventListener('touchmove',function(e){if(!e.target.closest||!e.target.closest('.qhPlayBack'))e.preventDefault()},{passive:false});
 }
 function openPlay(g){
   if(!playEl)playBuild();
   playEl.hidden=false;playEl.classList.add('open');
   document.documentElement.classList.add('qLock');
-  playTitle.textContent=g.t;
   if(playId===g.id&&gameFrame&&playHost.contains(gameFrame)){startT();return}
   playId=g.id;gameFrame=null;
   frame(playHost,g.f,g.t,'',function(fr){fr.__full=1;fr.setAttribute('scrolling','auto');gameInit(fr,g.id)});
@@ -271,7 +261,6 @@ function closePlay(){
   if(!playEl||playEl.hidden)return;
   playEl.hidden=true;playEl.classList.remove('open');
   document.documentElement.classList.remove('qLock');
-  if(document.fullscreenElement){try{document.exitFullscreen()}catch(e){}}
 }
 var gkey='';
 function showGame(sub){
