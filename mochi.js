@@ -83,7 +83,7 @@
     busy=true; addRow(text,true);
     var tb=addRow('Mochi sedang mengetik\u2026'); tb.classList.add('typing');
     var ac=('AbortController' in window)?new AbortController():null;
-    var tm=ac?setTimeout(function(){ac.abort()},30000):null;
+    var tm=ac?setTimeout(function(){ac.abort()},45000):null;
     fetch(API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({message:text,history:history.slice(-12)}),signal:ac?ac.signal:undefined})
     .then(function(r){ return r.json() })
     .then(function(j){ if(!j||!j.reply) throw new Error('bad');
