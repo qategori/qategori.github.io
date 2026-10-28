@@ -600,10 +600,13 @@ html.qScDown .qtStick{top:8px}
 html.qOv .qtStick{visibility:hidden}
 
 /* ===== Forum (chip Komunitas + Berita) ===== */
-.qfChips{display:flex;gap:6px;margin:0 0 14px}
-.qfChip{display:inline-flex;align-items:center;gap:6px;padding:6px 14px;border:1px solid var(--themeBd-color);border-radius:20px;background:var(--themeBg-alt);color:var(--themeC);font:inherit;font-size:13px;font-weight:600;cursor:pointer}
+.qfChips{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin:0 0 14px;padding:10px;border-radius:16px;background:rgba(20,40,60,.05)}
+.qfChip{display:inline-flex;align-items:center;gap:6px;padding:10px 18px;border:1.5px solid rgba(20,40,60,.22);border-radius:99px;background:transparent;color:var(--themeC);font:inherit;font-size:.92rem;font-weight:700;cursor:pointer}
 .qfChip svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;flex:0 0 auto}
-.qfChip.on{background:var(--themeLink);color:#fff;border-color:var(--themeLink)}
+.qfChip.on{background:#0b5cad;border-color:#0b5cad;color:#fff;box-shadow:0 2px 6px rgba(11,92,173,.35)}
+.nB[data-theme=dark] .qfChips{background:rgba(255,255,255,.06)}
+.nB[data-theme=dark] .qfChip{border-color:rgba(255,255,255,.25)}
+.nB[data-theme=dark] .qfChip.on{background:#2b78c9;border-color:#2b78c9;box-shadow:none}
 .qfPin,.qfForm,.qfPost{border:1px solid rgba(127,140,180,.35);border-radius:14px;padding:12px 14px;margin:0 0 12px}
 .qfPinTag{display:inline-block;font-size:10px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:#9a8cff;margin-bottom:6px}
 .qfWho{display:flex;align-items:center;gap:8px;margin-bottom:6px}
