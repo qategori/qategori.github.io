@@ -383,8 +383,8 @@ html.qLock body{overflow:hidden}
  html body #qfxFab{bottom:calc(var(--mobileHeight,60px) + 24px + env(safe-area-inset-bottom))}
  .qFoot{padding-bottom:96px}
 }
-/* tombol Mochi & Suasana diangkat JS agar tidak menutupi footer */
-#qcat,#qfxFab{translate:0 calc(-1px * var(--qlift,0))}
+/* tombol Mochi, Suasana & YouTube diangkat JS agar tidak menutupi footer */
+#qcat,#qfxFab,#qytFab{translate:0 calc(-1px * var(--qlift,0))}
 
 /* ===== Mochi beranda: kucing chibi yang sama dengan Mochi melayang ===== */
 .qbStage .mochi{width:88px;height:88px;bottom:13px}

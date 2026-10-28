@@ -1622,9 +1622,9 @@
   render();
 })();
 
-/* Mochi & tombol Suasana tidak boleh menutupi footer (sosmed & kredit): naik di atas garis footer */
+/* Mochi, tombol Suasana & tombol YouTube tidak boleh menutupi footer (sosmed & kredit): naik di atas garis footer */
 (function(){
-  var ids=['qcat','qfxFab'],raf=0;
+  var ids=['qcat','qfxFab','qytFab'],raf=0;
   function run(){
     raf=0;
     var f=document.querySelector('.qFoot'),line=f?f.getBoundingClientRect().top:1e9;
