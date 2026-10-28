@@ -117,7 +117,7 @@ function parse(){
   if(tab==='belajar'){var qb=lsGet('qh_bel');tab=BEL.indexOf(qb)>=0?qb:'jlpt';sub=tab==='tg2'?'semua':''}
   if(!h)tab='beranda';
   if(!panes[tab]){tab='beranda';sub=''}
-  if(tab==='game'&&!GAMES.some(function(g){return g.id===sub}))sub='';
+  if(tab==='game'&&!GAMES.some(function(g){return g.id===sub})&&!/^drama-ep\d{1,2}$/.test(sub))sub='';
   if(tab==='kana'&&sub!=='hiragana'&&sub!=='katakana')sub='hiragana';
   ['jlpt','tg2','jawa','sunda','bali'].forEach(function(k){if(tab===k&&!URL_OF[k+'-'+sub])sub=k==='tg2'?'semua':''});
   return{tab:tab,sub:sub,qs:qs};
@@ -226,7 +226,7 @@ function mount(paneId,key){
   });
 }
 /* game */
-var gameFrame=null,gameTimer=0;
+var gameFrame=null,gameTimer=0,frameCfg='';
 function isDark(){var t=nB.getAttribute('data-theme');return t==='dark'||(t!=='light'&&matchMedia('(prefers-color-scheme: dark)').matches)}
 function tune(fr){try{var d=fr.contentDocument;if(!d||!d.documentElement)return;if(fr.__kana)kanaTheme(fr);if(fr.__gx)gxSync(fr);var w=isDark()?'dark':'light';if(d.documentElement.getAttribute('data-theme')!==w)d.documentElement.setAttribute('data-theme',w);
   if(!fr.__full){var h=d.body?Math.ceil(d.body.getBoundingClientRect().height):0;if(!h)h=d.documentElement.scrollHeight;if(h>120&&Math.abs(fr.offsetHeight-h)>2)fr.style.height=h+'px'}}catch(e){}}
@@ -235,6 +235,7 @@ function startT(){stopT();if(gameFrame)gameTimer=setInterval(function(){tune(gam
 function frame(host,file,title,bar,onload){
   host.innerHTML=(bar||'')+'<p class="qhLoad">Memuat...</p>';
   fetch(GAME_BASE+file).then(function(r){if(!r.ok)throw new Error('HTTP '+r.status);return r.text()}).then(function(html){
+    if(frameCfg){var inj=frameCfg;frameCfg='';if(/<head[^>]*>/i.test(html))html=html.replace(/<head[^>]*>/i,'$&'+inj);else html=inj+html}
     host.innerHTML=bar||'';var fr=document.createElement('iframe');fr.className='qhGame';fr.title=title;fr.setAttribute('scrolling','no');
     fr.addEventListener('load',function(){tune(fr);if(onload)onload(fr)});fr.srcdoc=html;host.appendChild(fr);gameFrame=fr;startT();
   }).catch(function(err){host.innerHTML=(bar||'')+'<div class="qhErr"><p>Belum bisa dimuat ('+esc(err&&err.message)+').</p><a class="qhBtn alt" target="_blank" rel="noopener" href="'+GAME_BASE+file+'">Buka di tab baru</a></div>'});
@@ -264,10 +265,42 @@ function closePlay(){
 }
 var gkey='';
 function showGame(sub){
-  var host=panes.game.querySelector('.qhBody'),g=GAMES.filter(function(x){return x.id===sub})[0];
-  if(!g){closePlay();stopT();gkey='';gameFrame=null;host.innerHTML='<div class="qhGameGrid">'+GAMES.filter(function(x){return x.id!=='kana'}).map(function(g){return'<button type="button" class="qhGameCard" data-go="game-'+g.id+'"><svg viewBox="0 0 24 24" aria-hidden="true">'+g.ic+'</svg><b>'+esc(g.t)+'</b><i>'+g.j+' &middot; '+esc(g.r)+'</i><small>'+esc(g.d)+'</small></button>'}).join('')+'</div>';return}
-  gkey=g.id;openPlay(g);
+  var host=panes.game.querySelector('.qhBody'),epM=/^drama-(ep\d{1,2})$/.exec(sub||''),g=GAMES.filter(function(x){return x.id===(epM?'drama':sub)})[0];
+  if(!g){closePlay();stopT();gkey='';gameFrame=null;host.innerHTML='<div class="qdSlot"></div><div class="qhGameGrid">'+GAMES.filter(function(x){return x.id!=='kana'}).map(function(g){return'<button type="button" class="qhGameCard" data-go="game-'+g.id+'"><svg viewBox="0 0 24 24" aria-hidden="true">'+g.ic+'</svg><b>'+esc(g.t)+'</b><i>'+g.j+' &middot; '+esc(g.r)+'</i><small>'+esc(g.d)+'</small></button>'}).join('')+'</div>';qdRender(host.querySelector('.qdSlot'));return}
+  gkey=g.id;if(epM)frameCfg=qdCfgScript(epM[1]);openPlay(g);
 }
+/* ===== Korsel Mini Drama: daftar episode di atas laman Game =====
+   Ilustrasi + judul saja; klik membuka episode itu langsung di pemutar.
+   Data episode dari index.json drama; gambar adegan dari thumbs.json
+   (dibangkitkan dari mesin drama sendiri, di-host bersama data drama). */
+var QD_BASE='https://bshantoz.github.io/nihongo/game/drama/',qdData=null,qdProm=null;
+function qdStripJa(t){return String(t||'').replace(/\{([^|]+)\|[^}]*\}/g,'$1')}
+function qdCfgScript(ep){return '<script>window.__CFG={ep:"'+ep+'"};(function(){var t=setInterval(function(){if(window.INDEX&&INDEX.length&&typeof openEp==="function"){clearInterval(t);try{openEp("'+ep+'")}catch(e){}}},150);})();<\/script>'}
+function qdLoad(){
+  if(qdData)return Promise.resolve(qdData);
+  if(qdProm)return qdProm;
+  qdProm=Promise.all([
+    fetch(QD_BASE+'index.json').then(function(r){if(!r.ok)throw new Error('index');return r.json()}),
+    fetch(QD_BASE+'thumbs.json').then(function(r){if(!r.ok)throw new Error('thumbs');return r.json()})
+  ]).then(function(a){qdData={eps:a[0].filter(function(x){return x.kind!=='long'&&!x.soon}),th:a[1]};return qdData}).catch(function(e){qdProm=null;throw e});
+  return qdProm;
+}
+function qdRender(slot){
+  if(!slot)return;
+  qdLoad().then(function(d){
+    if(!slot.isConnected||!d.eps.length)return;
+    if(!document.getElementById('qdCss')){var st=document.createElement('style');st.id='qdCss';st.textContent=d.th.css;document.head.appendChild(st)}
+    slot.innerHTML='<section class="qdSec" aria-label="Mini Drama">'
+      +'<div class="qdHead"><h3>Mini Drama <span>'+d.eps.length+' episode</span></h3>'
+      +'<div class="qdNav"><button type="button" class="qdPrev" aria-label="Geser ke kiri">&#8249;</button><button type="button" class="qdNext" aria-label="Geser ke kanan">&#8250;</button></div></div>'
+      +'<div class="qdTrack">'+d.eps.map(function(e){return '<button type="button" class="qdCard" data-qdep="'+e.id+'"><span class="qdTh">'+(d.th.items[e.id]||'')+'</span><span class="qdT">'+esc(qdStripJa(e.ja))+'<small>'+esc(e.idn)+'</small></span></button>'}).join('')+'</div></section>';
+    var track=slot.querySelector('.qdTrack');
+    function step(dir){track.scrollBy({left:dir*Math.max(220,Math.round(track.clientWidth*0.8)),behavior:'smooth'})}
+    slot.querySelector('.qdPrev').addEventListener('click',function(){step(-1)});
+    slot.querySelector('.qdNext').addEventListener('click',function(){step(1)});
+  }).catch(function(){});
+}
+document.addEventListener('click',function(e){var b=e.target&&e.target.closest?e.target.closest('[data-qdep]'):null;if(b)go('game-drama-'+b.getAttribute('data-qdep'))});
 /* ===== Terjemah Video (putar YouTube + subtitle JP/ID sinkron) ===== */
 var QTW='https://qategori-terjemah.bshantoz.workers.dev';
 var qtBuilt=false,qtPlayer=null,qtReady=false,qtCues=[],qtVid='',qtTimer=0,qtActive=-1,qtLastTouch=0,qtMode='both',qtWordOn=true,qtBank=null,qtBankBusy=false;
