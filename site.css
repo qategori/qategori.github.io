@@ -600,7 +600,8 @@ html.qOv .qtStick{visibility:hidden}
 
 /* ===== Forum (chip Komunitas + Berita) ===== */
 .qfChips{display:flex;gap:8px;margin:2px 0 14px}
-.qfChip{border:1px solid #39466b;background:transparent;color:inherit;border-radius:999px;padding:7px 18px;font:inherit;font-size:13.5px;font-weight:700;cursor:pointer}
+.qfChip{display:inline-flex;align-items:center;gap:7px;border:1px solid #39466b;background:transparent;color:inherit;border-radius:999px;padding:7px 16px;font:inherit;font-size:13.5px;font-weight:700;cursor:pointer}
+.qfChip svg{width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;flex:0 0 auto}
 .qfChip.on{background:#8b7ff0;border-color:#8b7ff0;color:#fff}
 .qfPin,.qfForm,.qfPost{border:1px solid rgba(127,140,180,.35);border-radius:14px;padding:12px 14px;margin:0 0 12px}
 .qfPinTag{display:inline-block;font-size:10px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:#9a8cff;margin-bottom:6px}
