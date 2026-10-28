@@ -933,14 +933,17 @@ function showBerita(qs){
 /* ===== Forum: chip Komunitas (papan sapa) + Berita ===== */
 var QF_API='https://qategori-forum.bshantoz.workers.dev';
 var qfCommActive=(localStorage.getItem('qfView')!=='berita');
-var qfMsgs=null,qfBuilt=false;
+var qfMsgs=null,qfBuilt=false,qfReplyTo=null;
 function qfAgo(ts){var s=Math.max(1,((Date.now()-ts)/1000)|0);if(s<60)return'baru saja';var m=(s/60)|0;if(m<60)return m+' mnt lalu';var j=(m/60)|0;if(j<24)return j+' jam lalu';return ((j/24)|0)+' hari lalu'}
-function qfCard(m){var nm=String(m.name||'Tamu').slice(0,30);
-  return '<article class="qfPost"><div class="qfWho"><span class="qfAv">'+esc((nm.charAt(0)||'T').toUpperCase())+'</span><span class="qfNm">'+esc(nm)+'</span><span class="qfTm">'+qfAgo(m.ts)+'</span></div><p class="qfTx">'+esc(m.text)+'</p><div class="qfActs"><button type="button" class="qfReply" data-nm="'+esc(nm)+'">Balas</button><button type="button" class="qfRep" data-id="'+m.id+'">Laporkan</button></div></article>'}
+function qfCard(m,rid){var nm=String(m.name||'Tamu').slice(0,30);
+  return '<article class="qfPost"><div class="qfWho"><span class="qfAv">'+esc((nm.charAt(0)||'T').toUpperCase())+'</span><span class="qfNm">'+esc(nm)+'</span><span class="qfTm">'+qfAgo(m.ts)+'</span></div><p class="qfTx">'+esc(m.text)+'</p><div class="qfActs"><button type="button" class="qfReply" data-rid="'+(rid||m.id)+'" data-nm="'+esc(nm)+'">Balas</button><button type="button" class="qfRep" data-id="'+m.id+'">Laporkan</button></div></article>'}
+function qfThread(m){var h=qfCard(m,m.id);
+  if(m.replies&&m.replies.length)h+='<div class="qfReplies">'+m.replies.map(function(x){return qfCard(x,m.id)}).join('')+'</div>';
+  return h}
 function qfRender(){var box=document.getElementById('qfFeed');if(!box)return;
   if(qfMsgs===null){box.innerHTML='<p class="qhLoad">Memuat pesan komunitas...</p>';return}
   if(qfMsgs==='err'){box.innerHTML='<p class="qhLoad">Forum belum bisa dimuat. Coba lagi sebentar lagi ya.</p>';return}
-  box.innerHTML=qfMsgs.length?qfMsgs.map(qfCard).join(''):'<p class="qhLoad">Belum ada pesan. Jadilah yang pertama menyapa!</p>'}
+  box.innerHTML=qfMsgs.length?qfMsgs.map(qfThread).join(''):'<p class="qhLoad">Belum ada pesan. Jadilah yang pertama menyapa!</p>'}
 function qfLoad(){fetch(QF_API+'/list').then(function(r){return r.json()}).then(function(j){qfMsgs=(j&&j.messages)||[];qfRender()}).catch(function(){qfMsgs='err';qfRender()})}
 function qfSync(){var w=document.getElementById('qfWrap');if(!w)return;
   w.querySelectorAll('.qfChip').forEach(function(c){c.classList.toggle('on',(c.getAttribute('data-v')==='komunitas')===qfCommActive)});
@@ -955,7 +958,7 @@ function qfBuild(){if(qfBuilt)return;qfBuilt=true;
   var w=document.createElement('div');w.id='qfWrap';
   w.innerHTML='<div class="qfChips"><button type="button" class="qfChip" data-v="komunitas"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5.5C4 4.7 4.7 4 5.5 4H15.5C16.3 4 17 4.7 17 5.5V11.5C17 12.3 16.3 13 15.5 13H9L5.5 16V13C4.7 13 4 12.3 4 11.5Z"/><path d="M20 9V16.5C20 17.3 19.3 18 18.5 18H18V20.5L15 18H10"/></svg>Komunitas</button><button type="button" class="qfChip" data-v="berita"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3H15L19 7V20C19 20.6 18.6 21 18 21H6C5.4 21 5 20.6 5 20V4C5 3.4 5.4 3 6 3Z"/><path d="M14.5 3V7.5H19"/><path d="M8.5 12H15.5M8.5 15.5H15.5"/></svg>Berita</button></div>'
    +'<div id="qfComm" hidden><div class="qfPin"><span class="qfPinTag">Disematkan</span><div class="qfWho"><span class="qfAv qfAdm">B</span><span class="qfNm">Ben</span><span class="qfTm">Admin</span></div><p class="qfTx">Selamat datang di Forum Qategori! Silakan saling sapa, tanya jawab soal belajar bahasa Jepang, bahasa daerah, dan kehidupan di Jepang. Jaga sopan santun ya — pesan berisi tautan akan ditinjau admin dulu sebelum tampil.</p></div>'
-   +'<form class="qfForm" id="qfForm"><div class="qfWho"><span class="qfAv" id="qfMyAv">?</span><input class="qfIn" id="qfName" maxlength="30" placeholder="Nama kamu" autocomplete="name"></div><textarea class="qfIn qfTa" id="qfText" rows="3" maxlength="400" placeholder="Tulis sapaan atau pertanyaan..."></textarea><input type="text" id="qfHp" name="website" autocomplete="off" tabindex="-1" aria-hidden="true" style="display:none"><p class="qfNote" id="qfNote" hidden></p><button type="submit" class="qfSend" id="qfSend">Kirim</button></form>'
+   +'<form class="qfForm" id="qfForm"><div class="qfWho"><span class="qfAv" id="qfMyAv">?</span><input class="qfIn" id="qfName" maxlength="30" placeholder="Nama kamu" autocomplete="name"></div><textarea class="qfIn qfTa" id="qfText" rows="3" maxlength="400" placeholder="Tulis sapaan atau pertanyaan..."></textarea><input type="text" id="qfHp" name="website" autocomplete="off" tabindex="-1" aria-hidden="true" style="display:none"><p class="qfCtx" id="qfCtx" hidden>Membalas <b id="qfCtxNm"></b><button type="button" class="qfCtxX" id="qfCtxX">Batal</button></p><p class="qfNote" id="qfNote" hidden></p><button type="submit" class="qfSend" id="qfSend">Kirim</button></form>'
    +'<div id="qfFeed"></div></div>';
   panes.berita.insertBefore(w,panes.berita.firstChild);
   var nm=document.getElementById('qfName');try{nm.value=localStorage.getItem('qfName')||''}catch(e){}
@@ -965,20 +968,28 @@ function qfBuild(){if(qfBuilt)return;qfBuilt=true;
     var name=nm.value.trim(),text=document.getElementById('qfText').value.trim(),note=document.getElementById('qfNote'),btn=document.getElementById('qfSend');
     if(name.length<2||text.length<2){note.hidden=false;note.textContent='Isi nama dan pesan dulu ya (masing-masing minimal 2 huruf).';return}
     btn.disabled=true;btn.textContent='Mengirim...';
-    fetch(QF_API+'/post',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:name,text:text,hp:document.getElementById('qfHp').value})})
+    fetch(QF_API+'/post',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:name,text:text,hp:document.getElementById('qfHp').value,parent:qfReplyTo?qfReplyTo.id:0})})
     .then(function(r){return r.json().then(function(j){return{st:r.status,j:j}})})
     .then(function(x){btn.disabled=false;btn.textContent='Kirim';
       if(x.st===429){note.hidden=false;note.textContent='Terlalu cepat — tunggu beberapa menit sebelum mengirim lagi ya.';return}
       if(!x.j||!x.j.ok){note.hidden=false;note.textContent='Pesan belum terkirim. Coba lagi ya.';return}
       try{localStorage.setItem('qfName',name)}catch(e2){}document.getElementById('qfText').value='';
+      var wasReply=qfReplyTo;qfReplyTo=null;document.getElementById('qfCtx').hidden=true;
       if(x.j.held){note.hidden=false;note.textContent='Pesanmu terkirim dan sedang menunggu persetujuan admin (biasanya karena mengandung tautan atau kata tertentu).';return}
       note.hidden=true;
-      if(Object.prototype.toString.call(qfMsgs)==='[object Array]'){qfMsgs.unshift({id:x.j.id,name:name,text:text,ts:x.j.ts||Date.now()});qfRender()}
+      if(Object.prototype.toString.call(qfMsgs)==='[object Array]'){
+        var nm2={id:x.j.id,name:name,text:text,ts:x.j.ts||Date.now(),replies:[]};
+        var root=null;if(x.j.parent){for(var i=0;i<qfMsgs.length;i++)if(qfMsgs[i].id===x.j.parent)root=qfMsgs[i]}
+        if(root){root.replies=root.replies||[];root.replies.push(nm2)}else if(!wasReply){qfMsgs.unshift(nm2)}
+        qfRender()}
     }).catch(function(){btn.disabled=false;btn.textContent='Kirim';note.hidden=false;note.textContent='Pesan belum terkirim. Periksa koneksi lalu coba lagi.'});
   });
+  document.getElementById('qfCtxX').addEventListener('click',function(){qfReplyTo=null;document.getElementById('qfCtx').hidden=true});
   document.getElementById('qfFeed').addEventListener('click',function(e){
     var rp=e.target.closest&&e.target.closest('.qfReply');
-    if(rp){var ta=document.getElementById('qfText');ta.value='@'+rp.getAttribute('data-nm')+' ';ta.focus();if(ta.scrollIntoView)ta.scrollIntoView({block:'center'});return}
+    if(rp){qfReplyTo={id:+rp.getAttribute('data-rid'),name:rp.getAttribute('data-nm')};
+      document.getElementById('qfCtxNm').textContent=qfReplyTo.name;document.getElementById('qfCtx').hidden=false;
+      var ta=document.getElementById('qfText');ta.focus();if(ta.scrollIntoView)ta.scrollIntoView({block:'center'});return}
     var rl=e.target.closest&&e.target.closest('.qfRep');
     if(rl&&!rl.disabled){rl.disabled=true;rl.textContent='Dilaporkan';
       fetch(QF_API+'/report',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:+rl.getAttribute('data-id')})}).catch(function(){})}
