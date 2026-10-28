@@ -1239,20 +1239,22 @@ function renderBeranda(){
   var B={};B.mochi='<section class="qbHero"><div class="qbStage '+sk+'" id="qbStage"><div class="qbSky">'+stars+'<b class="qbSun"></b><s class="qbCloud c1"></s><s class="qbCloud c2"></s></div><div class="qbHill"></div><div class="qbGround"></div>'+
    '<div class="qbCar" id="qbCar" role="button" aria-label="Mobil mainan">'+CARSVG+'</div><div class="qbBall" id="qbBall" role="button" aria-label="Bola">'+BALLSVG+'</div>'+
    '<div class="mochi" id="qMochi" role="button" tabindex="0" aria-label="Mochi: ketuk untuk menyapa">'+MSVG+'</div><div class="qbBubble" id="qBub"></div><div class="qbHint">Ketuk Mochi, bola, atau mobil</div></div></section>';
-  B.ringkasan='<h2 class="qhH">Ringkasan belajar</h2><div class="qbStats">'+
+  var hFlip='<div class="qhFlip" id="qhFlip" role="button" tabindex="0" aria-label="Kartu kata hari ini, ketuk untuk membalik"><div class="qhFlipIn"><div class="qhFace"><small id="qhCardTag">Memuat…</small><b id="qhCardFront">·</b><span>Ketuk untuk membalik</span></div><div class="qhFace qhBack"><small id="qhCardTag2"></small><b id="qhCardBack"></b><span id="qhCardDetail"></span><button type="button" class="qhSpeak" id="qhSpeak" aria-label="Dengarkan pelafalan">Dengarkan</button></div></div></div>'+
+  '<p class="qhReg" id="qhReg"></p>';
+  var hStats='<div class="qbStats">'+
   '<div class="qbSt"><small>Beruntun</small><b>&#128293; '+d.streak+'</b><span>hari'+(d.best?' · terbaik '+d.best:'')+'</span></div>'+
   '<div class="qbSt"><small>Total dihapal</small><b>'+s.tot+'</b><span>kotoba + kanji</span></div>'+
   '<a class="qbSt qtKj" href="/p/materi-dan-kuis-kanji-metode-bushu.html" data-qt="kj"><small>今日の漢字 Kanji hari ini</small><b>·</b><span>Memuat...</span></a>'+
-  '<button type="button" class="qbSt qtGl" data-qt="gl" aria-label="Ganti target harian"><small>Target hari ini</small><b>'+d.n+' / '+d.goal+'</b><span>'+(d.met?'Tercapai! すごい':'kartu dihapal')+'</span><i class="qtBar"><u style="width:'+pct+'%"></u></i></button></div>'+
-  '<div class="qbAct"><button type="button" class="qhBtn" data-go="'+cont+'">Lanjut belajar &middot; '+BER_TITLE[cont]+'</button><button type="button" class="qhBtn alt" data-go="game">Main game</button></div>'+
-  '<div class="qbRiw">'+s.rows+(s.lq&&s.lq.t>0?'<p class="qbLast">Kuis terakhir: <b>'+s.lq.s+'/'+s.lq.t+'</b>'+(s.lq.at?' &middot; '+ago(+s.lq.at):'')+'</p>':'<p class="qbLast">Belum ada riwayat kuis. Ayo coba satu!</p>')+'</div>';
+  '<button type="button" class="qbSt qtGl" data-qt="gl" aria-label="Ganti target harian"><small>Target hari ini</small><b>'+d.n+' / '+d.goal+'</b><span>'+(d.met?'Tercapai! すごい':'kartu dihapal')+'</span><i class="qtBar"><u style="width:'+pct+'%"></u></i></button></div>';
+  var hAct='<div class="qbAct"><button type="button" class="qhBtn" data-go="'+cont+'">Lanjut belajar &middot; '+BER_TITLE[cont]+'</button><button type="button" class="qhBtn alt" id="qhChalStart">Tantangan 1 menit</button></div>';
+  var hRiw='<div class="qbRiw">'+s.rows+(s.lq&&s.lq.t>0?'<p class="qbLast">Kuis terakhir: <b>'+s.lq.s+'/'+s.lq.t+'</b>'+(s.lq.at?' &middot; '+ago(+s.lq.at):'')+'</p>':'<p class="qbLast">Belum ada riwayat kuis. Ayo coba satu!</p>')+'</div>';
+  var hCal='<div class="qhCal"><small>Kuis tercatat · 28 hari terakhir</small><div class="qhDots" id="qhDots"></div></div>';
+  B.ringkasan='<h2 class="qhH">Hari ini</h2><div class="qhHari">'+hFlip+hStats+hAct+'<div class="qhChal" id="qhChal"><span class="qhChalNote">5 soal · 60 detik</span></div>'+hRiw+hCal+'</div>';
   B.berita='<h2 class="qhH">Berita terbaru</h2><div class="qGrid qbNews" id="qbNews"><p class="qhLoad">Memuat...</p></div>';
-  B.hariini='<h2 class="qhH">Hari ini</h2><div class="qhHari">'+
-  '<div class="qhFlip" id="qhFlip" role="button" tabindex="0" aria-label="Kartu kata hari ini, ketuk untuk membalik"><div class="qhFlipIn"><div class="qhFace"><small id="qhCardTag">Memuat…</small><b id="qhCardFront">·</b><span>Ketuk untuk membalik</span></div><div class="qhFace qhBack"><small id="qhCardTag2"></small><b id="qhCardBack"></b><span id="qhCardDetail"></span><button type="button" class="qhSpeak" id="qhSpeak" aria-label="Dengarkan pelafalan">Dengarkan</button></div></div></div>'+
-  '<p class="qhReg" id="qhReg"></p>'+
+  B.hariini='<h2 class="qhH">Hari ini</h2><div class="qhHari">'+hFlip+
   '<div class="qhChal" id="qhChal"><button type="button" class="qhBtn" id="qhChalStart">Mulai tantangan 1 menit</button><span class="qhChalNote">5 soal · 60 detik</span></div>'+
-  '<div class="qhCal"><small>Kuis tercatat · 28 hari terakhir</small><div class="qhDots" id="qhDots"></div></div></div>';
-  var LH=(typeof QL!=='undefined'&&QL.home)||{order:['mochi','ringkasan','berita'],off:[],news:4},h='',hariDone=false;(LH.order||['mochi','ringkasan','berita']).forEach(function(k){if(B[k]&&(LH.off||[]).indexOf(k)<0){h+=B[k];if(k==='ringkasan'){h+=B.hariini;hariDone=true}}});if(!hariDone)h+=B.hariini;
+  hCal+'</div>';
+  var LH=(typeof QL!=='undefined'&&QL.home)||{order:['mochi','ringkasan','berita'],off:[],news:4},h='',hariDone=false;(LH.order||['mochi','ringkasan','berita']).forEach(function(k){if(B[k]&&(LH.off||[]).indexOf(k)<0){h+=B[k];if(k==='ringkasan'){hariDone=true}}});if(!hariDone)h+=B.hariini;
   berEl.innerHTML=h;
   try{showGoal();loadKanji()}catch(e){}
   loadPosts(function(){var rows=postRows().slice(0,(typeof QL!=='undefined'&&QL.home&&QL.home.news)||4);var n=document.getElementById('qbNews');if(n)n.innerHTML=rows.map(function(x){return cardHtml(x)}).join('')});

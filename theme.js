@@ -350,8 +350,33 @@
     if (e.target.id === 'qfxVol') { st.vol = e.target.value / 100; save(); if (au) au.setVol(st.vol); }
   });
   document.addEventListener('click', function(e){ if (!pan.hidden && !pan.contains(e.target) && !fab.contains(e.target)) pan.hidden = true; });
+  /* Tombol YouTube melayang (di atas tombol suasana): ID video + tampil/sembunyi dari CMS lewat window.QYT.
+     Muncul ±10 detik seperti iklan melayang, lalu jendelanya terbuka sendiri sekali per sesi. */
+  function qytInit(){
+    var Q = window.QYT || {};
+    if (!Q.id || Q.show === false || document.getElementById('qytFab')) return;
+    var qFab = document.createElement('button');
+    qFab.type = 'button'; qFab.id = 'qytFab'; qFab.setAttribute('aria-label', 'Tonton video YouTube');
+    qFab.innerHTML = '<svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path fill=\"currentColor\" d=\"M23 12s0-3.85-.5-5.7a2.94 2.94 0 0 0-2.07-2.08C18.6 4.75 12 4.75 12 4.75s-6.6 0-8.43.47A2.94 2.94 0 0 0 1.5 6.3C1 8.15 1 12 1 12s0 3.85.5 5.7a2.94 2.94 0 0 0 2.07 2.08c1.83.47 8.43.47 8.43.47s6.6 0 8.43-.47a2.94 2.94 0 0 0 2.07-2.08C23 15.85 23 12 23 12Z\"/><path fill=\"var(--themeBg)\" d=\"M9.8 8.6v6.8L15.8 12Z\"/></svg>';
+    var qPan = document.createElement('div');
+    qPan.id = 'qytPan'; qPan.hidden = true; qPan.setAttribute('role', 'dialog'); qPan.setAttribute('aria-label', 'Video YouTube');
+    qPan.innerHTML = '<div class=\"qfxH\"><b>YouTube</b><button type=\"button\" class=\"qfxX\" data-x=\"1\" aria-label=\"Tutup\">&times;</button></div><div class=\"qytVid\"></div>';
+    var qBuilt = false;
+    function qOpen(){
+      if (!qBuilt) { qBuilt = true; qPan.querySelector('.qytVid').innerHTML = '<iframe src=\"https://www.youtube.com/embed/' + Q.id + '?rel=0\" title=\"Video YouTube\" allow=\"accelerometer; encrypted-media; picture-in-picture\" allowfullscreen loading=\"lazy\"></iframe>'; }
+      qPan.hidden = false;
+    }
+    document.body.appendChild(qFab); document.body.appendChild(qPan);
+    qFab.addEventListener('click', function(){ if (qPan.hidden) qOpen(); else qPan.hidden = true; });
+    qPan.addEventListener('click', function(e){ var b = e.target.closest ? e.target.closest('[data-x]') : null; if (b) qPan.hidden = true; });
+    document.addEventListener('click', function(e){ if (!qPan.hidden && !qPan.contains(e.target) && !qFab.contains(e.target)) qPan.hidden = true; });
+    var qAuto = false;
+    try { qAuto = sessionStorage.getItem('qytAuto') === '1'; if (!qAuto) sessionStorage.setItem('qytAuto', '1'); } catch(e){}
+    if (!qAuto) setTimeout(qOpen, 10300);
+  }
   function init(){
     document.body.appendChild(fab); document.body.appendChild(pan);
+    qytInit();
     if (st.fx !== 'off') { applyFx(); fxChanged(); }
     /* Peramban memblokir suara sebelum ada sentuhan: lanjutkan musik pada sentuhan pertama. */
     if (anyOn()) {
@@ -915,7 +940,7 @@
     function item(tag, k, label, href, cls){
       return '<' + tag + (tag === 'a' ? ' href="' + href + '"' : ' type="button"') + ' data-k="' + k + '"' + (cls ? ' class="' + cls + '"' : '') + '>' + IC[k] + '<span>' + label + '</span></' + tag + '>';
     }
-    bar.innerHTML = item('a', 'podcast', 'Podcast', '/#podcast') + item('a', 'belajar', 'Belajar', '/#belajar') + item('button', 'mochi', 'Mochi AI') + item('a', 'game', 'Game', '/#game') + item('a', 'berita', 'Berita', '/#berita', 'qNavBerita');
+    bar.innerHTML = item('a', 'podcast', 'Podcast', '/#podcast') + item('a', 'belajar', 'Belajar', '/#belajar') + item('button', 'mochi', 'Mochi AI') + item('a', 'game', 'Game', '/#game') + item('a', 'berita', 'Forum', '/#berita', 'qNavBerita');
     document.body.appendChild(bar); document.body.appendChild(fab);
     function inHome(){ return typeof window.qhGo === 'function' && document.body.classList.contains('home') && location.pathname === '/'; }
     function mark(){

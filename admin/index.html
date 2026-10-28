@@ -298,13 +298,13 @@ async function viewEditor(m,arg){
 }
 
 /* ====================== layout ====================== */
-const DEF={home:{order:['mochi','ringkasan','berita'],off:[],news:4},sidebar:{order:['ad','traktir','info'],off:[]},info:{title:'Informasi',links:[]},traktir:{url:''},ads:{videos:[],sticky:true},social:[]};
+const DEF={home:{order:['mochi','ringkasan','berita'],off:[],news:4},sidebar:{order:['ad','traktir','info'],off:[]},info:{title:'Informasi',links:[]},traktir:{url:''},ads:{videos:[],sticky:true,html:'',yt:{id:'',show:true}},social:[]};
 const HOMEN={mochi:'Panggung Mochi (animasi)',ringkasan:'Ringkasan belajar',berita:'Berita terbaru'},SIDEN={ad:'Iklan video (sidebar)',traktir:'Traktir Mochi (Saweria)',info:'Tautan Informasi'};
 const ICONS=['youtube','facebook','instagram','threads','tiktok','twitter','whatsapp','telegram','linkedin','pinterest','line','messenger','tumblr','behance','dribbble','blogger'];
 async function viewLayout(m){
   const box=el('div',{class:'card'},el('p',{class:'mut'},'Memuat layout…'));m.append(box);
   let L;try{await loadIdx();const f=await getFile('config/layout.json');L=f?JSON.parse(f.text):{};var sha=f&&f.sha}catch(e){box.innerHTML='';box.append(el('p',{class:'err'},e.message));return}
-  L=Object.assign({},JSON.parse(JSON.stringify(DEF)),L);['home','sidebar','info','traktir','ads'].forEach(k=>L[k]=Object.assign({},DEF[k],L[k]||{}));
+  L=Object.assign({},JSON.parse(JSON.stringify(DEF)),L);['home','sidebar','info','traktir','ads'].forEach(k=>L[k]=Object.assign({},DEF[k],L[k]||{}));L.ads.yt=Object.assign({},DEF.ads.yt,L.ads.yt||{});
   box.remove();
   const sections=el('div',{});m.append(sections);
   const orderEditor=(title,names,obj,extra)=>{const c=el('div',{class:'card'},el('h2',{},title));
@@ -328,7 +328,17 @@ async function viewLayout(m){
   /* iklan */
   const vt=el('textarea',{placeholder:'Satu per baris: URL YouTube atau ID video',oninput:()=>{L.ads.videos=vt.value.split(/\n+/).map(s=>s.trim()).filter(Boolean)}});vt.value=(L.ads.videos||[]).join('\n');
   const st=el('input',{type:'checkbox',checked:L.ads.sticky!==false,onchange:()=>{L.ads.sticky=st.checked}});
-  sections.append(el('div',{class:'card'},el('h2',{},'Iklan video'),el('p',{class:'mut'},'Satu video dipilih acak per sesi dari daftar ini (dipakai di sidebar & iklan melayang HP). Kosong = pakai bawaan.'),vt,el('label',{class:'row',style:'margin-top:10px'},st,'Tampilkan iklan melayang di bawah layar (HP)')));
+  const ht=el('textarea',{placeholder:'Tempel kode HTML iklan di sini',rows:'4',oninput:()=>{L.ads.html=ht.value}});ht.value=L.ads.html||'';
+  const yi=el('input',{type:'text',value:L.ads.yt.id||'',placeholder:'ID atau URL video YouTube',oninput:()=>{L.ads.yt.id=yi.value}});
+  const ys=el('input',{type:'checkbox',checked:L.ads.yt.show!==false,onchange:()=>{L.ads.yt.show=ys.checked}});
+  sections.append(el('div',{class:'card'},el('h2',{},'Iklan video'),el('p',{class:'mut'},'Satu video dipilih acak per sesi dari daftar ini (dipakai di sidebar, dan di iklan melayang bila kode HTML di bawah kosong). Kosong = pakai bawaan.'),vt,
+    el('h2',{style:'margin-top:18px'},'Iklan melayang (pojok bawah)'),
+    el('label',{class:'row'},st,'Tampilkan iklan melayang di bawah layar'),
+    el('p',{class:'mut',style:'margin-top:10px'},'Isi iklan melayang bisa diganti kode HTML bebas (mis. kode dari jaringan iklan lain). Kosongkan untuk tetap memakai video YouTube dari daftar di atas.'),ht,
+    el('h2',{style:'margin-top:18px'},'Tombol YouTube'),
+    el('p',{class:'mut'},'Tombol YouTube melayang di atas tombol musik: muncul setelah ±10 detik lalu jendelanya langsung terbuka (sekali per sesi), lebar jendela sama seperti jendela musik. Kosongkan ID untuk memakai video pertama dari daftar iklan video.'),
+    el('label',{class:'f'},'ID / URL video YouTube'),yi,
+    el('label',{class:'row',style:'margin-top:10px'},ys,'Tampilkan tombol YouTube')));
   /* sosial */
   const sl=el('div',{});
   const drawS=()=>{sl.innerHTML='';L.social.forEach((s,i)=>{const ic=el('select',{onchange:()=>{s.icon=ic.value}},ICONS.map(x=>el('option',{value:x,selected:x===s.icon},x)));
