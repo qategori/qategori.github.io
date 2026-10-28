@@ -14,8 +14,9 @@
   function esc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;') }
   var wrap=null, msgsEl=null, inputEl=null, opened=false, busy=false, history=[];
   function today(){ var d=new Date(); return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate() }
-  function used(){ if(lsGet('qmDay')!==today()) return 0; return parseInt(lsGet('qmN')||'0',10)||0 }
-  function bump(){ lsSet('qmDay',today()); lsSet('qmN',String(used()+1)) }
+  function used(){ if(lsGet('qmDay2')!==today()) return 0; return parseInt(lsGet('qmN2')||'0',10)||0 }
+  function bump(){ var n=used()+1; lsSet('qmDay2',today()); lsSet('qmN2',String(n)); note() }
+  function note(){ try{ var n=wrap&&wrap.querySelector('.qmNote'); if(n) n.textContent='Gratis \u2022 sisa '+Math.max(0,20-used())+' dari 20 pertanyaan hari ini \u2022 jawaban AI bisa keliru' }catch(e){} }
   function fixUrl(u){
     if(u.indexOf('materi-dan-soal-tg2')>-1) return 'https://www.qategori.com/#tg2-semua';
     return u;
@@ -73,7 +74,7 @@
     if(!document.body.classList.contains('qmOpen')||!vv){ st.height=''; st.top=''; ps.maxHeight=''; return }
     st.height=vv.height+'px'; st.top=vv.offsetTop+'px'; ps.maxHeight=Math.max(200,Math.round(vv.height*0.94))+'px' }
   if(vv){ vv.addEventListener('resize',qmFit); vv.addEventListener('scroll',qmFit) }
-  function openChat(){ build(); wrap.setAttribute('aria-hidden','false'); document.body.classList.add('qmOpen'); qmFit();
+  function openChat(){ build(); note(); wrap.setAttribute('aria-hidden','false'); document.body.classList.add('qmOpen'); qmFit();
     if(!opened){ opened=true; addRow('Halo! Aku Mochi, teman belajarmu di Qategori. Mau belajar kata baru, kuis mini, atau tanya soal Tokutei Ginou? Tulis saja pertanyaanmu, nya~') }
     setTimeout(function(){ try{ inputEl.focus() }catch(e){} },320) }
   function closeChat(){ if(wrap) wrap.setAttribute('aria-hidden','true'); document.body.classList.remove('qmOpen'); qmFit() }
