@@ -1470,3 +1470,37 @@ show();
     fetch(u,{method:'POST',body:b,keepalive:true}).catch(function(){});
   }catch(e){}
 })();
+
+/* Daftar isi melayang untuk artikel yang dibuka langsung dari luar (Google,
+   tautan dibagikan, hasil pencarian): halaman statis artikel tidak melewati
+   pembaca di dalam SPA (qhToc hanya jalan di sana), jadi tombol lompat ke
+   heading dibangun di sini dengan kelas & perilaku yang sama persis. */
+(function(){
+  try{
+    if(document.getElementById('qHome'))return;
+    if(!/^\/(\d{4}\/\d{2}|p)\/[^\/]+\.html$/.test(location.pathname))return;
+    if(document.querySelector('.qhTocB'))return;
+    var art=document.querySelector('article.qPost .postBody')||document.querySelector('.postBody')||document.querySelector('main article')||document.querySelector('article');
+    if(!art)return;
+    var hs=Array.prototype.slice.call(art.querySelectorAll('h1,h2,h3,h4,h5,h6'));
+    if(hs.length<2)return;
+    var min=6,links='';
+    hs.forEach(function(h){min=Math.min(min,parseInt(h.tagName.charAt(1),10))});
+    hs.forEach(function(h,i){
+      var slug=(h.textContent||'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'').slice(0,40);
+      h.id='qk'+(i+1)+(slug?'-'+slug:'');h.style.scrollMarginTop='84px';
+      var tx=(h.textContent||'').trim().replace(/&/g,'&amp;').replace(/</g,'&lt;');
+      links+='<a href="#'+h.id+'" style="padding-left:'+((parseInt(h.tagName.charAt(1),10)-min)*14)+'px">'+tx+'</a>'});
+    var btn=document.createElement('button');btn.type='button';btn.className='qhTocB';btn.setAttribute('aria-label','Buka daftar isi');
+    btn.innerHTML='<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h10"/></svg>';
+    var pan=document.createElement('div');pan.className='qhTocP';pan.hidden=true;
+    pan.innerHTML='<button type="button" class="qhTocX">&lsaquo; Konten</button><div class="qhTocC">'+links+'</div>';
+    btn.addEventListener('click',function(){pan.hidden=!pan.hidden});
+    pan.addEventListener('click',function(e){
+      if(e.target.closest('.qhTocX')){pan.hidden=true;return}
+      var a=e.target.closest('a[href^="#"]');if(!a)return;
+      e.preventDefault();e.stopPropagation();pan.hidden=true;
+      var t=document.getElementById(a.getAttribute('href').slice(1));if(t)window.scrollTo({top:t.getBoundingClientRect().top+window.pageYOffset-84,behavior:'smooth'})});
+    document.body.appendChild(btn);document.body.appendChild(pan);
+  }catch(e){}
+})();

@@ -600,13 +600,11 @@ html.qScDown .qtStick{top:8px}
 html.qOv .qtStick{visibility:hidden}
 
 /* ===== Forum (chip Komunitas + Berita) ===== */
-.qfChips{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin:0 0 14px;padding:10px;border-radius:16px;background:rgba(20,40,60,.05)}
-.qfChip{display:inline-flex;align-items:center;gap:6px;padding:10px 18px;border:1.5px solid rgba(20,40,60,.22);border-radius:99px;background:transparent;color:var(--themeC);font:inherit;font-size:.92rem;font-weight:700;cursor:pointer}
-.qfChip svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;flex:0 0 auto}
-.qfChip.on{background:#0b5cad;border-color:#0b5cad;color:#fff;box-shadow:0 2px 6px rgba(11,92,173,.35)}
-.nB[data-theme=dark] .qfChips{background:rgba(255,255,255,.06)}
-.nB[data-theme=dark] .qfChip{border-color:rgba(255,255,255,.25)}
-.nB[data-theme=dark] .qfChip.on{background:#2b78c9;border-color:#2b78c9;box-shadow:none}
+.qfChips{display:flex;margin:0 0 14px;border-bottom:1px solid var(--themeBd-color)}
+.qfChip{flex:1 1 0;min-width:0;position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;padding:10px 2px 12px;border:0;background:transparent;color:var(--themeC);font:inherit;font-size:13px;font-weight:600;cursor:pointer;opacity:.7;transition:color .2s,opacity .2s}
+.qfChip svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;flex:0 0 auto}
+.qfChip.on{color:var(--themeLink);opacity:1}
+.qfChip.on::after{content:"";position:absolute;left:0;right:0;bottom:-1px;height:3px;border-radius:2px;background:var(--themeLink)}
 .qfPin,.qfForm,.qfPost{border:1px solid rgba(127,140,180,.35);border-radius:14px;padding:12px 14px;margin:0 0 12px}
 .qfPinTag{display:inline-block;font-size:10px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:#9a8cff;margin-bottom:6px}
 .qfWho{display:flex;align-items:center;gap:8px;margin-bottom:6px}
