@@ -655,6 +655,28 @@ html.qOv .qtStick{visibility:hidden}
 .qdT{display:block;margin-top:8px;font-weight:700;font-size:14.5px;line-height:1.3}
 .qdT small{display:block;font-weight:500;opacity:.65;font-size:12px;margin-top:1px}
 
+/* ===== Laci navigasi: blok profil & progres (qdp) + menu diperbesar ===== */
+.qdpLi{display:none;padding:2px 16px 8px;list-style:none}
+.qdp .qpSec{margin-top:18px}
+.qdp .qpHero{margin-bottom:2px}
+.qdpTap{cursor:pointer}
+.qdpAcc{margin-top:8px}
+.qdp .qpRow:last-child{border-bottom:0}
+.nB .navi:checked ~ .mainW .qdpLi{display:block}
+@media screen and (max-width:896px){
+  .qdpLi{display:block}
+  .qpMenuLi{display:none}
+  html body .mainL{width:86vw;max-width:360px}
+  html body .leftNav{--padding:15px}
+  html body .leftNav .a>svg{width:24px;height:24px}
+  html body .leftNav .a .text{font-size:17px}
+}
+@media screen and (min-width:897px){
+  .nB .navi:checked ~ .mainW .leftNav{--padding:15px}
+  .nB .navi:checked ~ .mainW .leftNav .a>svg{width:24px;height:24px}
+  .nB .navi:checked ~ .mainW .leftNav .a .text{font-size:17px}
+}
+
 .leftF{justify-content:flex-start!important}
 .leftF label{min-width:56px!important;justify-content:flex-start!important;padding-inline:var(--contentPadding,16px)!important}
 .leftF label::before{content:''!important;display:block;width:24px;height:24px;background:currentColor;-webkit-mask:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%221.5%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22M15%2019.9201L8.47997%2013.4001C7.70997%2012.6301%207.70997%2011.3701%208.47997%2010.6001L15%204.08008%22/%3E%3C/svg%3E") center/contain no-repeat;mask:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%221.5%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22M15%2019.9201L8.47997%2013.4001C7.70997%2012.6301%207.70997%2011.3701%208.47997%2010.6001L15%204.08008%22/%3E%3C/svg%3E") center/contain no-repeat}

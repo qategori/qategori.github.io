@@ -1537,3 +1537,144 @@ show();
     document.body.appendChild(btn);document.body.appendChild(pan);
   }catch(e){}
 })();
+
+/* Blok profil & progres di laci navigasi (qdp): ringkasan panel Profil & Progres
+   (qp di theme.js) ditampilkan di kepala laci, memakai kelas qp yang sama persis.
+   Aksi Cadangkan/Pulihkan/Sinkronkan diteruskan ke tombol panel aslinya. */
+(function(){
+  'use strict';
+  if (window.__qdp) return; window.__qdp = 1;
+  var nav = document.querySelector('.leftNav');
+  if (!nav) return;
+  var LV = ['n5','n4','n3','n2','n1'];
+  var LVN = {n5:'N5 Pemula', n4:'N4 Dasar', n3:'N3 Menengah', n2:'N2 Lanjut', n1:'N1 Mahir'};
+  var BIDANG = {kensetsu:'Konstruksi (kensetsu)', manufaktur:'Manufaktur (seizou)', jidousha:'Perawatan Mobil (jidousha seibi)', bisniskaria:'Bisnis Karir (bijinesu kyaria)'};
+  var KEEP = /_prefs$|_archived_v1$|_fav_v1$|^kbq_theme_v1$|^qProgress/;
+  var ICON_USER = '<svg class="line" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4.5 20c.8-3.6 3.8-5.5 7.5-5.5s6.7 1.9 7.5 5.5"/></svg>';
+  function esc(s){ return String(s == null ? '' : s).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+  function lsGet(k){ try { return localStorage.getItem(k); } catch(e){ return null; } }
+  function readArr(raw){ try { var a = JSON.parse(raw); return Array.isArray(a) ? a.filter(function(x){ return typeof x === 'string'; }) : []; } catch(e){ return []; } }
+  var sel = {kotoba:null, kanji:null};
+  function pickLv(kind, rows){
+    var cur = sel[kind];
+    if (!cur || LV.indexOf(cur) < 0) {
+      cur = 'n5';
+      for (var i = 0; i < rows.length; i++) { if (!rows[i].tot || rows[i].n < rows[i].tot) { cur = rows[i].l; break; } }
+      sel[kind] = cur;
+    }
+    return cur;
+  }
+  function rowsFor(kind){
+    var t = {};
+    try { t = JSON.parse(lsGet(kind === 'kotoba' ? 'qProgressTotals' : 'qProgressTotalsK') || '{}') || {}; } catch(e){}
+    return LV.map(function(l){ return {l:l, n:readArr(lsGet(l + (kind === 'kotoba' ? '_kotoba_archived_v1' : '_kanji_archived_v1'))).length, tot:t[l] || 0}; });
+  }
+  function lvBlock(kind, rows){
+    var cur = pickLv(kind, rows), s = null, sumN = 0, sumT = 0;
+    rows.forEach(function(r){ sumN += r.n; sumT += r.tot; if (r.l === cur) s = r; });
+    var chips = '<div class="qpPick">' + rows.map(function(r){
+      var p = r.tot ? Math.min(100, Math.round(100 * r.n / r.tot)) : 0;
+      return '<button type="button" class="qpPk' + (r.l === cur ? ' on' : '') + '" data-qdp="lv:' + kind + ':' + r.l + '"><b>' + r.l.toUpperCase() + '</b><small>' + p + '%</small></button>';
+    }).join('') + '</div>';
+    var pc = s.tot ? Math.min(100, Math.round(100 * s.n / s.tot)) : 0;
+    return chips + '<div class="qpLv"><span>' + LVN[cur] + '</span><b>' + s.n + (s.tot ? ' / ' + s.tot : '') + '</b><i class="qpBar"><u style="width:' + pc + '%"></u></i></div>' +
+      '<p class="qpNote">Semua level: ' + sumN + (sumT ? ' / ' + sumT : '') + ' dihapal.</p>';
+  }
+  function heroHtml(user, info){
+    if (!user) return '<label class="qpHero qdpTap" for="forProfil"><span class="qpHAv">' + ICON_USER + '</span><div><b>Belum masuk</b><small>Masuk untuk membuka kuis dan menyimpan progres belajarmu.</small></div></label>';
+    var name = user.displayName || user.email || '';
+    var img = user.photoURL ? '<img alt="" referrerpolicy="no-referrer" src="' + esc(user.photoURL) + '"/>' : esc((name || '?').charAt(0).toUpperCase());
+    var role = info && info.role === 'admin' ? 'Admin' : (info && info.role === 'member' ? 'Anggota' : '');
+    return '<label class="qpHero qdpTap" for="forProfil"><span class="qpHAv">' + img + '</span><div><b>' + esc(name) + (role ? ' <i class="qpBadge">' + role + '</i>' : '') + '</b><small>' + esc(user.email || '') + '</small></div></label>';
+  }
+  function accessHtml(user, info){
+    if (!user) return '';
+    var t;
+    if (!info || info.loading) t = 'Memeriksa akses...';
+    else if (info.err) t = 'Tidak bisa memeriksa akses sekarang.';
+    else if (info.role === 'admin') t = 'Admin: semua bidang terbuka.';
+    else if (info.role === 'member') t = !info.bidang ? 'Anggota: semua bidang terbuka.' : 'Anggota: ' + (info.bidang.length ? info.bidang.map(function(b){ return BIDANG[b] || b; }).join(', ') : 'belum ada bidang.');
+    else t = 'Akun belum terdaftar sebagai anggota.';
+    return '<p class="qpNote qdpAcc">Akses kuis: ' + esc(t) + '</p>';
+  }
+  function skorHtml(info){
+    if (!info || info.loading || !info.results || !info.results.length) return '';
+    return '<div class="qpSec"><h4>Skor kuis</h4>' + info.results.slice(0, 2).map(function(r){
+      var l = r.last || {};
+      return '<div class="qpRow"><span>' + esc(r.n) + '<small>' + r.count + ' kali kuis</small></span><b>' + esc(l.skor) + '/' + esc(l.total) + '<small>terbaik ' + r.best + '%</small></b></div>';
+    }).join('') + '</div>';
+  }
+  function dailyHtml(){
+    var d = window.qDaily ? window.qDaily.get() : null; if (!d) return '';
+    var pct = Math.min(100, Math.round(100 * d.n / d.goal));
+    return '<div class="qpSec"><h4>Target hari ini</h4><div class="qpGoal"><span>' + (d.met ? 'Tercapai! すごい (sugoi)' : 'Kartu dihapal hari ini') + '</span><b>' + d.n + ' / ' + d.goal + '</b><i class="qpBar"><u style="width:' + pct + '%"></u></i></div>' +
+      '<p class="qpStreak">Streak: <b>' + d.streak + ' hari</b>' + (d.best > 1 ? ' &middot; terbaik ' + d.best + ' hari' : '') + '</p>' +
+      '<p class="qpStreak"><button type="button" class="qpBtn sm" data-qdp="goal">Ganti target (' + d.goal + ')</button></p></div>';
+  }
+  function kotobaHtml(user){
+    var st;
+    if (!user) st = 'Belum masuk: progres hanya tersimpan di browser ini.';
+    else { var at = +lsGet('qSyncAt'); st = at ? 'Tersinkron ke akunmu pukul ' + new Date(at).toLocaleTimeString('id-ID', {hour:'2-digit', minute:'2-digit'}) + '.' : 'Belum disinkronkan.'; }
+    return '<div class="qpSec"><h4>Kotoba dihapal (単語, tango)</h4>' + lvBlock('kotoba', rowsFor('kotoba')) +
+      '<p class="qpNote">' + esc(st) + (user ? ' <a href="#" data-qdp="sync">Sinkronkan sekarang</a>' : '') + '</p></div>';
+  }
+  function kanjiHtml(){
+    return '<div class="qpSec"><h4>Kanji dihapal (漢字, kanji)</h4>' + lvBlock('kanji', rowsFor('kanji')) + '</div>';
+  }
+  function nihoHtml(){
+    var a = [];
+    try { a = JSON.parse(lsGet('qProgressLog') || '[]'); } catch(e){}
+    a = (Array.isArray(a) ? a : []).filter(function(x){ return x && typeof x.k === 'string' && isFinite(x.s) && isFinite(x.t) && isFinite(x.at); });
+    var g = {};
+    a.forEach(function(r){ var o = g[r.k] || (g[r.k] = {n:r.n || r.k, c:0, last:null, best:0}); o.c++; if (!o.last || r.at > o.last.at) o.last = r; if (r.t) o.best = Math.max(o.best, Math.round(100 * r.s / r.t)); });
+    var list = Object.keys(g).map(function(k){ return g[k]; }).sort(function(x, y){ return y.last.at - x.last.at; }).slice(0, 3);
+    var h = '<div class="qpSec"><h4>Skor kuis Nihongo</h4>';
+    if (!list.length) h += '<p class="qpNote">Belum ada skor. Selesaikan kuis di halaman materi JLPT atau kuis Bushu.</p>';
+    else h += list.map(function(o){
+      var d = new Date(o.last.at).toLocaleDateString('id-ID', {day:'numeric', month:'short'});
+      return '<div class="qpRow"><span>' + esc(o.n) + '<small>' + o.c + ' kali &middot; terakhir ' + esc(d) + '</small></span><b>' + o.last.s + '/' + o.last.t + '<small>terbaik ' + o.best + '%</small></b></div>';
+    }).join('');
+    return h + '</div>';
+  }
+  var toolsHtml = '<div class="qpSec"><h4>Alat</h4><div class="qpTools"><button class="qpBtn" type="button" data-qdp="backup">Cadangkan</button><button class="qpBtn" type="button" data-qdp="restore">Pulihkan</button></div></div>';
+
+  var li = document.createElement('li');
+  li.className = 'qdpLi';
+  li.innerHTML = '<div class="qdp"></div>';
+  nav.insertBefore(li, nav.firstChild);
+  var box = li.firstChild;
+  function paint(){
+    var user = null, info = null;
+    try { user = window.qpUser ? window.qpUser() : null; } catch(e){}
+    try { info = window.qpInfo ? window.qpInfo() : null; } catch(e){}
+    box.innerHTML = heroHtml(user, info) + accessHtml(user, info) + skorHtml(info) + dailyHtml() + kotobaHtml(user) + kanjiHtml() + nihoHtml() + toolsHtml;
+  }
+  function panelBtn(sel){ return document.querySelector('#qpBody ' + sel); }
+  function backupFallback(){
+    var o = {};
+    try { for (var i = 0; i < localStorage.length; i++) { var k = localStorage.key(i); if (KEEP.test(k)) o[k] = localStorage.getItem(k); } } catch(e){}
+    var user = null; try { user = window.qpUser ? window.qpUser() : null; } catch(e){}
+    var data = {app:'qategori', v:1, at:new Date().toISOString(), email:user ? user.email : null, local:o, skor:[]};
+    var blob = new Blob([JSON.stringify(data, null, 1)], {type:'application/json'});
+    var a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+    a.download = 'qategori-cadangan-' + new Date().toISOString().slice(0, 10) + '.json';
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(function(){ URL.revokeObjectURL(a.href); }, 4000);
+  }
+  box.addEventListener('click', function(e){
+    var b = e.target.closest ? e.target.closest('[data-qdp]') : null; if (!b) return;
+    var a = b.getAttribute('data-qdp');
+    if (a.indexOf('lv:') === 0) { var p = a.split(':'); if (sel.hasOwnProperty(p[1]) && LV.indexOf(p[2]) >= 0) { sel[p[1]] = p[2]; paint(); } return; }
+    if (a === 'goal') { if (window.qDaily) window.qDaily.nextGoal(); paint(); return; }
+    if (a === 'sync') { e.preventDefault(); var sb = panelBtn('[data-qp="sync"]'); if (sb) sb.click(); else { var hp = box.querySelector('.qdpTap'); if (hp) hp.click(); } setTimeout(paint, 150); return; }
+    if (a === 'backup') { var bb = panelBtn('[data-qp="backup"]'); if (bb) bb.click(); else backupFallback(); return; }
+    if (a === 'restore') { var f = document.getElementById('qpFile'); if (f) f.click(); return; }
+  });
+  window.addEventListener('qp-user', paint);
+  window.addEventListener('qdaily', paint);
+  var navi = document.querySelector('.navi');
+  if (navi) navi.addEventListener('change', function(){ if (navi.checked) paint(); });
+  paint();
+  setTimeout(paint, 1500);
+  setTimeout(paint, 4000);
+})();

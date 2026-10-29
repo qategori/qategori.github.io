@@ -1077,6 +1077,7 @@
   var user = null, checked = false, info = null, msg = '', busy = false, dip = null;
   var mode = 'choice', ev = '', pv = '';   // login email: choice | signin | signup
   window.qpUser = function(){ return user; };
+  window.qpInfo = function(){ return info; };
   var LV = ['n5','n4','n3','n2','n1'];
   var LVN = {n5:'N5 Pemula', n4:'N4 Dasar', n3:'N3 Menengah', n2:'N2 Lanjut', n1:'N1 Mahir'};
   var syncing = false, syncErr = '', lastSig = null;
