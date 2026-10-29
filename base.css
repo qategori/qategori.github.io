@@ -844,6 +844,19 @@ main.blogB:has(>#qHome){padding-top:0!important}
 @keyframes qcZ{0%{opacity:0;transform:translate(0,6px) scale(.7)}30%{opacity:.9}100%{opacity:0;transform:translate(8px,-14px) scale(1.2)}}
 @keyframes qcHop{0%{transform:translateY(0)}35%{transform:translateY(-12px)}65%{transform:translateY(0)}82%{transform:translateY(-4px)}100%{transform:translateY(0)}}
 @keyframes qcPop{from{opacity:0;transform:scale(.85)}to{opacity:1;transform:scale(1)}}
+/* Rig Mochi melayang: lengan & kaki */
+#qcat .mLegL{transform-origin:26px 49px}#qcat .mLegR{transform-origin:38px 49px}
+#qcat .mArmL{transform-origin:19px 43px}#qcat .mArmR{transform-origin:45px 43px}
+#qcat .mLeg,#qcat .mArm{transition:transform .18s ease}
+#qcat.qcWalk .mLegL{animation:qcStep .5s ease-in-out infinite}
+#qcat.qcWalk .mLegR{animation:qcStep .5s ease-in-out -.25s infinite}
+#qcat.qcWalk .mArmL{animation:qcSwing .5s ease-in-out -.25s infinite}
+#qcat.qcWalk .mArmR{animation:qcSwing .5s ease-in-out infinite}
+@keyframes qcStep{0%,100%{transform:rotate(23deg)}50%{transform:rotate(-23deg)}}
+@keyframes qcSwing{0%,100%{transform:rotate(16deg)}50%{transform:rotate(-16deg)}}
+#qcat.qcLift .mLegL{transform:rotate(16deg)}#qcat.qcLift .mLegR{transform:rotate(-16deg)}
+#qcat.qcLift .mArmL{transform:rotate(24deg)}#qcat.qcLift .mArmR{transform:rotate(-24deg)}
+#qcat.qcHop .mLegL{transform:rotate(-22deg)}#qcat.qcHop .mLegR{transform:rotate(22deg)}
 @media (prefers-reduced-motion:reduce){#qcat *,#qcat{animation:none!important}}
 
 #qcat .qcEyes{transition:transform .12s}
@@ -891,7 +904,7 @@ a.qtTile,button.qtTile{cursor:pointer}
 
 /* Pemandangan musim */
 header.mainH,.nB header.mainH,.nB:not(.headerSticky) header.mainH{position:sticky;top:0}
-.qsH{position:absolute;inset:0;overflow:hidden;pointer-events:none;opacity:.8}
+.qsH{position:absolute;inset:0;overflow:hidden;pointer-events:none;opacity:1}
 .qsH svg{position:absolute;right:0;bottom:0;height:100%;max-width:100%;width:auto}
 @media screen and (max-width:560px){.qsH svg{opacity:.8}}
 .qsF{position:relative;height:56px;overflow:hidden;pointer-events:none;margin-bottom:6px}

@@ -640,10 +640,15 @@
 
   /* ---------- Gambar kucing (SVG) ---------- */
   var SVG = '<svg viewBox="0 0 64 64" aria-hidden="true">' +
+    '<g class="mAll">' +
     '<g class="qcTail"><path d="M45 54C58 54 60 40 54 34" fill="none" stroke="#5a3a22" stroke-width="7" stroke-linecap="round"/><path d="M45 54C58 54 60 40 54 34" fill="none" stroke="#f2a65a" stroke-width="4.6" stroke-linecap="round"/></g>' +
+    '<g class="mLeg mLegL"><path d="M26 49L25 57.5" fill="none" stroke="#5a3a22" stroke-width="7" stroke-linecap="round"/><path d="M26 49L25 57.5" fill="none" stroke="#f2a65a" stroke-width="4.6" stroke-linecap="round"/><ellipse cx="25" cy="59.5" rx="5" ry="3" fill="#fff3e0" stroke="#5a3a22" stroke-width="1.3"/></g>' +
+    '<g class="mLeg mLegR"><path d="M38 49L39 57.5" fill="none" stroke="#5a3a22" stroke-width="7" stroke-linecap="round"/><path d="M38 49L39 57.5" fill="none" stroke="#f2a65a" stroke-width="4.6" stroke-linecap="round"/><ellipse cx="39" cy="59.5" rx="5" ry="3" fill="#fff3e0" stroke="#5a3a22" stroke-width="1.3"/></g>' +
+    '<g class="mArm mArmL"><path d="M19 43C15 46 13.5 49.5 14.5 53.5" fill="none" stroke="#5a3a22" stroke-width="7" stroke-linecap="round"/><path d="M19 43C15 46 13.5 49.5 14.5 53.5" fill="none" stroke="#f2a65a" stroke-width="4.6" stroke-linecap="round"/></g>' +
+    '<g class="mArm mArmR"><path d="M45 43C49 46 50.5 49.5 49.5 53.5" fill="none" stroke="#5a3a22" stroke-width="7" stroke-linecap="round"/><path d="M45 43C49 46 50.5 49.5 49.5 53.5" fill="none" stroke="#f2a65a" stroke-width="4.6" stroke-linecap="round"/></g>' +
+    '<g class="mBody">' +
     '<ellipse cx="32" cy="50" rx="16" ry="12.5" fill="#f2a65a" stroke="#5a3a22" stroke-width="1.6"/>' +
     '<ellipse cx="32" cy="53" rx="8.5" ry="8" fill="#fff3e0"/>' +
-    '<ellipse cx="25" cy="59.5" rx="5" ry="3" fill="#fff3e0" stroke="#5a3a22" stroke-width="1.3"/><ellipse cx="39" cy="59.5" rx="5" ry="3" fill="#fff3e0" stroke="#5a3a22" stroke-width="1.3"/>' +
     '<g class="qcHead">' +
       '<g class="qcEarL"><path d="M17.5 24L19 7.5L31 17.5Z" fill="#f2a65a" stroke="#5a3a22" stroke-width="1.6" stroke-linejoin="round"/><path d="M21 19L21.6 12.5L26.5 17Z" fill="#f7b6b6"/></g>' +
       '<g class="qcEarR"><path d="M46.5 24L45 7.5L33 17.5Z" fill="#f2a65a" stroke="#5a3a22" stroke-width="1.6" stroke-linejoin="round"/><path d="M43 19L42.4 12.5L37.5 17Z" fill="#f7b6b6"/></g>' +
@@ -660,7 +665,8 @@
       '<g class="qcAcc qcPanas"><path d="M17 22Q32 14 47 22" fill="none" stroke="#e8c15a" stroke-width="3" stroke-linecap="round"/><path d="M13 22H51" stroke="#d9a93c" stroke-width="3.4" stroke-linecap="round"/><path d="M20 22Q32 8 44 22Z" fill="#f1d27a" stroke="#b88a24" stroke-width="1"/><path d="M20.5 20.5H43.5" stroke="#d6453d" stroke-width="2"/></g>' +
       '<g class="qcAcc qcNightCap"><path d="M19 20Q30 2 46 10Q40 14 46 22Z" fill="#5b6fd6" stroke="#2f3b8a" stroke-width="1"/><path d="M17 21Q32 25 47 21" fill="none" stroke="#e8ecff" stroke-width="3" stroke-linecap="round"/><circle cx="46.5" cy="10" r="2.6" fill="#fff"/><path d="M33 12l1 2 2 .3-1.5 1.4.4 2-1.9-1-1.9 1 .4-2L30 14.3 32 14Z" fill="#ffe27a"/></g>' +
     '</g>' +
-    '<g class="qcNite"><path d="M54 3A6 6 0 1 0 54 15A4.8 4.8 0 0 1 54 3Z" fill="#fdf3c0"/><circle class="qcTw" cx="60" cy="20" r="1.1" fill="#fff6c8"/><circle class="qcTw qcTw2" cx="8" cy="8" r="1.2" fill="#fff6c8"/><circle class="qcTw" cx="4" cy="26" r=".9" fill="#fff6c8"/></g></svg>';
+    '</g>' +
+    '<g class="qcNite"><path d="M54 3A6 6 0 1 0 54 15A4.8 4.8 0 0 1 54 3Z" fill="#fdf3c0"/><circle class="qcTw" cx="60" cy="20" r="1.1" fill="#fff6c8"/><circle class="qcTw qcTw2" cx="8" cy="8" r="1.2" fill="#fff6c8"/><circle class="qcTw" cx="4" cy="26" r=".9" fill="#fff6c8"/></g></g></svg>';
 
   /* ---------- Elemen ---------- */
   var el = document.createElement('div');
@@ -823,9 +829,11 @@
     say('<b lang="ja">あっ！</b><i>a!</i><span>Bola benang!</span>', 1500);
     setTimeout(function(){
       el.style.transition = 'left .8s ease-in-out, top .8s ease-in-out';
+      el.classList.add('qcWalk');
       el.style.left = Math.max(4, Math.min(w - 68, tx - 24)) + 'px'; el.style.top = Math.max(4, Math.min(h - 72, ty - 30)) + 'px'; el.style.bottom = 'auto';
     }, 500);
     setTimeout(function(){
+      el.classList.remove('qcWalk');
       if (y.parentNode) y.parentNode.removeChild(y);
       bounce(); meow(); heart(); heart();
       say('<b lang="ja">やった！</b><i>yatta!</i><span>Dapat! Mochi menang.</span>', 2200);
@@ -1078,6 +1086,9 @@
   var mode = 'choice', ev = '', pv = '';   // login email: choice | signin | signup
   window.qpUser = function(){ return user; };
   window.qpInfo = function(){ return info; };
+  /* Jembatan aplikasi Android (QApp): login Google bawaan + simpan berkas ke Unduhan. */
+  function appG(){ try { return !!(window.QApp && typeof QApp.googleLogin === 'function'); } catch(e){ return false; } }
+  function appSave(){ try { return !!(window.QApp && typeof QApp.saveFile === 'function'); } catch(e){ return false; } }
   var LV = ['n5','n4','n3','n2','n1'];
   var LVN = {n5:'N5 Pemula', n4:'N4 Dasar', n3:'N3 Menengah', n2:'N2 Lanjut', n1:'N1 Mahir'};
   var syncing = false, syncErr = '', lastSig = null;
@@ -1409,7 +1420,7 @@
   function loginBlock(){
     var dis = busy ? ' disabled' : '';
     var inApp = /QategoriApp/.test(navigator.userAgent);
-    var gBtn = inApp ? '<p class="qpNote">Di aplikasi, masuk lewat Email. Google tidak mengizinkan login di dalam aplikasi. Kalau akunmu dulu daftar dengan Google, pilih Masuk dengan Email lalu &quot;Lupa kata sandi?&quot; dengan email Google yang sama untuk membuat kata sandi.</p>' : '<p class="qpOr">atau</p><button class="qpBtn" type="button" data-qp="google"' + dis + '>Masuk dengan Google</button>';
+    var gBtn = (inApp && !appG()) ? '<p class="qpNote">Di aplikasi, masuk lewat Email. Google tidak mengizinkan login di dalam aplikasi. Kalau akunmu dulu daftar dengan Google, pilih Masuk dengan Email lalu &quot;Lupa kata sandi?&quot; dengan email Google yang sama untuk membuat kata sandi.</p>' : '<p class="qpOr">atau</p><button class="qpBtn" type="button" data-qp="google"' + dis + '>Masuk dengan Google</button>';
     if (mode === 'choice') {
       return '<button class="qpBtn pr" type="button" data-qp="emailmode"' + dis + '>Masuk dengan Email</button>' +
         gBtn +
@@ -1422,7 +1433,7 @@
       '<button class="qpLink" type="button" data-qp="emailswitch">' + (up ? 'Sudah punya akun? Masuk' : 'Belum punya akun? Daftar') + '</button>' +
       '<button class="qpLink" type="button" data-qp="emailreset">Lupa kata sandi?</button>' +
       (msg ? '<p class="qpMsg">' + esc(msg) + '</p>' : '') +
-      (inApp ? '' : '<p class="qpOr">atau</p><button class="qpBtn" type="button" data-qp="google"' + dis + '>Masuk dengan Google</button>') +
+      ((inApp && !appG()) ? '' : '<p class="qpOr">atau</p><button class="qpBtn" type="button" data-qp="google"' + dis + '>Masuk dengan Google</button>') +
       '<button class="qpLink" type="button" data-qp="emailback">&larr; Kembali</button></div>';
   }
   function render(){
@@ -1471,9 +1482,15 @@
   }
   function backup(){
     var data = {app:'qategori', v:1, at:new Date().toISOString(), email:user ? user.email : null, local:collect(), skor:info ? info.results : []};
+    var fname = 'qategori-cadangan-' + new Date().toISOString().slice(0, 10) + '.json';
+    if (appSave()) {
+      window.__qSaveCb = function(ok){ window.__qSaveCb = null; msg = ok ? 'Cadangan tersimpan di folder Unduhan. Simpan di tempat aman.' : 'Gagal menyimpan cadangan lewat aplikasi.'; render(); };
+      try { QApp.saveFile(fname, btoa(unescape(encodeURIComponent(JSON.stringify(data, null, 1))))); return; }
+      catch(e){ window.__qSaveCb = null; }
+    }
     var blob = new Blob([JSON.stringify(data, null, 1)], {type:'application/json'});
     var a = document.createElement('a'); a.href = URL.createObjectURL(blob);
-    a.download = 'qategori-cadangan-' + new Date().toISOString().slice(0, 10) + '.json';
+    a.download = fname;
     document.body.appendChild(a); a.click(); a.remove();
     setTimeout(function(){ URL.revokeObjectURL(a.href); }, 4000);
     msg = 'Cadangan diunduh. Simpan filenya di tempat aman.';
@@ -1531,9 +1548,20 @@
       return;
     }
     if (a === 'google') {
-      if (!F) return;
       busy = true; render();
-      F.auth.signInWithPopup(auth, new F.auth.GoogleAuthProvider()).catch(function(err){ msg = ERR[err && err.code] || 'Gagal masuk. Coba lagi.'; }).then(function(){ busy = false; render(); });
+      boot().then(function(){
+        if (!F) { busy = false; render(); return; }
+        if (appG()) {
+          window.__qGoogleCb = function(tok, err){
+            window.__qGoogleCb = null;
+            if (!tok) { busy = false; msg = err || 'Login Google dibatalkan.'; render(); return; }
+            F.auth.signInWithCredential(auth, F.auth.GoogleAuthProvider.credential(tok)).catch(function(e2){ msg = ERR[e2 && e2.code] || 'Gagal masuk. Coba lagi.'; }).then(function(){ busy = false; render(); });
+          };
+          try { QApp.googleLogin(); } catch(e) { window.__qGoogleCb = null; busy = false; msg = 'Aplikasi tidak mendukung login Google. Perbarui aplikasinya.'; render(); }
+        } else {
+          F.auth.signInWithPopup(auth, new F.auth.GoogleAuthProvider()).catch(function(err){ msg = ERR[err && err.code] || 'Gagal masuk. Coba lagi.'; }).then(function(){ busy = false; render(); });
+        }
+      });
     } else if (a === 'out') { if (F) F.auth.signOut(auth); }
     else if (a === 'backup') backup();
     else if (a === 'restore') { var f = el('qpFile'); if (f) f.click(); }

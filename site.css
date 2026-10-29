@@ -409,6 +409,43 @@ html[data-qs="sakura"][data-qn="0"] .mochi .qcSakura,html[data-qs="aki"][data-qn
 .qbBubble .mWhiskasBtn:active{transform:scale(.94)}
 .qbBubble .mWhiskasBtn.empty{background:#e67e22}
 
+/* ===== Rig Mochi panggung: lengan & kaki (poros 64 satuan, menimpa asal era 120) ===== */
+.mochi .mLegL{transform-origin:26px 49px}.mochi .mLegR{transform-origin:38px 49px}
+.mochi .mArmL{transform-origin:19px 43px}.mochi .mArmR{transform-origin:45px 43px}
+.mochi .mLeg,.mochi .mArm{transition:transform .18s ease}
+.mochi.qcHop .mLegL{transform:rotate(-24deg)}.mochi.qcHop .mLegR{transform:rotate(24deg)}
+.mochi.qcHop .mArmL{transform:rotate(38deg)}.mochi.qcHop .mArmR{transform:rotate(-38deg)}
+.mochi.eat .qcHead{animation:qbMunch .45s ease-in-out infinite}
+.mochi.eat .qcEyes{opacity:0}.mochi.eat .qcSleep{opacity:1}
+.mochi.eat::after{content:'🐟';position:absolute;right:0;bottom:6px;font-size:19px;animation:qbFish 2.3s ease-in forwards;pointer-events:none}
+@keyframes qbMunch{0%,100%{transform:translateY(0) rotate(0)}30%{transform:translateY(2.6px) rotate(2.2deg)}55%{transform:translateY(.5px) rotate(0)}80%{transform:translateY(2.6px) rotate(-1.6deg)}}
+@keyframes qbFish{0%{transform:scale(0)}12%{transform:scale(1.15)}20%{transform:scale(1)}42%{transform:scale(.66)}64%{transform:scale(.34)}84%,100%{transform:scale(0)}}
+
+/* ===== Panggung beranda ikut musim Suasana: pohon & gapura ===== */
+.qbTree{position:absolute;left:4px;bottom:24px;width:62px;height:66px;z-index:1;pointer-events:none}
+.qbTree .qbCanopy circle{fill:#7fb069}
+.qbStage[data-season="sakura"] .qbTree .qbCanopy circle{fill:#f4a9c4}
+.qbStage[data-season="sakura"] .qbTree .qbCanopy circle:nth-child(2){fill:#f9c9d9}
+.qbStage[data-season="aki"] .qbTree .qbCanopy circle{fill:#e07b2a}
+.qbStage[data-season="aki"] .qbTree .qbCanopy circle:nth-child(2){fill:#d95f26}
+.qbStage[data-season="salju"] .qbTree .qbCanopy circle{fill:#2e5d43}
+.qbStage[data-season="panas"] .qbTree .qbCanopy circle{fill:#57ab4e}
+.qbTree .qbFruit{display:none}
+.qbStage[data-season="panas"] .qbTree .qbFruit{display:block}
+.qbTree .qbFruit circle{fill:#ffd93b}
+.qbTree .qbTreeSnow{display:none}
+.qbStage[data-season="salju"] .qbTree .qbTreeSnow{display:block}
+.qbTree .qbTreeSnow circle{fill:#fff;opacity:.92}
+.qbTorii{position:absolute;right:8px;bottom:26px;width:54px;height:42px;z-index:1;pointer-events:none}
+.qbTorii rect{fill:#c0392b}
+.qbTorii .qbTCap{fill:#fff;display:none}
+.qbStage[data-season="salju"] .qbTorii .qbTCap{display:block}
+.qbStage.night .qbTree,.qbStage.night .qbTorii{filter:brightness(.55) saturate(.85)}
+.qbStage.dusk .qbTree,.qbStage.dusk .qbTorii{filter:brightness(.82)}
+.qbStage[data-season="salju"] .qbGround{background:linear-gradient(#e8f1f8 0 52%,#4b4d58 52%)}
+.qbStage[data-season="aki"] .qbGround{background:linear-gradient(#c9a24a 0 52%,#4b4d58 52%)}
+.qbStage[data-season="sakura"] .qbGround{background:linear-gradient(#8fce7d 0 52%,#4b4d58 52%)}
+
 /* ===== Beranda: ringkasan 4 kartu, berita hanya gambar + judul, jarak & lebar HP ===== */
 .qbStats{grid-template-columns:repeat(2,minmax(0,1fr))}
 @media(min-width:640px){.qbStats{grid-template-columns:repeat(4,minmax(0,1fr))}}
