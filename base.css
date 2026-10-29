@@ -857,6 +857,25 @@ main.blogB:has(>#qHome){padding-top:0!important}
 #qcat.qcLift .mLegL{transform:rotate(16deg)}#qcat.qcLift .mLegR{transform:rotate(-16deg)}
 #qcat.qcLift .mArmL{transform:rotate(24deg)}#qcat.qcLift .mArmR{transform:rotate(-24deg)}
 #qcat.qcHop .mLegL{transform:rotate(-22deg)}#qcat.qcHop .mLegR{transform:rotate(22deg)}
+/* Reaksi ketuk Mochi melayang: loncat, lambaikan tangan, ekspresi senang */
+#qcat .mAll{transform-origin:32px 62px}
+#qcat.qcJump .mAll{animation:qcJumpA .95s cubic-bezier(.36,0,.3,1) both}
+#qcat.qcJump .mLegL{animation:qcTuckA .95s ease both}
+#qcat.qcJump .mLegR{animation:qcTuckB .95s ease both}
+#qcat.qcJump .mArmL{animation:qcUpA .95s ease both}
+#qcat.qcJump .mArmR{animation:qcUpB .95s ease both}
+@keyframes qcJumpA{0%{transform:translateY(0) scale(1,1)}18%{transform:translateY(1.5px) scale(1.05,.88)}42%{transform:translateY(-16px) scale(.97,1.05)}58%{transform:translateY(-16px) scale(1,1)}78%{transform:translateY(0) scale(1,1)}88%{transform:translateY(1px) scale(1.05,.9)}100%{transform:translateY(0) scale(1,1)}}
+@keyframes qcTuckA{0%,18%{transform:rotate(0)}42%,62%{transform:rotate(-26deg)}82%,100%{transform:rotate(0)}}
+@keyframes qcTuckB{0%,18%{transform:rotate(0)}42%,62%{transform:rotate(26deg)}82%,100%{transform:rotate(0)}}
+@keyframes qcUpA{0%,18%{transform:rotate(0)}42%,62%{transform:rotate(64deg)}82%,100%{transform:rotate(0)}}
+@keyframes qcUpB{0%,18%{transform:rotate(0)}42%,62%{transform:rotate(-64deg)}82%,100%{transform:rotate(0)}}
+#qcat.qcWave .mArmR{animation:qcWaveA 1.7s ease-in-out both}
+#qcat.qcWave .mBody{animation:qcTiltA 1.7s ease-in-out both}
+@keyframes qcWaveA{0%{transform:rotate(0)}18%{transform:rotate(-158deg)}30%{transform:rotate(-138deg)}44%{transform:rotate(-162deg)}58%{transform:rotate(-138deg)}72%{transform:rotate(-160deg)}86%{transform:rotate(-152deg)}100%{transform:rotate(0)}}
+@keyframes qcTiltA{0%,100%{transform:rotate(0)}20%,80%{transform:rotate(2.4deg)}}
+#qcat.qcHappy .qcEyes{opacity:0}
+#qcat.qcHappy .qcSleep{opacity:1}
+#qcat.qcHappy .mAll{animation:qcGiggle .45s ease-in-out 3}
 @media (prefers-reduced-motion:reduce){#qcat *,#qcat{animation:none!important}}
 
 #qcat .qcEyes{transition:transform .12s}

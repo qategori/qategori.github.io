@@ -694,6 +694,22 @@
     if (reduce) return;
     el.classList.remove('qcHop'); void el.offsetWidth; el.classList.add('qcHop');
   }
+  var tapCycle = 0;
+  function reactTap(){
+    tapCycle++;
+    if (reduce) { bounce(); return; }
+    var k = tapCycle % 3;
+    if (k === 1) {
+      el.classList.remove('qcJump'); void el.offsetWidth; el.classList.add('qcJump');
+      setTimeout(function(){ el.classList.remove('qcJump'); }, 1000);
+    } else if (k === 2) {
+      el.classList.remove('qcWave'); void el.offsetWidth; el.classList.add('qcWave');
+      setTimeout(function(){ el.classList.remove('qcWave'); }, 1800);
+    } else {
+      el.classList.add('qcHappy'); heart(); setTimeout(heart, 240);
+      setTimeout(function(){ el.classList.remove('qcHappy'); }, 1500);
+    }
+  }
   function wake(){
     clearTimeout(sleepT);
     if (!awake) { awake = true; el.classList.remove('qcSleeping'); }
@@ -784,7 +800,7 @@
     if (!was && taps.length >= 3) { giggle(); meow(); say('<b>hihi~ geli!</b><span>Iya iya, aku bangun.</span>', 2400); return; }
     if (was && quick && taps.length < 5) { playYarn(); return; }
     if (taps.length >= 5) { taps = []; spin(); meow(); say('<b lang="ja">\u306b\u3083\u30fc\uff01</b><i>nyaa!</i><span>Wah, kamu suka sekali ya!</span>', 2800); return; }
-    bounce(); meow();
+    meow(); reactTap();
     say(was ? greet() : '<b>nyaa~</b><span>Aku ketiduran, hehe. Ayo lanjut belajar!</span>');
   }
   el.addEventListener('pointerup', up);

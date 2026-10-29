@@ -410,6 +410,8 @@ html[data-qs="sakura"][data-qn="0"] .mochi .qcSakura,html[data-qs="aki"][data-qn
 .qbBubble .mWhiskasBtn.empty{background:#e67e22}
 
 /* ===== Rig Mochi panggung: lengan & kaki (poros 64 satuan, menimpa asal era 120) ===== */
+.mochi.run .qcHead{animation:qbHeadRun .3s ease-in-out infinite alternate}
+@keyframes qbHeadRun{from{transform:rotate(-1.8deg)}to{transform:rotate(1.8deg) translateY(.7px)}}
 .mochi .mLegL{transform-origin:26px 49px}.mochi .mLegR{transform-origin:38px 49px}
 .mochi .mArmL{transform-origin:19px 43px}.mochi .mArmR{transform-origin:45px 43px}
 .mochi .mLeg,.mochi .mArm{transition:transform .18s ease}
