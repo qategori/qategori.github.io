@@ -593,6 +593,13 @@ html body .qBottom .qmBtn .qmAv,body #qnvBar .qmQnvAv{
 .qtStick{transition:top .28s ease}
 html.qScDown .qtStick{top:8px}
 
+/* Rel kiri desktop: saat header sembunyi, rel memanjang penuh ke atas
+   (top 0 + tinggi penuh) supaya garis pembatasnya ikut sampai ke tepi atas. */
+@media screen and (min-width:897px){
+  html body .leftW{transition:top .28s ease,height var(--tDuration)}
+  html.qScDown body .leftW{top:0;height:var(--vHeight)}
+}
+
 /* Baris tempel Terjemah (.qtStick) tidak boleh menembus laci menu/overlay */
 .nB:has(#forNav:checked) .qtStick,.nB:has(#forJepang:checked) .qtStick,
 .nB:has(#forProfil:checked) .qtStick,.nB:has(#forBook:checked) .qtStick,
