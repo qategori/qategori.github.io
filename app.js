@@ -1648,7 +1648,8 @@ show();
     }).join('');
     return h + '</div>';
   }
-  var toolsHtml = '<div class="qpSec"><h4>Alat</h4><div class="qpTools"><button class="qpBtn" type="button" data-qdp="backup">Cadangkan</button><button class="qpBtn" type="button" data-qdp="restore">Pulihkan</button></div></div>';
+  var inAppQ = !!(window.QApp && window.QApp.openSettings);
+  var toolsHtml = '<div class="qpSec"><h4>Alat</h4><div class="qpTools"><button class="qpBtn" type="button" data-qdp="backup">Cadangkan</button><button class="qpBtn" type="button" data-qdp="restore">Pulihkan</button>' + (inAppQ ? '<button class="qpBtn wide" type="button" data-qdp="appset">Pengaturan &amp; Offline</button>' : '') + '</div></div>';
 
   var li = document.createElement('li');
   li.className = 'qdpLi';
@@ -1681,6 +1682,7 @@ show();
     if (a === 'sync') { e.preventDefault(); var sb = panelBtn('[data-qp="sync"]'); if (sb) sb.click(); else { var hp = box.querySelector('.qdpTap'); if (hp) hp.click(); } setTimeout(paint, 150); return; }
     if (a === 'backup') { var bb = panelBtn('[data-qp="backup"]'); if (bb) bb.click(); else backupFallback(); return; }
     if (a === 'restore') { var f = document.getElementById('qpFile'); if (f) f.click(); return; }
+    if (a === 'appset') { try { window.QApp.openSettings(); } catch (e) {} return; }
   });
   window.addEventListener('qp-user', paint);
   window.addEventListener('qdaily', paint);

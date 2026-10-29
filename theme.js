@@ -1430,6 +1430,7 @@
         if (/TikTok|musical_ly|Bytedance|Instagram|FBAN|FBAV|Line\//i.test(ua)) h += '<p class="qpMsg" style="grid-column:1/-1">Kalau tidak terunduh, buka situs ini lewat Chrome lalu coba lagi.</p>';
       } else if (!standalone) h += '<button class="qpBtn wide" type="button" data-qp="install">Pasang aplikasi di layar utama</button>';
     }
+    if (inApp && window.QApp && window.QApp.openSettings) h += '<button class="qpBtn wide" type="button" data-qp="appset">Pengaturan &amp; Offline</button>';
     h += '</div>' + (msg ? '<p class="qpMsg">' + esc(msg) + '</p>' : '') + '</div>';
     return h;
   }
@@ -1581,6 +1582,7 @@
     } else if (a === 'out') { if (F) F.auth.signOut(auth); }
     else if (a === 'backup') backup();
     else if (a === 'restore') { var f = el('qpFile'); if (f) f.click(); }
+    else if (a === 'appset') { try { window.QApp.openSettings(); } catch(e) {} }
     else if (a === 'install') install();
     else if (a === 'sync') { e.preventDefault(); sync(); return; }
     else if (a && a.indexOf('lv:') === 0) { var pp = a.split(':'); if (selLv.hasOwnProperty(pp[1]) && LV.indexOf(pp[2]) >= 0) { selLv[pp[1]] = pp[2]; render(); } return; }
