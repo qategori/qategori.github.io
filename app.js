@@ -1692,3 +1692,82 @@ show();
   setTimeout(paint, 1500);
   setTimeout(paint, 4000);
 })();
+
+/* ===== Bottom sheet: geser popup Belajar & Profil + tombol ✕ sidebar (HP) ===== */
+(function(){
+  'use strict';
+  function sheetOf(chk){
+    if(!chk || !chk.parentElement) return null;
+    var pop = chk.parentElement.querySelector('.popUp');
+    if(!pop) return null;
+    var inn = pop.querySelector('.popIn');
+    return inn ? { chk: chk, inn: inn } : null;
+  }
+  function setup(id){
+    var chk = document.getElementById(id);
+    if(!chk) return true; /* popup tidak ada di halaman ini */
+    var s = sheetOf(chk);
+    if(!s) return false;
+    var inn = s.inn;
+    if(inn.dataset.qSheet) return true;
+    inn.dataset.qSheet = '1';
+    var drag = null, suppress = false;
+    function reset(){ inn.classList.remove('qSheetFull', 'qDragging'); inn.style.maxHeight = ''; }
+    chk.addEventListener('change', function(){ if(!chk.checked) reset(); });
+    inn.addEventListener('pointerdown', function(e){
+      if(window.innerWidth > 896) return;
+      var r = inn.getBoundingClientRect();
+      var inHead = !!(e.target && e.target.closest && e.target.closest('.popH'));
+      var inZone = (typeof e.clientY === 'number') && ((e.clientY - r.top) <= 26);
+      if(!inHead && !inZone) return;
+      drag = { y: e.clientY, h: r.height, moved: false };
+      inn.classList.add('qDragging');
+    });
+    window.addEventListener('pointermove', function(e){
+      if(!drag) return;
+      var dy = e.clientY - drag.y;
+      if(Math.abs(dy) > 6) drag.moved = true;
+      if(!drag.moved) return;
+      var vh = window.innerHeight || 1;
+      var nh = Math.max(110, Math.min(vh * 0.88, drag.h - dy));
+      inn.style.maxHeight = nh + 'px';
+      if(e.cancelable) e.preventDefault();
+    }, { passive: false });
+    function end(e){
+      if(!drag) return;
+      var dy = (e && typeof e.clientY === 'number') ? (e.clientY - drag.y) : 0;
+      var wasDrag = drag.moved;
+      drag = null;
+      inn.classList.remove('qDragging');
+      inn.style.maxHeight = '';
+      if(!wasDrag) return;
+      suppress = true; setTimeout(function(){ suppress = false; }, 350);
+      if(dy > 70){ chk.checked = false; try{ chk.dispatchEvent(new Event('change')); }catch(_){ } reset(); }
+      else if(dy < -70){ inn.classList.add('qSheetFull'); }
+      else if(dy > 0){ inn.classList.remove('qSheetFull'); }
+    }
+    window.addEventListener('pointerup', end);
+    window.addEventListener('pointercancel', function(){ if(drag){ drag = null; inn.classList.remove('qDragging'); inn.style.maxHeight = ''; } });
+    inn.addEventListener('click', function(e){ if(suppress){ e.preventDefault(); e.stopPropagation(); } }, true);
+    return true;
+  }
+  function injectX(){
+    var lw = document.querySelector('.leftW');
+    if(!lw) return false;
+    if(!document.getElementById('forNav')) return true;
+    if(lw.querySelector('.qNavX')) return true;
+    var x = document.createElement('label');
+    x.className = 'qNavX'; x.setAttribute('for', 'forNav'); x.setAttribute('aria-label', 'Close menu'); x.textContent = '✕';
+    lw.appendChild(x);
+    return true;
+  }
+  var tries = 0, doneJ = false, doneP = false, doneX = false;
+  function init(){
+    if(!doneJ) doneJ = setup('forJepang');
+    if(!doneP) doneP = setup('forProfil');
+    if(!doneX) doneX = injectX();
+    if((!doneJ || !doneP || !doneX) && tries++ < 5) setTimeout(init, 350);
+  }
+  init();
+  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
+})();

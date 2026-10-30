@@ -723,6 +723,30 @@ html.qOv .qtStick{visibility:hidden}
   .nB .navi:checked ~ .mainW .leftNav .a .text{font-size:17px}
 }
 
+/* ===== Popup bottom sheet (HP): setengah layar, bisa digeser, tutup di kanan =====
+   Untuk popup Belajar (#forJepang) & Profil (#forProfil): sheet menempel di bawah,
+   tinggi awal ±setengah layar; seret kepala sheet ke atas untuk memperluas,
+   ke bawah untuk menutup; tombol ✕ besar di kanan atas sheet (jangkauan jempol).
+   Bar "Tutup" bawah tema dimatikan untuk kedua popup ini, dan bar navigasi bawah
+   disembunyikan selama popup Belajar terbuka (sama seperti popup Profil). */
+.nB:has(#forJepang:checked) .qBottom{display:none}
+.qNavX{display:none;position:absolute;top:10px;right:12px;width:42px;height:42px;border-radius:50%;background:var(--themeBg-alt);align-items:center;justify-content:center;font-size:16px;font-weight:600;z-index:5;cursor:pointer}
+@media (max-width:896px){
+  #forJepang ~ .popUp .popIn, #forProfil ~ .popUp .popIn{max-height:52dvh!important;transition:max-height .25s ease}
+  #forJepang ~ .popUp .popIn.qSheetFull, #forProfil ~ .popUp .popIn.qSheetFull{max-height:88dvh!important}
+  #forJepang ~ .popUp .popIn.qDragging, #forProfil ~ .popUp .popIn.qDragging{transition:none!important}
+  #forJepang ~ .popUp .popIn::before, #forProfil ~ .popUp .popIn::before{content:'';position:absolute;top:8px;left:50%;transform:translateX(-50%);width:46px;height:5px;border-radius:3px;background:currentColor;opacity:.25;z-index:6;pointer-events:none}
+  #forJepang ~ .popUp .popC, #forProfil ~ .popUp .popC{min-height:0!important;padding-block-end:28px!important}
+  #forJepang ~ .popUp .popH::before, #forProfil ~ .popUp .popH::before{display:none!important}
+  #forJepang ~ .popUp .popH, #forProfil ~ .popUp .popH{touch-action:none}
+  #forJepang ~ .popUp .popH .c, #forProfil ~ .popUp .popH .c{position:absolute;top:12px;right:12px;bottom:auto;left:auto;width:42px;height:42px;min-width:42px;border-radius:50%;background:var(--themeBg-alt);display:flex!important;align-items:center;justify-content:center;margin:0;z-index:7}
+  #forJepang ~ .popUp .popH .c::after, #forProfil ~ .popUp .popH .c::after{content:'\2715';font-size:16px;font-weight:600}
+  /* tutup sidebar: bar bawah dipaksa tampil, label "Tutup" di kanan, sasaran besar */
+  .mainL .leftF{display:flex!important;justify-content:flex-end!important}
+  .mainL .leftF label{min-width:120px;justify-content:flex-end;padding-block:14px;font-weight:600}
+  .qNavX{display:flex}
+}
+
 .leftF{justify-content:flex-start!important}
 .leftF label{min-width:56px!important;justify-content:flex-start!important;padding-inline:var(--contentPadding,16px)!important}
 .leftF label::before{content:''!important;display:block;width:24px;height:24px;background:currentColor;-webkit-mask:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%221.5%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22M15%2019.9201L8.47997%2013.4001C7.70997%2012.6301%207.70997%2011.3701%208.47997%2010.6001L15%204.08008%22/%3E%3C/svg%3E") center/contain no-repeat;mask:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%221.5%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22M15%2019.9201L8.47997%2013.4001C7.70997%2012.6301%207.70997%2011.3701%208.47997%2010.6001L15%204.08008%22/%3E%3C/svg%3E") center/contain no-repeat}
