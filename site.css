@@ -807,6 +807,32 @@ html[data-qn="0"] .qBottom,html[data-qn="0"] #qfxFab,html[data-qn="0"] #qytFab,h
 /* v55: X pojok atas sidebar disembunyikan — penutup sidebar kini tombol lingkaran X di kanan bawah (lihat CLOSE_CSS di build.py) */
 .qNavX{display:none!important}
 
+/* ===== v56: Aksen mengikuti nuansa musim + nuansa di tutorial =====
+   Menimpa --darkLink/--lightLink pada .nB (definisi base.css): selektor
+   html[data-qs=...] .nB lebih spesifik dan site.css dimuat sesudah base.css.
+   Suasana mati (data-qs="off") -> aksen bawaan tema (ungu/biru) tetap berlaku. */
+html[data-qs="sakura"] .nB{--darkLink:#f28bb4;--lightLink:#d6336c;--qAccInk:#46202f}
+html[data-qs="aki"] .nB{--darkLink:#f0a35e;--lightLink:#c85a17;--qAccInk:#40260e}
+html[data-qs="salju"] .nB{--darkLink:#a9d3f5;--lightLink:#5b93c9;--qAccInk:#16324a}
+html[data-qs="panas"] .nB{--darkLink:#ffd166;--lightLink:#d9940d;--qAccInk:#42330a}
+html[data-qn="1"] .nB{--qAcc:var(--darkLink)}
+html[data-qn="0"] .nB{--qAcc:var(--lightLink)}
+/* teks di atas aksen pastel malam: tinta gelap musiman agar tetap terbaca */
+html[data-qn="1"] .qhBtn,html[data-qn="1"] .qpPk.on,html[data-qn="1"] .qTutPill.on,html[data-qn="1"] .qTutBtn,html[data-qn="1"] .qfSend,html[data-qn="1"] .qfAv.qfAdm{color:var(--qAccInk,#fff)}
+/* Forum: ungu hardcode (#9a8cff/#8b7ff0) ikut aksen musim */
+html[data-qs="sakura"] .qfPinTag,html[data-qs="aki"] .qfPinTag,html[data-qs="salju"] .qfPinTag,html[data-qs="panas"] .qfPinTag,html[data-qs="sakura"] .qfActs button,html[data-qs="aki"] .qfActs button,html[data-qs="salju"] .qfActs button,html[data-qs="panas"] .qfActs button{color:var(--qAcc)}
+html[data-qs="sakura"] .qfAv.qfAdm,html[data-qs="aki"] .qfAv.qfAdm,html[data-qs="salju"] .qfAv.qfAdm,html[data-qs="panas"] .qfAv.qfAdm,html[data-qs="sakura"] .qfSend,html[data-qs="aki"] .qfSend,html[data-qs="salju"] .qfSend,html[data-qs="panas"] .qfSend{background:var(--qAcc)}
+/* Tutorial: kepala sheet bergradasi tint musim + emoji musim + pegangan beraksen */
+html[data-qs="sakura"] .qTutHd{background-image:linear-gradient(90deg,rgba(246,179,200,.38),rgba(246,179,200,0) 75%)}
+html[data-qs="aki"] .qTutHd{background-image:linear-gradient(90deg,rgba(224,102,42,.32),rgba(224,102,42,0) 75%)}
+html[data-qs="salju"] .qTutHd{background-image:linear-gradient(90deg,rgba(160,200,235,.38),rgba(160,200,235,0) 75%)}
+html[data-qs="panas"] .qTutHd{background-image:linear-gradient(90deg,rgba(250,210,80,.30),rgba(250,210,80,0) 75%)}
+html[data-qs="sakura"] .qTutHd .t::after{content:' 🌸'}
+html[data-qs="aki"] .qTutHd .t::after{content:' 🍂'}
+html[data-qs="salju"] .qTutHd .t::after{content:' ❄️'}
+html[data-qs="panas"] .qTutHd .t::after{content:' ☀️'}
+.qTutSheet::before{background:var(--qAcc,currentColor)}
+
 .leftF{justify-content:flex-start!important}
 .leftF label{min-width:56px!important;justify-content:flex-start!important;padding-inline:var(--contentPadding,16px)!important}
 .leftF label::before{content:''!important;display:block;width:24px;height:24px;background:currentColor;-webkit-mask:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%221.5%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22M15%2019.9201L8.47997%2013.4001C7.70997%2012.6301%207.70997%2011.3701%208.47997%2010.6001L15%204.08008%22/%3E%3C/svg%3E") center/contain no-repeat;mask:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%221.5%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22M15%2019.9201L8.47997%2013.4001C7.70997%2012.6301%207.70997%2011.3701%208.47997%2010.6001L15%204.08008%22/%3E%3C/svg%3E") center/contain no-repeat}
