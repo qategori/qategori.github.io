@@ -1660,7 +1660,8 @@ show();
     var user = null, info = null;
     try { user = window.qpUser ? window.qpUser() : null; } catch(e){}
     try { info = window.qpInfo ? window.qpInfo() : null; } catch(e){}
-    box.innerHTML = heroHtml(user, info) + accessHtml(user, info) + skorHtml(info) + dailyHtml() + kotobaHtml(user) + kanjiHtml() + nihoHtml() + toolsHtml;
+    /* v60: bagian Kotoba/Kanji dihapal dibuang dari laci agar ringkas (detailnya tetap ada di popup Profil); target, skor kuis, dan alat dipertahankan. */
+    box.innerHTML = heroHtml(user, info) + accessHtml(user, info) + skorHtml(info) + dailyHtml() + nihoHtml() + toolsHtml;
   }
   function panelBtn(sel){ return document.querySelector('#qpBody ' + sel); }
   function backupFallback(){
