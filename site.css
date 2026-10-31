@@ -861,6 +861,11 @@ html[data-qn="1"] #qhChalStart{color:var(--qAccInk,#fff)}
    (z-index 2) supaya tombol Whiskas di dalamnya bisa diketuk lagi. */
 .qhScene #qBub{z-index:5}
 
+/* ===== v61: Tombol unduh aplikasi di langkah 4 tutorial ===== */
+.qTutDl{display:block;margin-top:12px;padding:12px;border-radius:12px;background:var(--themeLink);color:#fff;font-weight:700;text-align:center;text-decoration:none}
+html[data-qn="1"] .qTutDl{color:var(--qAccInk,#fff)}
+.qTutDl[hidden]{display:none}
+
 .leftF{justify-content:flex-start!important}
 .leftF label{min-width:56px!important;justify-content:flex-start!important;padding-inline:var(--contentPadding,16px)!important}
 .leftF label::before{content:''!important;display:block;width:24px;height:24px;background:currentColor;-webkit-mask:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%221.5%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22M15%2019.9201L8.47997%2013.4001C7.70997%2012.6301%207.70997%2011.3701%208.47997%2010.6001L15%204.08008%22/%3E%3C/svg%3E") center/contain no-repeat;mask:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%221.5%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22M15%2019.9201L8.47997%2013.4001C7.70997%2012.6301%207.70997%2011.3701%208.47997%2010.6001L15%204.08008%22/%3E%3C/svg%3E") center/contain no-repeat}

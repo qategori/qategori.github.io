@@ -1808,7 +1808,8 @@ show();
   var BUB = {
     1: 'Halo! Aku Mochi, teman belajarmu di sini. Tiga langkah singkat, setelah itu kamu bebas menjelajah.',
     2: 'Tenang, menunya tidak banyak. Ini lima tempat yang paling sering dipakai.',
-    3: 'Terakhir: jangan langsung berat-berat. Satu aksi kecil hari ini lebih baik daripada rencana besar yang tidak jalan.'
+    3: 'Terakhir: jangan langsung berat-berat. Satu aksi kecil hari ini lebih baik daripada rencana besar yang tidak jalan.',
+    4: 'Psst — Qategori juga ada aplikasinya, lho. Ada widget, notifikasi, dan mode offline. Cobain, yuk!'
   };
   var step = 1, fokus = 'JLPT', level = 'N5', goal = 10, root = null, toastEl = null, toastT = null;
 
@@ -1859,8 +1860,18 @@ show();
           '</div>' +
           '<p class="qTutNote">Tutorial ini hanya muncul sekali untuk pengunjung baru, dan bisa dibuka lagi kapan saja dari Profil → “Cara pakai Qategori”.</p>' +
         '</div>' +
+        '<div class="qTutStep" data-step="4" hidden>' +
+          '<h4>Belajar lebih nyaman di aplikasi</h4>' +
+          '<p class="qTutNote" id="qTutAppIntro">Qategori juga punya aplikasi Android dengan tiga kelebihan ini:</p>' +
+          '<div class="qTutPlaces">' +
+            '<div class="qTutPlace"><span class="ic">🧩</span><span><b>Widget layar utama</b><p>Kartu kotoba &amp; kanji hari ini langsung di layar utama HP, progresnya tersinkron dengan situs.</p></span></div>' +
+            '<div class="qTutPlace"><span class="ic">🔔</span><span><b>Notifikasi</b><p>Pengingat kotoba &amp; kanji harian, plus kabar setiap ada artikel baru.</p></span></div>' +
+            '<div class="qTutPlace"><span class="ic">📴</span><span><b>Mode offline</b><p>Materi tetap bisa dibuka tanpa internet (±22 MB).</p></span></div>' +
+          '</div>' +
+          '<a class="qTutDl" id="qTutDl" href="https://github.com/bshantoz/qategori/releases/download/terbaru/QategoriKartu.apk">⬇ Unduh aplikasi Android</a>' +
+        '</div>' +
       '</div>' +
-      '<div class="qTutFt"><div class="qTutDots"><i class="on"></i><i></i><i></i></div>' +
+      '<div class="qTutFt"><div class="qTutDots"><i class="on"></i><i></i><i></i><i></i></div>' +
       '<button type="button" class="qTutBtn gho" id="qTutSkip">Lewati</button>' +
       '<button type="button" class="qTutBtn gho" id="qTutBack" hidden>Kembali</button>' +
       '<button type="button" class="qTutBtn" id="qTutNext">Lanjut</button></div>' +
@@ -1877,8 +1888,8 @@ show();
     for (var j = 0; j < dots.length; j++) dots[j].classList.toggle('on', j === n - 1);
     root.querySelector('.qTutBub').textContent = BUB[n];
     root.querySelector('#qTutBack').hidden = (n === 1);
-    root.querySelector('#qTutSkip').hidden = (n === 3);
-    root.querySelector('#qTutNext').textContent = (n === 3) ? 'Mulai belajar →' : 'Lanjut';
+    root.querySelector('#qTutSkip').hidden = (n === 4);
+    root.querySelector('#qTutNext').textContent = (n === 4) ? 'Mulai belajar →' : 'Lanjut';
     root.querySelector('.qTutBd').scrollTop = 0;
   }
   function open(){
@@ -1886,6 +1897,14 @@ show();
     var av = root.querySelector('.qTutAv');
     av.innerHTML = window.__qmHead || '<span style="font-size:40px;line-height:56px">🐱</span>';
     showStep(1);
+    var dlA = root.querySelector('#qTutDl'), inA = root.querySelector('#qTutAppIntro');
+    if (window.QApp || /QategoriApp/.test(navigator.userAgent || '')){
+      if (dlA) dlA.hidden = true;
+      if (inA) inA.textContent = 'Kamu sedang memakai aplikasinya — tiga kelebihan ini sudah bisa kamu pakai:';
+    } else {
+      if (dlA) dlA.hidden = false;
+      if (inA) inA.textContent = 'Qategori juga punya aplikasi Android dengan tiga kelebihan ini:';
+    }
     root.hidden = false;
     document.documentElement.style.overflow = 'hidden';
   }
@@ -1914,7 +1933,7 @@ show();
     if (t.id === 'qTutSkip'){ close(); toast('Tutorial dilewati — bisa dibuka lagi dari Profil → Cara pakai Qategori'); return; }
     if (t.id === 'qTutBack'){ if (step > 1) showStep(step - 1); return; }
     if (t.id === 'qTutNext'){
-      if (step < 3){ showStep(step + 1); return; }
+      if (step < 4){ showStep(step + 1); return; }
       applyGoal(); close();
       toast('Siap! Target ' + goal + ' kartu/hari terpasang. Selamat belajar!');
       return;
