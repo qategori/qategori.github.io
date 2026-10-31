@@ -1771,3 +1771,204 @@ show();
   init();
   if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
 })();
+
+/* ===== v54: Tutorial sambutan Mochi (sekali untuk pengunjung baru, bisa dibuka lagi
+   dari Profil), chip hitung mundur JLPT di kartu Hari ini, tombol "Cara pakai Qategori".
+   Latar musim & kaca selektif ada di site.css. ===== */
+(function(){
+  'use strict';
+  if (window.__qTut54) return; window.__qTut54 = 1;
+  var SEEN = 'q_tut_v1';
+  function ls(k){ try { return localStorage.getItem(k); } catch(e){ return null; } }
+  function lsSet(k, v){ try { localStorage.setItem(k, v); } catch(e){} }
+  function esc(s){ return String(s == null ? '' : s).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+
+  /* ---------- Hitung mundur JLPT (Minggu pertama Juli / Desember) ---------- */
+  function nextJlpt(){
+    function fs(y, m){ var d = new Date(y, m, 1); while (d.getDay() !== 0) d.setDate(d.getDate() + 1); return d; }
+    var now = new Date(); now.setHours(0, 0, 0, 0);
+    var cs = [fs(now.getFullYear(), 6), fs(now.getFullYear(), 11), fs(now.getFullYear() + 1, 6)];
+    for (var i = 0; i < cs.length; i++) if (cs[i] >= now) return cs[i];
+    return cs[2];
+  }
+  function injectCd(){
+    var h = document.querySelector('.qhHari');
+    if (!h || h.querySelector('.qJlptCd')) return;
+    var MON = ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'];
+    var nx = nextJlpt(), days = Math.round((nx - new Date(new Date().setHours(0,0,0,0))) / 86400000);
+    var chip = document.createElement('div');
+    chip.className = 'qJlptCd';
+    chip.innerHTML = '🎌 Ujian JLPT berikutnya · <b>' + nx.getDate() + ' ' + MON[nx.getMonth()] + ' ' + nx.getFullYear() + '</b> · ' + (days === 0 ? 'hari ini!' : days + ' hari lagi');
+    var st = h.querySelector('.qbStats');
+    if (st && st.parentNode === h) h.insertBefore(chip, st.nextSibling); else h.appendChild(chip);
+  }
+
+  /* ---------- Tutorial sambutan ---------- */
+  var BUB = {
+    1: 'Halo! Aku Mochi, teman belajarmu di sini. Tiga langkah singkat, setelah itu kamu bebas menjelajah.',
+    2: 'Tenang, menunya tidak banyak. Ini lima tempat yang paling sering dipakai.',
+    3: 'Terakhir: jangan langsung berat-berat. Satu aksi kecil hari ini lebih baik daripada rencana besar yang tidak jalan.'
+  };
+  var step = 1, fokus = 'JLPT', level = 'N5', goal = 10, root = null, toastEl = null, toastT = null;
+
+  function toast(msg){
+    if (!toastEl){ toastEl = document.createElement('div'); toastEl.className = 'qTutToast'; document.body.appendChild(toastEl); }
+    toastEl.textContent = msg; toastEl.classList.add('on');
+    clearTimeout(toastT); toastT = setTimeout(function(){ toastEl.classList.remove('on'); }, 2800);
+  }
+  function build(){
+    if (root) return root;
+    root = document.createElement('div');
+    root.id = 'qTut'; root.hidden = true;
+    root.innerHTML =
+    '<div class="qTutBk" data-qt="close"></div>' +
+    '<div class="qTutSheet" role="dialog" aria-label="Tutorial sambutan Qategori">' +
+      '<div class="qTutHd"><span class="t">Selamat datang di Qategori</span><button type="button" class="qTutX" data-qt="close" aria-label="Tutup">✕</button></div>' +
+      '<div class="qTutBd">' +
+        '<div class="qTutMo"><div class="qTutAv"></div><p class="qTutBub"></p></div>' +
+        '<div class="qTutStep" data-step="1">' +
+          '<h4>Mau belajar apa dulu?</h4>' +
+          '<div class="qTutOpts" id="qTutFokus">' +
+            '<button type="button" class="qTutOpt on" data-f="JLPT"><span class="ic">🎌</span><span><b>Bahasa Jepang · JLPT</b><small>Kotoba, kanji, tata bahasa dari N5 sampai N1.</small></span><span class="ck">✓</span></button>' +
+            '<button type="button" class="qTutOpt" data-f="TG2"><span class="ic">🏗</span><span><b>Tokutei Ginou (TG2)</b><small>Materi &amp; kuis latihan per bidang kerja.</small></span><span class="ck">✓</span></button>' +
+            '<button type="button" class="qTutOpt" data-f="Daerah"><span class="ic">🗣</span><span><b>Bahasa Daerah</b><small>Jawa, Sunda, dan Bali — aksara dan kosakata.</small></span><span class="ck">✓</span></button>' +
+          '</div>' +
+          '<div id="qTutLvWrap"><div class="qTutLab">Level JLPT</div><div class="qTutRow" id="qTutLv">' +
+            '<button type="button" class="qTutPill on" data-l="N5">N5</button><button type="button" class="qTutPill" data-l="N4">N4</button><button type="button" class="qTutPill" data-l="N3">N3</button><button type="button" class="qTutPill" data-l="N2">N2</button><button type="button" class="qTutPill" data-l="N1">N1</button>' +
+          '</div></div>' +
+          '<div class="qTutLab">Target harianmu</div><div class="qTutRow" id="qTutGoal">' +
+            '<button type="button" class="qTutPill" data-g="5">5 kartu</button><button type="button" class="qTutPill on" data-g="10">10 kartu</button><button type="button" class="qTutPill" data-g="20">20 kartu</button><button type="button" class="qTutPill" data-g="30">30 kartu</button>' +
+          '</div>' +
+        '</div>' +
+        '<div class="qTutStep" data-step="2" hidden>' +
+          '<h4>Tempat-tempat penting</h4>' +
+          '<div class="qTutPlaces">' +
+            '<div class="qTutPlace"><span class="ic">📚</span><span><b>Menu Belajar</b><p>Semua materi dan kuis — tombolnya ada di navigasi bawah.</p></span></div>' +
+            '<div class="qTutPlace"><span class="ic">🎯</span><span><b>Hari Ini</b><p>Target harian dan streak-mu terpantau di beranda.</p></span></div>' +
+            '<div class="qTutPlace"><span class="ic">🐱</span><span><b>Mochi AI</b><p>Ketuk Mochi di navigasi bawah untuk bertanya soal materi.</p></span></div>' +
+            '<div class="qTutPlace"><span class="ic">▶️</span><span><b>Terjemah Video</b><p>Tonton video YouTube dengan subtitle Jepang + Indonesia tersinkron.</p></span></div>' +
+            '<div class="qTutPlace"><span class="ic">💬</span><span><b>Forum</b><p>Bertanya dan berbagi dengan pelajar lain.</p></span></div>' +
+          '</div>' +
+        '</div>' +
+        '<div class="qTutStep" data-step="3" hidden>' +
+          '<h4>Satu langkah kecil dulu</h4>' +
+          '<div class="qTutOpts" id="qTutAksi">' +
+            '<button type="button" class="qTutOpt on" data-a="tantangan"><span class="ic">⏱</span><span><b>Tantangan 1 menit</b><small>5 soal cepat — cara tercepat merasakan Qategori.</small></span><span class="ck">✓</span></button>' +
+            '<button type="button" class="qTutOpt" data-a="kartu"><span class="ic">🃏</span><span><b>Balik 1 kartu kata</b><small>Mulai dari kata hari ini, satu kartu saja dulu.</small></span><span class="ck">✓</span></button>' +
+          '</div>' +
+          '<p class="qTutNote">Tutorial ini hanya muncul sekali untuk pengunjung baru, dan bisa dibuka lagi kapan saja dari Profil → “Cara pakai Qategori”.</p>' +
+        '</div>' +
+      '</div>' +
+      '<div class="qTutFt"><div class="qTutDots"><i class="on"></i><i></i><i></i></div>' +
+      '<button type="button" class="qTutBtn gho" id="qTutSkip">Lewati</button>' +
+      '<button type="button" class="qTutBtn gho" id="qTutBack" hidden>Kembali</button>' +
+      '<button type="button" class="qTutBtn" id="qTutNext">Lanjut</button></div>' +
+    '</div>';
+    document.body.appendChild(root);
+    root.addEventListener('click', onClick);
+    return root;
+  }
+  function showStep(n){
+    step = n;
+    var steps = root.querySelectorAll('.qTutStep');
+    for (var i = 0; i < steps.length; i++) steps[i].hidden = (+steps[i].getAttribute('data-step') !== n);
+    var dots = root.querySelectorAll('.qTutDots i');
+    for (var j = 0; j < dots.length; j++) dots[j].classList.toggle('on', j === n - 1);
+    root.querySelector('.qTutBub').textContent = BUB[n];
+    root.querySelector('#qTutBack').hidden = (n === 1);
+    root.querySelector('#qTutSkip').hidden = (n === 3);
+    root.querySelector('#qTutNext').textContent = (n === 3) ? 'Mulai belajar →' : 'Lanjut';
+    root.querySelector('.qTutBd').scrollTop = 0;
+  }
+  function open(){
+    build();
+    var av = root.querySelector('.qTutAv');
+    av.innerHTML = window.__qmHead || '<span style="font-size:40px;line-height:56px">🐱</span>';
+    showStep(1);
+    root.hidden = false;
+    document.documentElement.style.overflow = 'hidden';
+  }
+  function close(){
+    if (root) root.hidden = true;
+    document.documentElement.style.overflow = '';
+    lsSet(SEEN, '1');
+  }
+  function applyGoal(){
+    lsSet('q_tut_focus', fokus + ':' + level);
+    if (!window.qDaily) return;
+    var guard = 0;
+    while (window.qDaily.get().goal !== goal && guard++ < 5) window.qDaily.nextGoal();
+  }
+  function pick(container, item, attr, fn){
+    var c = root.querySelector(container); if (!c) return;
+    var it = item; if (!it) return;
+    var all = c.querySelectorAll('.qTutOpt,.qTutPill');
+    for (var i = 0; i < all.length; i++) if (all[i].parentNode === c) all[i].classList.remove('on');
+    it.classList.add('on'); fn(it.getAttribute(attr));
+  }
+  function onClick(e){
+    var t = e.target;
+    var cl = t.closest ? t.closest('[data-qt="close"]') : null;
+    if (cl){ close(); return; }
+    if (t.id === 'qTutSkip'){ close(); toast('Tutorial dilewati — bisa dibuka lagi dari Profil → Cara pakai Qategori'); return; }
+    if (t.id === 'qTutBack'){ if (step > 1) showStep(step - 1); return; }
+    if (t.id === 'qTutNext'){
+      if (step < 3){ showStep(step + 1); return; }
+      applyGoal(); close();
+      toast('Siap! Target ' + goal + ' kartu/hari terpasang. Selamat belajar!');
+      return;
+    }
+    var opt = t.closest ? t.closest('#qTutFokus .qTutOpt') : null;
+    if (opt){ pick('#qTutFokus', opt, 'data-f', function(v){ fokus = v; root.querySelector('#qTutLvWrap').style.display = (v === 'JLPT') ? '' : 'none'; }); return; }
+    var ak = t.closest ? t.closest('#qTutAksi .qTutOpt') : null;
+    if (ak){ pick('#qTutAksi', ak, 'data-a', function(){}); return; }
+    var lv = t.closest ? t.closest('#qTutLv .qTutPill') : null;
+    if (lv){ pick('#qTutLv', lv, 'data-l', function(v){ level = v; }); return; }
+    var gl = t.closest ? t.closest('#qTutGoal .qTutPill') : null;
+    if (gl){ pick('#qTutGoal', gl, 'data-g', function(v){ goal = +v; }); return; }
+  }
+  window.qTutOpen = open;
+
+  /* ---------- Tombol "Cara pakai Qategori" di Profil (panel & laci) ---------- */
+  function injectBtns(){
+    var tools = document.querySelectorAll('.qpTools');
+    for (var i = 0; i < tools.length; i++){
+      if (tools[i].querySelector('[data-qtut]')) continue;
+      var b = document.createElement('button');
+      b.type = 'button'; b.className = 'qpBtn wide'; b.setAttribute('data-qtut', '1');
+      b.textContent = 'Cara pakai Qategori';
+      tools[i].appendChild(b);
+    }
+  }
+  document.addEventListener('click', function(e){
+    var b = e.target.closest ? e.target.closest('[data-qtut]') : null;
+    if (!b) return;
+    e.preventDefault();
+    var fp = document.getElementById('forProfil');
+    if (fp && fp.checked){ fp.checked = false; try { fp.dispatchEvent(new Event('change')); } catch(err){} }
+    var fn = document.getElementById('forNav');
+    if (fn && fn.checked){ fn.checked = false; try { fn.dispatchEvent(new Event('change')); } catch(err){} }
+    open();
+  });
+
+  /* ---------- Pemicu pengunjung baru (hanya dari beranda) ---------- */
+  var autoTried = false;
+  function maybeAuto(){
+    if (autoTried || ls(SEEN)) return;
+    var h = location.hash || '';
+    if (h && h !== '#beranda' && h.indexOf('#beranda') !== 0) return;
+    autoTried = true;
+    setTimeout(function(){ if (!ls(SEEN)) open(); }, 900);
+  }
+  window.addEventListener('hashchange', maybeAuto);
+
+  function init(){ injectBtns(); injectCd(); maybeAuto(); }
+  var tries = 0;
+  (function retry(){ init(); if (tries++ < 6) setTimeout(retry, 450); })();
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
+  var moT = null;
+  if (window.MutationObserver){
+    var mo = new MutationObserver(function(){ clearTimeout(moT); moT = setTimeout(function(){ injectBtns(); injectCd(); }, 300); });
+    mo.observe(document.body, {childList: true, subtree: true});
+  }
+})();
