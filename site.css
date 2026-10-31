@@ -758,9 +758,6 @@ html[data-qs="panas"] body{background-image:radial-gradient(130% 55% at 50% -8%,
 .qBottom,#qfxFab,#qytFab,#qfxPan,#qytPan{-webkit-backdrop-filter:blur(16px) saturate(160%);backdrop-filter:blur(16px) saturate(160%);background:rgba(128,138,165,.22)}
 html[data-qn="1"] .qBottom,html[data-qn="1"] #qfxFab,html[data-qn="1"] #qytFab,html[data-qn="1"] #qfxPan,html[data-qn="1"] #qytPan{background:rgba(15,19,34,.58)}
 html[data-qn="0"] .qBottom,html[data-qn="0"] #qfxFab,html[data-qn="0"] #qytFab,html[data-qn="0"] #qfxPan,html[data-qn="0"] #qytPan{background:rgba(255,255,255,.55)}
-@media screen and (max-width:896px){
-  #forJepang ~ .popUp .popH,#forProfil ~ .popUp .popH{background:rgba(128,138,165,.14);-webkit-backdrop-filter:blur(10px) saturate(150%);backdrop-filter:blur(10px) saturate(150%)}
-}
 /* chip hitung mundur JLPT di kartu Hari ini */
 .qJlptCd{display:flex;align-items:center;gap:8px;margin-top:11px;background:rgba(128,138,165,.09);border:1px dashed var(--themeBd-color);border-radius:13px;padding:9px 12px;font-size:13px;font-weight:600;color:var(--themeC)}
 .qJlptCd b{color:var(--themeLink)}
@@ -807,6 +804,9 @@ html[data-qn="0"] .qBottom,html[data-qn="0"] #qfxFab,html[data-qn="0"] #qytFab,h
 .qTutToast{position:fixed;left:50%;bottom:calc(var(--mobileHeight,56px) + 22px);transform:translate(-50%,20px);z-index:121;background:#20294a;color:#fff;font-size:13.5px;font-weight:600;padding:11px 17px;border-radius:999px;opacity:0;pointer-events:none;transition:.3s;box-shadow:0 12px 30px rgba(0,0,0,.4);max-width:92vw;text-align:center}
 .qTutToast.on{opacity:1;transform:translate(-50%,0)}
 
+/* v55: X pojok atas sidebar disembunyikan — penutup sidebar kini tombol lingkaran X di kanan bawah (lihat CLOSE_CSS di build.py) */
+.qNavX{display:none!important}
+
 .leftF{justify-content:flex-start!important}
 .leftF label{min-width:56px!important;justify-content:flex-start!important;padding-inline:var(--contentPadding,16px)!important}
 .leftF label::before{content:''!important;display:block;width:24px;height:24px;background:currentColor;-webkit-mask:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%221.5%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22M15%2019.9201L8.47997%2013.4001C7.70997%2012.6301%207.70997%2011.3701%208.47997%2010.6001L15%204.08008%22/%3E%3C/svg%3E") center/contain no-repeat;mask:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%221.5%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22M15%2019.9201L8.47997%2013.4001C7.70997%2012.6301%207.70997%2011.3701%208.47997%2010.6001L15%204.08008%22/%3E%3C/svg%3E") center/contain no-repeat}
@@ -820,7 +820,7 @@ html[data-qn="0"] .qBottom,html[data-qn="0"] #qfxFab,html[data-qn="0"] #qytFab,h
 /* sheet: tombol tutup popup Belajar & Profil pindah ke kanan atas (menimpa panah kembali) */
 #forJepang ~ .popUp .popH .c, #forProfil ~ .popUp .popH .c{left:auto!important;right:12px!important;justify-content:center!important;min-width:42px!important}
 #forJepang ~ .popUp .popH .c::after, #forProfil ~ .popUp .popH .c::after{content:'\2715'!important;-webkit-mask:none!important;mask:none!important;width:auto;height:auto;background:none}
-/* tutup sidebar kembali ke kanan: teks "Tutup" lagi, rata kanan */
+/* v55: tutup sidebar = tombol lingkaran X di kanan bawah, menggantikan teks "Tutup" (X pojok atas .qNavX disembunyikan di site.css) */
 .leftF{justify-content:flex-end!important}
-.leftF label{min-width:120px!important;justify-content:flex-end!important}
-.leftF label::before{content:var(--closeButton)!important;width:auto;height:auto;background:none;-webkit-mask:none!important;mask:none!important}
+.leftF label{min-width:44px!important;width:44px;height:44px;border-radius:50%;padding:0!important;justify-content:center!important;align-items:center;background:rgba(128,138,165,.16)}
+.leftF label::before{content:'\2715'!important;width:auto;height:auto;background:none;-webkit-mask:none!important;mask:none!important;font-size:15px;line-height:1}
