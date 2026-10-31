@@ -1988,11 +1988,18 @@ show();
     if (stage.parentNode === flip){ flip.classList.add('qhScene'); return; }
     var inEl = flip.querySelector('.qhFlipIn');
     if (!inEl) return;
-    var hero = stage.closest ? stage.closest('.qbHero') : stage.parentNode;
-    stage.classList.add('qbBg');
-    flip.insertBefore(stage, inEl);
+    if (stage.parentNode !== flip){
+      var hero = stage.closest ? stage.closest('.qbHero') : stage.parentNode;
+      stage.classList.add('qbBg');
+      flip.insertBefore(stage, inEl);
+      if (hero && hero.parentNode && hero !== stage) hero.parentNode.removeChild(hero);
+    }
+    /* v59: gelembung diangkat keluar dari panggung, sejajar di atas lapisan
+       kartu — kalau tetap di dalam panggung, lapisan .qhFlipIn menutupinya
+       dan tombol Whiskas tidak bisa diketuk. */
+    var bub = document.getElementById('qBub');
+    if (bub && bub.parentNode !== flip) flip.appendChild(bub);
     flip.classList.add('qhScene');
-    if (hero && hero.parentNode && hero !== stage) hero.parentNode.removeChild(hero);
     ['qMochi','qbBall','qbCar','qBub'].forEach(function(id){
       var el = document.getElementById(id);
       if (el && !el.__qTapGuard){ el.__qTapGuard = 1; el.addEventListener('click', function(e){ e.stopPropagation(); }); }
