@@ -818,7 +818,7 @@ html[data-qs="panas"] .nB{--darkLink:#ffd166;--lightLink:#d9940d;--qAccInk:#4233
 html[data-qn="1"] .nB{--qAcc:var(--darkLink)}
 html[data-qn="0"] .nB{--qAcc:var(--lightLink)}
 /* teks di atas aksen pastel malam: tinta gelap musiman agar tetap terbaca */
-html[data-qn="1"] .qhBtn,html[data-qn="1"] .qpPk.on,html[data-qn="1"] .qTutPill.on,html[data-qn="1"] .qTutBtn,html[data-qn="1"] .qfSend,html[data-qn="1"] .qfAv.qfAdm{color:var(--qAccInk,#fff)}
+html[data-qn="1"] .qhBtn:not(.alt),html[data-qn="1"] .qpPk.on,html[data-qn="1"] .qTutPill.on,html[data-qn="1"] .qTutBtn:not(.gho),html[data-qn="1"] .qfSend,html[data-qn="1"] .qfAv.qfAdm{color:var(--qAccInk,#fff)}
 /* Forum: ungu hardcode (#9a8cff/#8b7ff0) ikut aksen musim */
 html[data-qs="sakura"] .qfPinTag,html[data-qs="aki"] .qfPinTag,html[data-qs="salju"] .qfPinTag,html[data-qs="panas"] .qfPinTag,html[data-qs="sakura"] .qfActs button,html[data-qs="aki"] .qfActs button,html[data-qs="salju"] .qfActs button,html[data-qs="panas"] .qfActs button{color:var(--qAcc)}
 html[data-qs="sakura"] .qfAv.qfAdm,html[data-qs="aki"] .qfAv.qfAdm,html[data-qs="salju"] .qfAv.qfAdm,html[data-qs="panas"] .qfAv.qfAdm,html[data-qs="sakura"] .qfSend,html[data-qs="aki"] .qfSend,html[data-qs="salju"] .qfSend,html[data-qs="panas"] .qfSend{background:var(--qAcc)}
@@ -832,6 +832,29 @@ html[data-qs="aki"] .qTutHd .t::after{content:' 🍂'}
 html[data-qs="salju"] .qTutHd .t::after{content:' ❄️'}
 html[data-qs="panas"] .qTutHd .t::after{content:' ☀️'}
 .qTutSheet::before{background:var(--qAcc,currentColor)}
+
+/* ===== v57: Tantangan 1 menit terisi penuh seperti Lanjut belajar =====
+   Sebelumnya .qhBtn.alt (latar polos + teks biasa) — di tema gelap bernuansa,
+   teksnya kalah oleh aturan tinta v56 hingga nyaris tak terlihat. Kini tombol
+   tantangan memakai gaya tombol utama di semua varian beranda. */
+#qhChalStart{background:var(--themeLink);color:#fff;border-color:transparent}
+html[data-qn="1"] #qhChalStart{color:var(--qAccInk,#fff)}
+
+/* ===== v58: Panggung di dalam kartu kata (lihat blok JS v58 di app.js) ===== */
+.qhFlip.qhScene{position:relative;border-radius:18px}
+#qbStage.qbBg{position:absolute;inset:0;height:100%;z-index:0;border-radius:18px}
+.qhScene .qhFlipIn{position:relative;z-index:2;height:276px}
+.qhScene .qhFace{left:auto;top:auto;right:8px;bottom:14px;width:min(62%,250px);height:124px;padding:10px 14px;gap:4px;border-radius:15px;background:rgba(18,24,44,.55);-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px);color:#fff;border-color:rgba(255,255,255,.20)}
+.qhScene .qhFace small{color:rgba(255,255,255,.75)}
+.qhScene .qhFace span{color:rgba(255,255,255,.82)}
+.qhScene .qhFace b{font-size:1.9rem}
+.qhScene .qhBack b{font-size:1.3rem}
+.qhScene .qhSpeak{background:rgba(255,255,255,.16);color:#fff;border:1px solid rgba(255,255,255,.28);border-radius:999px;padding:4px 12px;font-size:12px;cursor:pointer;align-self:flex-start}
+.qhScene .qbBubble{height:124px;padding:9px 11px;display:flex;flex-direction:column;justify-content:center;font-size:12px}
+.qhScene .qbBubble b{font-size:.95rem}
+.qhScene .qbBubble p{margin-top:3px}
+.qhScene .qbBubble button{padding:5px 10px;font-size:12px;margin-top:6px}
+.qhScene .qbHint{display:none}
 
 .leftF{justify-content:flex-start!important}
 .leftF label{min-width:56px!important;justify-content:flex-start!important;padding-inline:var(--contentPadding,16px)!important}

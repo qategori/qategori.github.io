@@ -1972,3 +1972,39 @@ show();
     mo.observe(document.body, {childList: true, subtree: true});
   }
 })();
+
+/* ===== v58: Panggung Mochi digabung ke kartu kata hari ini =====
+   Blok hero .qbHero dihapus; #qbStage (elemen yang sama, jadi Mochi tetap hidup)
+   dipindah ke dalam #qhFlip sebagai latar. Gelembung diperkecil sampai tingginya
+   sama dengan panel kata (124px). Ketuk pada Mochi/bola/mobil/gelembung tidak
+   ikut membalik kartu. */
+(function(){
+  'use strict';
+  if (window.__qMerge58) return; window.__qMerge58 = 1;
+  function merge(){
+    var flip = document.getElementById('qhFlip');
+    var stage = document.getElementById('qbStage');
+    if (!flip || !stage) return;
+    if (stage.parentNode === flip){ flip.classList.add('qhScene'); return; }
+    var inEl = flip.querySelector('.qhFlipIn');
+    if (!inEl) return;
+    var hero = stage.closest ? stage.closest('.qbHero') : stage.parentNode;
+    stage.classList.add('qbBg');
+    flip.insertBefore(stage, inEl);
+    flip.classList.add('qhScene');
+    if (hero && hero.parentNode && hero !== stage) hero.parentNode.removeChild(hero);
+    ['qMochi','qbBall','qbCar','qBub'].forEach(function(id){
+      var el = document.getElementById(id);
+      if (el && !el.__qTapGuard){ el.__qTapGuard = 1; el.addEventListener('click', function(e){ e.stopPropagation(); }); }
+    });
+  }
+  var tries = 0;
+  (function retry(){ merge(); if (tries++ < 8) setTimeout(retry, 450); })();
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', merge);
+  window.addEventListener('hashchange', function(){ setTimeout(merge, 350); });
+  var moT = null;
+  if (window.MutationObserver){
+    var mo = new MutationObserver(function(){ clearTimeout(moT); moT = setTimeout(merge, 300); });
+    mo.observe(document.body, {childList: true, subtree: true});
+  }
+})();
