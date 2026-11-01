@@ -1105,6 +1105,11 @@
   /* Jembatan aplikasi Android (QApp): login Google bawaan + simpan berkas ke Unduhan. */
   function appG(){ try { return !!(window.QApp && typeof QApp.googleLogin === 'function'); } catch(e){ return false; } }
   function appSave(){ try { return !!(window.QApp && typeof QApp.saveFile === 'function'); } catch(e){ return false; } }
+  /* Penanda channel akses: 'aplikasi' bila halaman dibuka di dalam aplikasi Qategori, selain itu 'browser'.
+     Dipakai properti pengguna GA (dipasang di head), event sign_up/login di bawah, dan kolom channel Firestore. */
+  function hasQApp(){ try { return !!window.QApp; } catch(e){ return false; } }
+  var CHN = (/QategoriApp/.test(navigator.userAgent || '') || hasQApp()) ? 'aplikasi' : 'browser';
+  function gaEv(nm, m){ try { if (typeof gtag === 'function') gtag('event', nm, {method: m || '', access_channel: CHN}); } catch(e){} }
   var LV = ['n5','n4','n3','n2','n1'];
   var LVN = {n5:'N5 Pemula', n4:'N4 Dasar', n3:'N3 Menengah', n2:'N2 Lanjut', n1:'N1 Mahir'};
   var syncing = false, syncErr = '', lastSig = null;
@@ -1236,6 +1241,7 @@
         });
         payload[k.f] = out;
       });
+      if (d0.channel !== CHN) { payload.channel = CHN; push = true; }
       lastSig = sig();
       if (!push) return;
       payload.updatedAt = fs.serverTimestamp();
@@ -1559,8 +1565,8 @@
       busy = true; render();
       var A = F.auth, pr;
       if (a === 'emailreset') pr = A.sendPasswordResetEmail(auth, ev).then(function(){ msg = 'Tautan atur ulang kata sandi sudah dikirim. Cek folder spam juga.'; });
-      else if (mode === 'signup') pr = A.createUserWithEmailAndPassword(auth, ev, pv).then(function(c){ pv = ''; return A.sendEmailVerification(c.user).then(function(){ msg = 'Akun dibuat. Link verifikasi dikirim ke emailmu; buka link itu lalu muat ulang halaman.'; }); });
-      else pr = A.signInWithEmailAndPassword(auth, ev, pv).then(function(){ pv = ''; mode = 'choice'; });
+      else if (mode === 'signup') pr = A.createUserWithEmailAndPassword(auth, ev, pv).then(function(c){ pv = ''; gaEv('sign_up', 'email'); return A.sendEmailVerification(c.user).then(function(){ msg = 'Akun dibuat. Link verifikasi dikirim ke emailmu; buka link itu lalu muat ulang halaman.'; }); });
+      else pr = A.signInWithEmailAndPassword(auth, ev, pv).then(function(){ pv = ''; mode = 'choice'; gaEv('login', 'email'); });
       pr.catch(function(err){ msg = ERR[err && err.code] || 'Gagal. Coba lagi.'; }).then(function(){ busy = false; render(); });
       return;
     }
@@ -1572,11 +1578,11 @@
           window.__qGoogleCb = function(tok, err){
             window.__qGoogleCb = null;
             if (!tok) { busy = false; msg = err || 'Login Google dibatalkan.'; render(); return; }
-            F.auth.signInWithCredential(auth, F.auth.GoogleAuthProvider.credential(tok)).catch(function(e2){ msg = ERR[e2 && e2.code] || 'Gagal masuk. Coba lagi.'; }).then(function(){ busy = false; render(); });
+            F.auth.signInWithCredential(auth, F.auth.GoogleAuthProvider.credential(tok)).then(function(){ gaEv('login', 'Google (aplikasi)'); }).catch(function(e2){ msg = ERR[e2 && e2.code] || 'Gagal masuk. Coba lagi.'; }).then(function(){ busy = false; render(); });
           };
           try { QApp.googleLogin(); } catch(e) { window.__qGoogleCb = null; busy = false; msg = 'Aplikasi tidak mendukung login Google. Perbarui aplikasinya.'; render(); }
         } else {
-          F.auth.signInWithPopup(auth, new F.auth.GoogleAuthProvider()).catch(function(err){ msg = ERR[err && err.code] || 'Gagal masuk. Coba lagi.'; }).then(function(){ busy = false; render(); });
+          F.auth.signInWithPopup(auth, new F.auth.GoogleAuthProvider()).then(function(){ gaEv('login', 'Google'); }).catch(function(err){ msg = ERR[err && err.code] || 'Gagal masuk. Coba lagi.'; }).then(function(){ busy = false; render(); });
         }
       });
     } else if (a === 'out') { if (F) F.auth.signOut(auth); }
