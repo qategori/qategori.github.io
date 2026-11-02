@@ -1110,6 +1110,39 @@
   function hasQApp(){ try { return !!window.QApp; } catch(e){ return false; } }
   var CHN = (/QategoriApp/.test(navigator.userAgent || '') || hasQApp()) ? 'aplikasi' : 'browser';
   function gaEv(nm, m){ try { if (typeof gtag === 'function') gtag('event', nm, {method: m || '', access_channel: CHN}); } catch(e){} }
+  /* Profil tampilan kustom (nama + foto yang bisa diganti pengguna sendiri).
+     Sumber utama: kolom pname/pava di dokumen Firestore progress/<uid>; cermin lokal 'qpProf'
+     (terikat uid) supaya laci & Forum bisa memakainya seketika. Kosong = pakai nama/foto akun bawaan. */
+  var prof = {n:'', a:''}, profEdit = false, profTmpA = null;
+  function profName(){ return prof.n || (user ? (user.displayName || user.email || '') : ''); }
+  function profAva(){ return prof.a || (user ? (user.photoURL || '') : ''); }
+  window.qpProf = function(){ if (!user) return null; return {name: profName(), avatar: profAva()}; };
+  function profMirror(){ try { if (user) localStorage.setItem('qpProf', JSON.stringify({uid: user.uid, n: prof.n, a: prof.a})); } catch(e){} }
+  function profApply(){ paintSlot(); try { window.dispatchEvent(new Event('qp-prof')); } catch(e){} }
+  function profSec(){
+    if (!profEdit) return '<div class="qpSec"><h4>Profil tampilan</h4><p class="qpNote">Nama & foto ini yang tampil di panel profil, laci, dan Forum saat kamu memposting sebagai Profil.</p><button class="qpBtn" type="button" data-qp="profedit">Ubah nama & foto</button></div>';
+    var cur = profTmpA !== null ? profTmpA : profAva();
+    var prev = cur ? '<img alt="" src="' + esc(cur) + '"/>' : esc((profName() || '?').charAt(0).toUpperCase());
+    return '<div class="qpSec"><h4>Profil tampilan</h4>' +
+      '<label class="qpFld">Nama tampilan<input class="qpIn" id="qpProfName" maxlength="30" value="' + esc(profName()) + '"></label>' +
+      '<div class="qpProfRow"><span class="qpHAv qpProfPrev" id="qpProfPrev">' + prev + '</span><label class="qpBtn qpFileBtn">Pilih foto<input type="file" id="qpProfFile" accept="image/*" hidden></label>' +
+      (cur ? '<button class="qpBtn gho" type="button" data-qp="profdelava">Hapus foto</button>' : '') + '</div>' +
+      '<p class="qpNote">Foto dipotong persegi dan diperkecil otomatis, lalu tersimpan di akunmu (tampil juga di perangkat lain).</p>' +
+      '<div class="qpProfRow"><button class="qpBtn" type="button" data-qp="profsave">Simpan profil</button><button class="qpBtn gho" type="button" data-qp="profcancel">Batal</button></div></div>';
+  }
+  function profSave(){
+    if (!user || !F) return;
+    var ni = el('qpProfName'); var n = ni ? ni.value.trim().slice(0, 30) : '';
+    if (n.length < 2) { msg = 'Nama tampilan minimal 2 huruf.'; render(); return; }
+    prof.n = n;
+    if (profTmpA !== null) prof.a = profTmpA;
+    profEdit = false; profTmpA = null;
+    profMirror(); profApply();
+    msg = 'Profil tampilan tersimpan.';
+    render();
+    try { F.fs.setDoc(F.fs.doc(db, 'progress', user.uid), {pname: prof.n, pava: prof.a, updatedAt: F.fs.serverTimestamp()}, {merge: true}).catch(function(){}); } catch(e){}
+    if (F.auth.updateProfile && n !== user.displayName) { try { F.auth.updateProfile(user, {displayName: n}).catch(function(){}); } catch(e){} }
+  }
   var LV = ['n5','n4','n3','n2','n1'];
   var LVN = {n5:'N5 Pemula', n4:'N4 Dasar', n3:'N3 Menengah', n2:'N2 Lanjut', n1:'N1 Mahir'};
   var syncing = false, syncErr = '', lastSig = null;
@@ -1140,6 +1173,8 @@
 
   function onUser(u){
     user = u; checked = true; info = null;
+    prof = {n:'', a:''}; profEdit = false; profTmpA = null;
+    if (u) { try { var pm = JSON.parse(lsGet('qpProf') || 'null'); if (pm && pm.uid === u.uid) { prof.n = pm.n || ''; prof.a = pm.a || ''; } } catch(e){} }
     try { window.dispatchEvent(new Event('qp-user')); } catch(e){}
     lsSet('qpHint', u ? '1' : '0');
     paintSlot();
@@ -1157,6 +1192,9 @@
         if (m.exists()) { mine.role = 'member'; var b = m.data().bidang; mine.bidang = Array.isArray(b) ? b : null; }
       });
     }).catch(function(){ mine.err = true; });
+    var pp = fs.getDoc(fs.doc(db, 'progress', u.uid)).then(function(s){
+      if (s.exists()) { var d = s.data() || {}; if (typeof d.pname === 'string') mine.pname = d.pname; if (typeof d.pava === 'string') mine.pava = d.pava; }
+    }).catch(function(){});
     var rs = RESULT_COLS.map(function(c){
       return fs.getDocs(fs.query(fs.collection(db, c.c), fs.where('uid', '==', u.uid))).then(function(s){
         if (!s.size) return;
@@ -1165,18 +1203,18 @@
         mine.results.push({n:c.n, count:rows.length, last:rows[0], best:best});
       }).catch(function(){});
     });
-    Promise.all([p].concat(rs)).then(function(){ mine.loading = false; if (info === mine) render(); });
+    Promise.all([p, pp].concat(rs)).then(function(){ mine.loading = false; if (info === mine) { prof.n = mine.pname || ''; prof.a = mine.pava || ''; profMirror(); render(); profApply(); } });
   }
 
   /* ---------- Tampilan slot (rel kiri / menu) ---------- */
   var ICON0 = el('qpAv') ? el('qpAv').innerHTML : '';
   function paintSlot(){
     var av = el('qpAv'), nm = el('qpName'), mn = el('qpMenuName'), lb = av && av.closest ? av.closest('label') : null;
-    var name = user ? (user.displayName || user.email || '') : '';
+    var name = user ? profName() : '';
     var first = name.split(' ')[0];
     document.documentElement.classList.toggle('qp-in', !!user);
     if (av) {
-      if (user && user.photoURL) av.innerHTML = '<img alt="" referrerpolicy="no-referrer" src="' + esc(user.photoURL) + '"/>';
+      if (user && profAva()) av.innerHTML = '<img alt="" referrerpolicy="no-referrer" src="' + esc(profAva()) + '"/>';
       else if (user && first) av.innerHTML = '<b class="qpIni">' + esc(first.charAt(0).toUpperCase()) + '</b>';
       else av.innerHTML = ICON0;
     }
@@ -1468,10 +1506,11 @@
         loginBlock() +
         '<p class="qpNote">Anggota terdaftar: masuk dengan email yang didaftarkan admin untuk membuka kuis TG2.</p>' + dailySec() + kotobaSec() + kanjiSec() + nihoSec() + tools();
     } else {
-      var name = user.displayName || user.email;
-      var img = user.photoURL ? '<img alt="" referrerpolicy="no-referrer" src="' + esc(user.photoURL) + '"/>' : esc((name || '?').charAt(0).toUpperCase());
+      var name = profName();
+      var ava = profAva();
+      var img = ava ? '<img alt="" referrerpolicy="no-referrer" src="' + esc(ava) + '"/>' : esc((name || '?').charAt(0).toUpperCase());
       var role = info && info.role === 'admin' ? 'Admin' : (info && info.role === 'member' ? 'Anggota' : '');
-      h = '<div class="qpHero"><span class="qpHAv">' + img + '</span><div><b>' + esc(name) + (role ? ' <i class="qpBadge">' + role + '</i>' : '') + '</b><small>' + esc(user.email || '') + '</small></div></div>';
+      h = '<div class="qpHero"><span class="qpHAv">' + img + '</span><div><b>' + esc(name) + (role ? ' <i class="qpBadge">' + role + '</i>' : '') + '</b><small>' + esc(user.email || '') + '</small></div></div>' + profSec();
       if (!user.emailVerified) h += '<p class="qpMsg">Email belum diverifikasi. <a href="' + TG2 + '">Selesaikan di halaman TG2</a>.</p>';
       h += '<div class="qpSec"><h4>Akses kuis</h4>';
       if (!info || info.loading) h += '<p class="qpNote">Memeriksa akses...</p>';
@@ -1585,7 +1624,12 @@
           F.auth.signInWithPopup(auth, new F.auth.GoogleAuthProvider()).then(function(){ gaEv('login', 'Google'); }).catch(function(err){ msg = ERR[err && err.code] || 'Gagal masuk. Coba lagi.'; }).then(function(){ busy = false; render(); });
         }
       });
-    } else if (a === 'out') { if (F) F.auth.signOut(auth); }
+    }
+    else if (a === 'profedit') { profEdit = true; profTmpA = null; render(); }
+    else if (a === 'profcancel') { profEdit = false; profTmpA = null; render(); }
+    else if (a === 'profdelava') { profTmpA = ''; var pv0 = el('qpProfPrev'); if (pv0) pv0.innerHTML = esc((profName() || '?').charAt(0).toUpperCase()); }
+    else if (a === 'profsave') { profSave(); }
+    else if (a === 'out') { if (F) F.auth.signOut(auth); }
     else if (a === 'backup') backup();
     else if (a === 'restore') { var f = el('qpFile'); if (f) f.click(); }
     else if (a === 'appset') { try { window.QApp.openSettings(); } catch(e) {} }
@@ -1596,6 +1640,25 @@
   });
   var file = el('qpFile');
   if (file) file.addEventListener('change', function(){ if (file.files && file.files[0]) restore(file.files[0]); file.value = ''; });
+  body.addEventListener('change', function(e){
+    if (!e.target || e.target.id !== 'qpProfFile' || !e.target.files || !e.target.files[0]) return;
+    var rd = new FileReader();
+    rd.onload = function(){
+      var im = new Image();
+      im.onload = function(){
+        try {
+          var s = 160, cv = document.createElement('canvas'); cv.width = s; cv.height = s;
+          var cx = cv.getContext('2d'); var sc = Math.max(s / im.width, s / im.height);
+          var w = im.width * sc, hh = im.height * sc;
+          cx.drawImage(im, (s - w) / 2, (s - hh) / 2, w, hh);
+          profTmpA = cv.toDataURL('image/jpeg', 0.82);
+          var pv = el('qpProfPrev'); if (pv) pv.innerHTML = '<img alt="" src="' + profTmpA + '"/>';
+        } catch(e2){ msg = 'Foto tidak bisa diproses. Coba foto lain.'; render(); }
+      };
+      im.src = rd.result;
+    };
+    rd.readAsDataURL(e.target.files[0]);
+  });
 
   window.addEventListener('qdaily', function(){ var ae = document.activeElement; if (chk.checked && !(ae && /^(INPUT|TEXTAREA)$/.test(ae.tagName))) render(); });
   chk.addEventListener('change', function(){ if (chk.checked) { render(); boot().then(watch); } });

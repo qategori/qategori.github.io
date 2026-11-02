@@ -1001,10 +1001,25 @@ function showBerita(qs){
 /* ===== Forum: chip Komunitas (papan sapa) + Berita ===== */
 var QF_API='https://qategori-forum.bshantoz.workers.dev';
 var qfCommActive=(localStorage.getItem('qfView')!=='berita');
-var qfMsgs=null,qfBuilt=false,qfReplyTo=null;
+var qfMsgs=null,qfBuilt=false,qfReplyTo=null,qfUpdAv=null;
+var qfMode='tamu';try{qfMode=localStorage.getItem('qfMode')==='profil'?'profil':'tamu'}catch(e){}
+function qfProf(){var u=null,p=null;try{u=window.qpUser&&qpUser()}catch(e){}if(!u)return null;try{p=window.qpProf&&qpProf()}catch(e){}
+  var name=(p&&p.name)||u.displayName||(u.email?u.email.split('@')[0]:'')||'Anggota';
+  var ava=(p&&p.avatar)||u.photoURL||'';return{name:name,avatar:ava}}
+function qfAvHtml(m,nm){var a=m&&m.avatar;
+  if(typeof a==='string'&&(a.indexOf('data:image/')===0||a.indexOf('https://')===0)&&a.length<70000)return '<span class="qfAv"><img class="qfAvImg" alt="" src="'+esc(a)+'"/></span>';
+  return '<span class="qfAv">'+esc((nm.charAt(0)||'T').toUpperCase())+'</span>'}
+function qfApplyId(){var pr=qfProf();var row=document.getElementById('qfIdRow');var nm=document.getElementById('qfName');var av=document.getElementById('qfMyAv');if(!nm||!av)return;
+  if(!pr){if(row)row.hidden=true;nm.readOnly=false;nm.removeAttribute('data-pf');if(qfUpdAv)qfUpdAv();return}
+  if(row)row.hidden=false;
+  if(row)row.querySelectorAll('.qfIdBtn').forEach(function(b){b.classList.toggle('on',(b.getAttribute('data-idm')==='profil')===(qfMode==='profil'))});
+  if(qfMode==='profil'){nm.value=pr.name;nm.readOnly=true;nm.setAttribute('data-pf','1');
+    av.innerHTML=pr.avatar?'<img class="qfAvImg" alt="" src="'+esc(pr.avatar)+'"/>':esc((pr.name.charAt(0)||'A').toUpperCase())}
+  else{nm.readOnly=false;nm.removeAttribute('data-pf');try{nm.value=localStorage.getItem('qfName')||''}catch(e){}if(qfUpdAv)qfUpdAv()}
+}
 function qfAgo(ts){var s=Math.max(1,((Date.now()-ts)/1000)|0);if(s<60)return'baru saja';var m=(s/60)|0;if(m<60)return m+' mnt lalu';var j=(m/60)|0;if(j<24)return j+' jam lalu';return ((j/24)|0)+' hari lalu'}
 function qfCard(m,rid){var nm=String(m.name||'Tamu').slice(0,30);
-  return '<article class="qfPost"><div class="qfWho"><span class="qfAv">'+esc((nm.charAt(0)||'T').toUpperCase())+'</span><span class="qfNm">'+esc(nm)+'</span><span class="qfTm">'+qfAgo(m.ts)+'</span></div><p class="qfTx">'+esc(m.text)+'</p><div class="qfActs"><button type="button" class="qfReply" data-rid="'+(rid||m.id)+'" data-nm="'+esc(nm)+'">Balas</button><button type="button" class="qfRep" data-id="'+m.id+'">Laporkan</button></div></article>'}
+  return '<article class="qfPost"><div class="qfWho">'+qfAvHtml(m,nm)+'<span class="qfNm">'+esc(nm)+'</span><span class="qfTm">'+qfAgo(m.ts)+'</span></div><p class="qfTx">'+esc(m.text)+'</p><div class="qfActs"><button type="button" class="qfReply" data-rid="'+(rid||m.id)+'" data-nm="'+esc(nm)+'">Balas</button><button type="button" class="qfRep" data-id="'+m.id+'">Laporkan</button></div></article>'}
 function qfThread(m){var h=qfCard(m,m.id);
   if(m.replies&&m.replies.length)h+='<div class="qfReplies">'+m.replies.map(function(x){return qfCard(x,m.id)}).join('')+'</div>';
   return h}
@@ -1016,6 +1031,7 @@ function qfLoad(){fetch(QF_API+'/list').then(function(r){return r.json()}).then(
 function qfSync(){var w=document.getElementById('qfWrap');if(!w)return;
   w.querySelectorAll('.qfChip').forEach(function(c){c.classList.toggle('on',(c.getAttribute('data-v')==='komunitas')===qfCommActive)});
   var cm=document.getElementById('qfComm');if(cm)cm.hidden=!qfCommActive;
+  qfApplyId();
   if(qfCommActive&&qfMsgs===null)qfLoad()}
 function qfSetView(comm){qfCommActive=comm;try{localStorage.setItem('qfView',comm?'komunitas':'berita')}catch(e){}
   listEl.hidden=comm;extraEl.hidden=comm;todayEl.hidden=comm;
@@ -1026,27 +1042,32 @@ function qfBuild(){if(qfBuilt)return;qfBuilt=true;
   var w=document.createElement('div');w.id='qfWrap';
   w.innerHTML='<div class="qfChips"><button type="button" class="qfChip" data-v="komunitas"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5.5C4 4.7 4.7 4 5.5 4H15.5C16.3 4 17 4.7 17 5.5V11.5C17 12.3 16.3 13 15.5 13H9L5.5 16V13C4.7 13 4 12.3 4 11.5Z"/><path d="M20 9V16.5C20 17.3 19.3 18 18.5 18H18V20.5L15 18H10"/></svg>Komunitas</button><button type="button" class="qfChip" data-v="berita"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3H15L19 7V20C19 20.6 18.6 21 18 21H6C5.4 21 5 20.6 5 20V4C5 3.4 5.4 3 6 3Z"/><path d="M14.5 3V7.5H19"/><path d="M8.5 12H15.5M8.5 15.5H15.5"/></svg>Berita</button></div>'
    +'<div id="qfComm" hidden><div class="qfPin"><span class="qfPinTag">Disematkan</span><div class="qfWho"><span class="qfAv qfAdm">B</span><span class="qfNm">Ben</span><span class="qfTm">Admin</span></div><p class="qfTx">Selamat datang di Forum Qategori! Silakan saling sapa, tanya jawab soal belajar bahasa Jepang, bahasa daerah, dan kehidupan di Jepang. Jaga sopan santun ya — pesan berisi tautan akan ditinjau admin dulu sebelum tampil.</p></div>'
-   +'<form class="qfForm" id="qfForm"><div class="qfWho"><span class="qfAv" id="qfMyAv">?</span><input class="qfIn" id="qfName" maxlength="30" placeholder="Nama kamu" autocomplete="name"></div><textarea class="qfIn qfTa" id="qfText" rows="3" maxlength="400" placeholder="Tulis sapaan atau pertanyaan..."></textarea><input type="text" id="qfHp" name="website" autocomplete="off" tabindex="-1" aria-hidden="true" style="display:none"><p class="qfCtx" id="qfCtx" hidden>Membalas <b id="qfCtxNm"></b><button type="button" class="qfCtxX" id="qfCtxX">Batal</button></p><p class="qfNote" id="qfNote" hidden></p><button type="submit" class="qfSend" id="qfSend">Kirim</button></form>'
+   +'<form class="qfForm" id="qfForm"><div class="qfIdRow" id="qfIdRow" hidden><span>Posting sebagai</span><button type="button" class="qfIdBtn" data-idm="profil">Profil</button><button type="button" class="qfIdBtn" data-idm="tamu">Tamu</button></div><div class="qfWho"><span class="qfAv" id="qfMyAv">?</span><input class="qfIn" id="qfName" maxlength="30" placeholder="Nama kamu" autocomplete="name"></div><textarea class="qfIn qfTa" id="qfText" rows="3" maxlength="400" placeholder="Tulis sapaan atau pertanyaan..."></textarea><input type="text" id="qfHp" name="website" autocomplete="off" tabindex="-1" aria-hidden="true" style="display:none"><p class="qfCtx" id="qfCtx" hidden>Membalas <b id="qfCtxNm"></b><button type="button" class="qfCtxX" id="qfCtxX">Batal</button></p><p class="qfNote" id="qfNote" hidden></p><button type="submit" class="qfSend" id="qfSend">Kirim</button></form>'
    +'<div id="qfFeed"></div></div>';
   panes.berita.insertBefore(w,panes.berita.firstChild);
   var nm=document.getElementById('qfName');try{nm.value=localStorage.getItem('qfName')||''}catch(e){}
-  var av=document.getElementById('qfMyAv');function upd(){av.textContent=(nm.value.trim().charAt(0)||'?').toUpperCase()}nm.addEventListener('input',upd);upd();
+  var av=document.getElementById('qfMyAv');function upd(){av.textContent=(nm.value.trim().charAt(0)||'?').toUpperCase()}nm.addEventListener('input',upd);qfUpdAv=upd;upd();
+  w.querySelectorAll('.qfIdBtn').forEach(function(b){b.addEventListener('click',function(){qfMode=b.getAttribute('data-idm')==='profil'?'profil':'tamu';try{localStorage.setItem('qfMode',qfMode)}catch(e){}qfApplyId()})});
+  window.addEventListener('qp-user',qfApplyId);window.addEventListener('qp-prof',qfApplyId);
   w.querySelectorAll('.qfChip').forEach(function(c){c.addEventListener('click',function(){qfSetView(c.getAttribute('data-v')==='komunitas')})});
   document.getElementById('qfForm').addEventListener('submit',function(e){e.preventDefault();
-    var name=nm.value.trim(),text=document.getElementById('qfText').value.trim(),note=document.getElementById('qfNote'),btn=document.getElementById('qfSend');
+    var pr2=qfMode==='profil'?qfProf():null;
+    var name=pr2?pr2.name:nm.value.trim(),text=document.getElementById('qfText').value.trim(),note=document.getElementById('qfNote'),btn=document.getElementById('qfSend');
+    var ava=pr2?(pr2.avatar||''):'';
     if(name.length<2||text.length<2){note.hidden=false;note.textContent='Isi nama dan pesan dulu ya (masing-masing minimal 2 huruf).';return}
     btn.disabled=true;btn.textContent='Mengirim...';
-    fetch(QF_API+'/post',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:name,text:text,hp:document.getElementById('qfHp').value,parent:qfReplyTo?qfReplyTo.id:0})})
+    var pbody={name:name,text:text,hp:document.getElementById('qfHp').value,parent:qfReplyTo?qfReplyTo.id:0};if(ava)pbody.avatar=ava;
+    fetch(QF_API+'/post',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(pbody)})
     .then(function(r){return r.json().then(function(j){return{st:r.status,j:j}})})
     .then(function(x){btn.disabled=false;btn.textContent='Kirim';
       if(x.st===429){note.hidden=false;note.textContent='Terlalu cepat — tunggu beberapa menit sebelum mengirim lagi ya.';return}
       if(!x.j||!x.j.ok){note.hidden=false;note.textContent='Pesan belum terkirim. Coba lagi ya.';return}
-      try{localStorage.setItem('qfName',name)}catch(e2){}document.getElementById('qfText').value='';
+      if(!pr2)try{localStorage.setItem('qfName',name)}catch(e2){}document.getElementById('qfText').value='';
       var wasReply=qfReplyTo;qfReplyTo=null;document.getElementById('qfCtx').hidden=true;
       if(x.j.held){note.hidden=false;note.textContent='Pesanmu terkirim dan sedang menunggu persetujuan admin (biasanya karena mengandung tautan atau kata tertentu).';return}
       note.hidden=true;
       if(Object.prototype.toString.call(qfMsgs)==='[object Array]'){
-        var nm2={id:x.j.id,name:name,text:text,ts:x.j.ts||Date.now(),replies:[]};
+        var nm2={id:x.j.id,name:name,text:text,ts:x.j.ts||Date.now(),replies:[]};if(ava)nm2.avatar=ava;
         var root=null;if(x.j.parent){for(var i=0;i<qfMsgs.length;i++)if(qfMsgs[i].id===x.j.parent)root=qfMsgs[i]}
         if(root){root.replies=root.replies||[];root.replies.push(nm2)}else if(!wasReply){qfMsgs.unshift(nm2)}
         qfRender()}
@@ -1594,8 +1615,10 @@ show();
   }
   function heroHtml(user, info){
     if (!user) return '<label class="qpHero qdpTap" for="forProfil"><span class="qpHAv">' + ICON_USER + '</span><div><b>Belum masuk</b><small>Masuk untuk membuka kuis dan menyimpan progres belajarmu.</small></div></label>';
-    var name = user.displayName || user.email || '';
-    var img = user.photoURL ? '<img alt="" referrerpolicy="no-referrer" src="' + esc(user.photoURL) + '"/>' : esc((name || '?').charAt(0).toUpperCase());
+    var prf = null; try { prf = window.qpProf && qpProf(); } catch(e){}
+    var name = (prf && prf.name) || user.displayName || user.email || '';
+    var ava = (prf && prf.avatar) || user.photoURL || '';
+    var img = ava ? '<img alt="" referrerpolicy="no-referrer" src="' + esc(ava) + '"/>' : esc((name || '?').charAt(0).toUpperCase());
     var role = info && info.role === 'admin' ? 'Admin' : (info && info.role === 'member' ? 'Anggota' : '');
     return '<label class="qpHero qdpTap" for="forProfil"><span class="qpHAv">' + img + '</span><div><b>' + esc(name) + (role ? ' <i class="qpBadge">' + role + '</i>' : '') + '</b><small>' + esc(user.email || '') + '</small></div></label>';
   }
@@ -1686,6 +1709,7 @@ show();
     if (a === 'appset') { try { window.QApp.openSettings(); } catch (e) {} return; }
   });
   window.addEventListener('qp-user', paint);
+  window.addEventListener('qp-prof', paint);
   window.addEventListener('qdaily', paint);
   var navi = document.querySelector('.navi');
   if (navi) navi.addEventListener('change', function(){ if (navi.checked) paint(); });

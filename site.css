@@ -674,6 +674,22 @@ html.qOv .qtStick{visibility:hidden}
 .qfCtx{display:flex;align-items:center;gap:8px;font-size:12.5px;margin:8px 0 0;color:#a89dff}
 .qfCtxX{margin-left:auto;background:rgba(127,140,180,.15);border:1px solid rgba(127,140,180,.4);color:inherit;border-radius:7px;padding:4px 10px;font:inherit;font-size:12px;cursor:pointer}
 
+/* Forum: pilihan identitas Profil/Tamu + foto profil pada pesan */
+.qfAv{overflow:hidden}
+.qfAvImg{width:100%;height:100%;object-fit:cover;display:block;border-radius:50%}
+.qfIdRow{display:flex;align-items:center;gap:8px;margin:0 0 10px;font-size:13px}
+.qfIdRow>span{opacity:.75}
+.qfIdBtn{background:transparent;border:1px solid rgba(127,140,180,.45);color:inherit;border-radius:99px;padding:5px 16px;font:inherit;font-size:13px;font-weight:700;cursor:pointer}
+.qfIdBtn.on{background:#8b7ff0;border-color:transparent;color:#fff}
+.qfForm .qfIn[readonly]{opacity:.8}
+
+/* Panel profil: ubah nama & foto tampilan */
+.qpProfRow{display:flex;align-items:center;gap:10px;margin:10px 0;flex-wrap:wrap}
+.qpProfPrev{width:52px;height:52px}
+.qpFileBtn{cursor:pointer;display:inline-block}
+.qpFld{display:block;margin:8px 0}
+.qpFld .qpIn{margin-top:5px}
+
 /* Beranda: di HP berita terbaru cukup 2 kartu agar tidak sempit (di PC tetap sesuai jumlah CMS) */
 @media screen and (max-width:896px){
 #qbNews>*:nth-child(n+3){display:none}
@@ -821,7 +837,7 @@ html[data-qn="0"] .nB{--qAcc:var(--lightLink)}
 html[data-qn="1"] .qhBtn:not(.alt),html[data-qn="1"] .qpPk.on,html[data-qn="1"] .qTutPill.on,html[data-qn="1"] .qTutBtn:not(.gho),html[data-qn="1"] .qfSend,html[data-qn="1"] .qfAv.qfAdm{color:var(--qAccInk,#fff)}
 /* Forum: ungu hardcode (#9a8cff/#8b7ff0) ikut aksen musim */
 html[data-qs="sakura"] .qfPinTag,html[data-qs="aki"] .qfPinTag,html[data-qs="salju"] .qfPinTag,html[data-qs="panas"] .qfPinTag,html[data-qs="sakura"] .qfActs button,html[data-qs="aki"] .qfActs button,html[data-qs="salju"] .qfActs button,html[data-qs="panas"] .qfActs button{color:var(--qAcc)}
-html[data-qs="sakura"] .qfAv.qfAdm,html[data-qs="aki"] .qfAv.qfAdm,html[data-qs="salju"] .qfAv.qfAdm,html[data-qs="panas"] .qfAv.qfAdm,html[data-qs="sakura"] .qfSend,html[data-qs="aki"] .qfSend,html[data-qs="salju"] .qfSend,html[data-qs="panas"] .qfSend{background:var(--qAcc)}
+html[data-qs="sakura"] .qfAv.qfAdm,html[data-qs="aki"] .qfAv.qfAdm,html[data-qs="salju"] .qfAv.qfAdm,html[data-qs="panas"] .qfAv.qfAdm,html[data-qs="sakura"] .qfSend,html[data-qs="aki"] .qfSend,html[data-qs="salju"] .qfSend,html[data-qs="panas"] .qfSend,html[data-qs="sakura"] .qfIdBtn.on,html[data-qs="aki"] .qfIdBtn.on,html[data-qs="salju"] .qfIdBtn.on,html[data-qs="panas"] .qfIdBtn.on{background:var(--qAcc)}
 /* Tutorial: kepala sheet bergradasi tint musim + emoji musim + pegangan beraksen */
 html[data-qs="sakura"] .qTutHd{background-image:linear-gradient(90deg,rgba(246,179,200,.38),rgba(246,179,200,0) 75%)}
 html[data-qs="aki"] .qTutHd{background-image:linear-gradient(90deg,rgba(224,102,42,.32),rgba(224,102,42,0) 75%)}
