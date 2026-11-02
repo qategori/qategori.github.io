@@ -690,6 +690,12 @@ html.qOv .qtStick{visibility:hidden}
 .qpFld{display:block;margin:8px 0}
 .qpFld .qpIn{margin-top:5px}
 
+/* Panel profil: tombol login varian A — Google putih berlogo di atas, Email berikon amplop */
+.qpBtn.qpFlex{display:flex;align-items:center;justify-content:center;gap:10px;width:100%}
+.qpBtn.qpG{background:#fff;color:#1f2430;border:1px solid rgba(127,140,180,.35)}
+.qpBtn.qpG img{width:20px;height:20px;display:block;flex:0 0 auto}
+.qpBtn .qpIc{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round;flex:0 0 auto}
+
 /* Beranda: di HP berita terbaru cukup 2 kartu agar tidak sempit (di PC tetap sesuai jumlah CMS) */
 @media screen and (max-width:896px){
 #qbNews>*:nth-child(n+3){display:none}

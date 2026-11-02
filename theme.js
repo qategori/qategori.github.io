@@ -1478,23 +1478,28 @@
     h += '</div>' + (msg ? '<p class="qpMsg">' + esc(msg) + '</p>' : '') + '</div>';
     return h;
   }
+  var GLOGO = '<img alt="" src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg">';
+  var EICON = '<svg class="qpIc" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5.5" width="18" height="13" rx="2.5"/><path d="M4 7.5l8 6 8-6"/></svg>';
   function loginBlock(){
     var dis = busy ? ' disabled' : '';
     var inApp = /QategoriApp/.test(navigator.userAgent);
-    var gBtn = (inApp && !appG()) ? '<p class="qpNote">Di aplikasi, masuk lewat Email. Google tidak mengizinkan login di dalam aplikasi. Kalau akunmu dulu daftar dengan Google, pilih Masuk dengan Email lalu &quot;Lupa kata sandi?&quot; dengan email Google yang sama untuk membuat kata sandi.</p>' : '<p class="qpOr">atau</p><button class="qpBtn" type="button" data-qp="google"' + dis + '>Masuk dengan Google</button>';
+    var noG = inApp && !appG();
+    var gBtn = '<button class="qpBtn qpG qpFlex" type="button" data-qp="google"' + dis + '>' + GLOGO + 'Masuk dengan Google</button>';
+    var noteG = '<p class="qpNote">Di aplikasi, masuk lewat Email. Google tidak mengizinkan login di dalam aplikasi. Kalau akunmu dulu daftar dengan Google, pilih Masuk dengan Email lalu &quot;Lupa kata sandi?&quot; dengan email Google yang sama untuk membuat kata sandi.</p>';
     if (mode === 'choice') {
-      return '<button class="qpBtn pr" type="button" data-qp="emailmode"' + dis + '>Masuk dengan Email</button>' +
-        gBtn +
+      if (noG) return '<button class="qpBtn pr qpFlex" type="button" data-qp="emailmode"' + dis + '>' + EICON + 'Masuk dengan Email</button>' + noteG + (msg ? '<p class="qpMsg">' + esc(msg) + '</p>' : '');
+      return gBtn +
+        '<p class="qpOr">atau</p><button class="qpBtn pr qpFlex" type="button" data-qp="emailmode"' + dis + '>' + EICON + 'Masuk dengan Email</button>' +
         (msg ? '<p class="qpMsg">' + esc(msg) + '</p>' : '');
     }
     var up = mode === 'signup';
     return '<div class="qpForm"><input class="qpIn" type="email" id="qpEmail" placeholder="Email" autocomplete="email" value="' + esc(ev) + '">' +
       '<input class="qpIn" type="password" id="qpPass" placeholder="Kata sandi" autocomplete="' + (up ? 'new-password' : 'current-password') + '" value="' + esc(pv) + '">' +
-      '<button class="qpBtn pr" type="button" data-qp="emailgo"' + dis + '>' + (up ? 'Daftar dengan Email' : 'Masuk dengan Email') + '</button>' +
+      '<button class="qpBtn pr qpFlex" type="button" data-qp="emailgo"' + dis + '>' + EICON + (up ? 'Daftar dengan Email' : 'Masuk dengan Email') + '</button>' +
       '<button class="qpLink" type="button" data-qp="emailswitch">' + (up ? 'Sudah punya akun? Masuk' : 'Belum punya akun? Daftar') + '</button>' +
       '<button class="qpLink" type="button" data-qp="emailreset">Lupa kata sandi?</button>' +
       (msg ? '<p class="qpMsg">' + esc(msg) + '</p>' : '') +
-      ((inApp && !appG()) ? '' : '<p class="qpOr">atau</p><button class="qpBtn" type="button" data-qp="google"' + dis + '>Masuk dengan Google</button>') +
+      (noG ? '' : '<p class="qpOr">atau</p>' + gBtn) +
       '<button class="qpLink" type="button" data-qp="emailback">&larr; Kembali</button></div>';
   }
   function render(){
