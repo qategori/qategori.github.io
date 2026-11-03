@@ -1195,6 +1195,8 @@
     var pp = fs.getDoc(fs.doc(db, 'progress', u.uid)).then(function(s){
       if (s.exists()) { var d = s.data() || {}; if (typeof d.pname === 'string') mine.pname = d.pname; if (typeof d.pava === 'string') mine.pava = d.pava; }
     }).catch(function(){});
+    /* Profil tampilan diterapkan begitu dokumen progres tiba — jangan menunggu query hasil kuis yang lambat, supaya foto di header & Forum langsung sinkron. */
+    pp.then(function(){ if (info === mine && user) { prof.n = mine.pname || ''; prof.a = mine.pava || ''; profMirror(); profApply(); } });
     var rs = RESULT_COLS.map(function(c){
       return fs.getDocs(fs.query(fs.collection(db, c.c), fs.where('uid', '==', u.uid))).then(function(s){
         if (!s.size) return;
