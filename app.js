@@ -2059,3 +2059,58 @@ show();
     mo.observe(document.body, {childList: true, subtree: true});
   }
 })();
+
+/* ==== v66: geser dari tepi kiri untuk membuka menu (seperti X/Instagram) ====
+   Cara tambahan membuka laci di HP: usap ke kanan mulai dari tepi kiri layar.
+   Saat laci terbuka, usap ke kiri (dari laci atau latar) untuk menutup.
+   Hanya aktif pada lebar <=896px (laci melayang). Tidak mengganggu gulir
+   vertikal, seret Mochi melayang, popup Belajar/Profil, tutorial, dan panel. */
+(function(){
+  if (window.__qSwipeNav) return; window.__qSwipeNav = 1;
+  var EDGE = 26, OPEN_DX = 56, CLOSE_DX = 64;
+  var mq = window.matchMedia ? window.matchMedia('(max-width: 896px)') : null;
+  function navBox(){ return document.getElementById('forNav'); }
+  function isOpen(){ var c = navBox(); return !!(c && c.checked); }
+  function setNav(open){
+    var c = navBox(); if (!c || c.checked === open) return;
+    c.checked = open;
+    try { c.dispatchEvent(new Event('change', { bubbles: true })); } catch (e) {}
+  }
+  function otherOpen(){
+    var ids = ['forJepang', 'forProfil', 'forSearch', 'forBook', 'forShare', 'forTg2'];
+    for (var i = 0; i < ids.length; i++){
+      var c = document.getElementById(ids[i]);
+      if (c && c.checked) return true;
+    }
+    return false;
+  }
+  function blocked(t){
+    if (!t || !t.closest) return false;
+    if (t.closest('#qcat')) return true;
+    if (t.closest('.popUp')) return true;
+    if (t.closest('#qTut')) return true;
+    if (t.closest('#qfxPan, #qytPan')) return true;
+    if (t.closest('input, textarea, select')) return true;
+    return false;
+  }
+  var sx = 0, sy = 0, mode = 0, fired = false;
+  document.addEventListener('touchstart', function(e){
+    fired = false; mode = 0;
+    if (!mq || !mq.matches) return;
+    if (!e.touches || e.touches.length !== 1) return;
+    if (blocked(e.target)) return;
+    var t = e.touches[0]; sx = t.clientX; sy = t.clientY;
+    if (!isOpen()){ if (sx <= EDGE && !otherOpen()) mode = 1; }
+    else mode = 2;
+  }, { passive: true });
+  document.addEventListener('touchmove', function(e){
+    if (!mode || fired || !e.touches || !e.touches.length) return;
+    var t = e.touches[0], dx = t.clientX - sx, dy = t.clientY - sy;
+    var lim = Math.abs(dx) * 0.55 + 18;
+    if (mode === 1 && dx >= OPEN_DX && Math.abs(dy) <= lim){ fired = true; setNav(true); }
+    else if (mode === 2 && dx <= -CLOSE_DX && Math.abs(dy) <= lim){ fired = true; setNav(false); }
+  }, { passive: true });
+  function reset(){ mode = 0; }
+  document.addEventListener('touchend', reset, { passive: true });
+  document.addEventListener('touchcancel', reset, { passive: true });
+})();
