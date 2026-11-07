@@ -2060,14 +2060,16 @@ show();
   }
 })();
 
-/* ==== v66: geser dari tepi kiri untuk membuka menu (seperti X/Instagram) ====
-   Cara tambahan membuka laci di HP: usap ke kanan mulai dari tepi kiri layar.
-   Saat laci terbuka, usap ke kiri (dari laci atau latar) untuk menutup.
-   Hanya aktif pada lebar <=896px (laci melayang). Tidak mengganggu gulir
-   vertikal, seret Mochi melayang, popup Belajar/Profil, tutorial, dan panel. */
+/* ==== v67: geser untuk membuka menu (seperti X/Instagram) ====
+   Cara tambahan membuka laci di HP: usap ke kanan mulai dari dekat tepi kiri
+   layar, atau usap kanan tegas dari sisi kiri layar. Zona tepi diperlebar
+   (44px) karena 0-24px pertama biasanya diambil gestur "kembali" sistem
+   Android. Saat laci terbuka, usap ke kiri untuk menutup. Hanya aktif pada
+   lebar <=896px. Tidak mengganggu gulir vertikal, korsel/slider yang bisa
+   digeser menyamping, seret Mochi melayang, popup, tutorial, dan panel. */
 (function(){
   if (window.__qSwipeNav) return; window.__qSwipeNav = 1;
-  var EDGE = 26, OPEN_DX = 56, CLOSE_DX = 64;
+  var EDGE = 44, OPEN_DX = 56, AREA_DX = 88, CLOSE_DX = 64;
   var mq = window.matchMedia ? window.matchMedia('(max-width: 896px)') : null;
   function navBox(){ return document.getElementById('forNav'); }
   function isOpen(){ var c = navBox(); return !!(c && c.checked); }
@@ -2085,29 +2087,45 @@ show();
     return false;
   }
   function blocked(t){
-    if (!t || !t.closest) return false;
+    if (!t || !t.closest) return true;
     if (t.closest('#qcat')) return true;
     if (t.closest('.popUp')) return true;
     if (t.closest('#qTut')) return true;
     if (t.closest('#qfxPan, #qytPan')) return true;
+    if (t.closest('.qhPlay')) return true;
     if (t.closest('input, textarea, select')) return true;
     return false;
   }
-  var sx = 0, sy = 0, mode = 0, fired = false;
+  function inHScroll(t){
+    var el = t;
+    while (el && el !== document.body && el.nodeType === 1){
+      try {
+        var ox = window.getComputedStyle(el).overflowX;
+        if ((ox === 'auto' || ox === 'scroll') && el.scrollWidth > el.clientWidth + 4) return true;
+      } catch (e) {}
+      el = el.parentElement;
+    }
+    return false;
+  }
+  var sx = 0, sy = 0, mode = 0, need = OPEN_DX, fired = false;
   document.addEventListener('touchstart', function(e){
     fired = false; mode = 0;
     if (!mq || !mq.matches) return;
     if (!e.touches || e.touches.length !== 1) return;
     if (blocked(e.target)) return;
     var t = e.touches[0]; sx = t.clientX; sy = t.clientY;
-    if (!isOpen()){ if (sx <= EDGE && !otherOpen()) mode = 1; }
-    else mode = 2;
+    if (!isOpen()){
+      if (otherOpen()) return;
+      var wdt = window.innerWidth || 360;
+      if (sx <= EDGE){ mode = 1; need = OPEN_DX; }
+      else if (sx <= wdt * 0.45 && !inHScroll(e.target)){ mode = 1; need = AREA_DX; }
+    } else mode = 2;
   }, { passive: true });
   document.addEventListener('touchmove', function(e){
     if (!mode || fired || !e.touches || !e.touches.length) return;
     var t = e.touches[0], dx = t.clientX - sx, dy = t.clientY - sy;
     var lim = Math.abs(dx) * 0.55 + 18;
-    if (mode === 1 && dx >= OPEN_DX && Math.abs(dy) <= lim){ fired = true; setNav(true); }
+    if (mode === 1 && dx >= need && Math.abs(dy) <= lim){ fired = true; setNav(true); }
     else if (mode === 2 && dx <= -CLOSE_DX && Math.abs(dy) <= lim){ fired = true; setNav(false); }
   }, { passive: true });
   function reset(){ mode = 0; }
