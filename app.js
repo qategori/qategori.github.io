@@ -1165,6 +1165,32 @@ function qhTodayKey(){var d=new Date();return d.getFullYear()+'-'+(d.getMonth()+
 function qhSeeded(arr,seed){var a=arr.slice(),s=seed>>>0,i,j,t;for(i=a.length-1;i>0;i--){s=(s*1664525+1013904223)>>>0;j=s%(i+1);t=a[i];a[i]=a[j];a[j]=t}return a}
 function qhSpeak(txt,lang){try{if(!('speechSynthesis' in window))return;window.speechSynthesis.cancel();var u=new SpeechSynthesisUtterance(txt);u.lang=lang||'ja-JP';window.speechSynthesis.speak(u)}catch(e){}}
 function qhDailyReg(){return QH_REG[qhDaySeed()%QH_REG.length]}
+/* Pengaturan bahasa baris kata hari ini (permintaan pengunjung Forum, Nov
+   2026): tiap pengunjung mengatur sendiri bahasanya — 'daerah' = giliran
+   Jawa/Sunda/Bali seperti semula; 'jepang' = kata Jepang hari ini dari
+   kolam yang sama dengan kartu, digeser +31 supaya tidak sama persis
+   dengan kata di kartu. Pilihan tersimpan per pengunjung (localStorage
+   perambannya), tidak mengubah tampilan pengunjung lain. */
+var QH_REG_LANGS=[['daerah','Bahasa daerah'],['jepang','Bahasa Jepang']];
+function qhRegMode(){return lsGet('qh_reg_lang')==='jepang'?'jepang':'daerah'}
+function qhRenderReg(){
+ var el=document.getElementById('qhReg');if(!el)return;
+ var mode=qhRegMode();
+ var ctrl=' <label class="qhRegPick">Bahasa: <select id="qhRegSel" aria-label="Bahasa kata hari ini">'
+  +QH_REG_LANGS.map(function(o){return '<option value="'+o[0]+'"'+(o[0]===mode?' selected':'')+'>'+o[1]+'</option>'}).join('')+'</select></label>';
+ if(mode==='jepang'){
+  var pool=qhPoolJA||QH_JA_FALLBACK;
+  var w=pool[(qhDaySeed()+31)%pool.length];
+  window.qhDailyReg={front:w.front,read:w.read,mean:w.mean};
+  el.innerHTML='Kata Jepang hari ini: <b>'+esc(w.front)+'</b> ('+esc(w.read)+') — '+esc(w.mean)+ctrl;
+ }else{
+  var reg=qhDailyReg();
+  window.qhDailyReg={front:reg.w,read:reg.l,mean:reg.m};
+  el.innerHTML='Kata daerah hari ini: <b>'+esc(reg.w)+'</b> ('+esc(reg.l)+') — '+esc(reg.m)+ctrl;
+ }
+ var sel=document.getElementById('qhRegSel');
+ if(sel)sel.addEventListener('change',function(){lsSet('qh_reg_lang',sel.value);qhRenderReg()});
+}
 var qhPoolJA=null;
 function qhLoadJA(){
  if(qhPoolJA)return Promise.resolve(qhPoolJA);
@@ -1259,14 +1285,13 @@ function qhStartChal(){
 function qhInitHari(){
  var flip=document.getElementById('qhFlip');if(!flip)return;
  qhRenderCal();
- var reg=qhDailyReg();
- window.qhDailyReg={front:reg.w,read:reg.l,mean:reg.m};
- var regEl=document.getElementById('qhReg');if(regEl)regEl.innerHTML='Kata daerah hari ini: <b>'+esc(reg.w)+'</b> ('+esc(reg.l)+') — '+esc(reg.m);
+ qhRenderReg();
  var doFlip=function(){flip.classList.toggle('flipped')};
  flip.addEventListener('click',doFlip);
  flip.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();doFlip()}});
  var sp=document.getElementById('qhSpeak');if(sp)sp.addEventListener('click',function(e){e.stopPropagation();var w=window.qhDailyJA;if(w)qhSpeak(w.speak,w.lang)});
  qhLoadJA().then(function(pool){
+   qhRenderReg();
    var w=pool[qhDaySeed()%pool.length];
    window.qhDailyJA={front:w.front,read:w.read,mean:w.mean,speak:w.speak,lang:w.lang};
    var f=document.getElementById('qhCardFront');if(f)f.textContent=w.front;
