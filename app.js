@@ -1166,27 +1166,28 @@ function qhSeeded(arr,seed){var a=arr.slice(),s=seed>>>0,i,j,t;for(i=a.length-1;
 function qhSpeak(txt,lang){try{if(!('speechSynthesis' in window))return;window.speechSynthesis.cancel();var u=new SpeechSynthesisUtterance(txt);u.lang=lang||'ja-JP';window.speechSynthesis.speak(u)}catch(e){}}
 function qhDailyReg(){return QH_REG[qhDaySeed()%QH_REG.length]}
 /* Pengaturan bahasa baris kata hari ini (permintaan pengunjung Forum, Nov
-   2026): tiap pengunjung mengatur sendiri bahasanya — 'daerah' = giliran
-   Jawa/Sunda/Bali seperti semula; 'jepang' = kata Jepang hari ini dari
-   kolam yang sama dengan kartu, digeser +31 supaya tidak sama persis
-   dengan kata di kartu. Pilihan tersimpan per pengunjung (localStorage
-   perambannya), tidak mengubah tampilan pengunjung lain. */
-var QH_REG_LANGS=[['daerah','Bahasa daerah'],['jepang','Bahasa Jepang']];
+   2026): tiap pengunjung mengatur sendiri bahasanya lewat dropdown di awal
+   baris — 'daerah' = giliran Jawa/Sunda/Bali seperti semula; 'jepang' =
+   kata Jepang hari ini dari kolam yang sama dengan kartu, digeser +31
+   supaya tidak sama persis dengan kata di kartu. Pilihan tersimpan per
+   pengunjung (localStorage perambannya), tidak mengubah tampilan
+   pengunjung lain. */
 function qhRegMode(){return lsGet('qh_reg_lang')==='jepang'?'jepang':'daerah'}
 function qhRenderReg(){
  var el=document.getElementById('qhReg');if(!el)return;
  var mode=qhRegMode();
- var ctrl=' <label class="qhRegPick">Bahasa: <select id="qhRegSel" aria-label="Bahasa kata hari ini">'
-  +QH_REG_LANGS.map(function(o){return '<option value="'+o[0]+'"'+(o[0]===mode?' selected':'')+'>'+o[1]+'</option>'}).join('')+'</select></label>';
+ var ctrl='<select id="qhRegSel" class="qhRegSel" aria-label="Pilih jenis kata hari ini">'
+  +'<option value="daerah"'+(mode==='daerah'?' selected':'')+'>Kata Daerah</option>'
+  +'<option value="jepang"'+(mode==='jepang'?' selected':'')+'>Kata Jepang</option></select>';
  if(mode==='jepang'){
   var pool=qhPoolJA||QH_JA_FALLBACK;
   var w=pool[(qhDaySeed()+31)%pool.length];
   window.qhDailyReg={front:w.front,read:w.read,mean:w.mean};
-  el.innerHTML='Kata Jepang hari ini: <b>'+esc(w.front)+'</b> ('+esc(w.read)+') — '+esc(w.mean)+ctrl;
+  el.innerHTML=ctrl+' hari ini: <b>'+esc(w.front)+'</b> ('+esc(w.read)+') — '+esc(w.mean);
  }else{
   var reg=qhDailyReg();
   window.qhDailyReg={front:reg.w,read:reg.l,mean:reg.m};
-  el.innerHTML='Kata daerah hari ini: <b>'+esc(reg.w)+'</b> ('+esc(reg.l)+') — '+esc(reg.m)+ctrl;
+  el.innerHTML=ctrl+' hari ini: <b>'+esc(reg.w)+'</b> ('+esc(reg.l)+') — '+esc(reg.m);
  }
  var sel=document.getElementById('qhRegSel');
  if(sel)sel.addEventListener('change',function(){lsSet('qh_reg_lang',sel.value);qhRenderReg()});

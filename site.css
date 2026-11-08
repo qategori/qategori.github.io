@@ -887,7 +887,7 @@ html[data-qn="1"] #qhChalStart{color:var(--qAccInk,#fff)}
 .qTutDl{display:block;margin-top:12px;padding:12px;border-radius:12px;background:var(--themeLink);color:#fff;font-weight:700;text-align:center;text-decoration:none}
 html[data-qn="1"] .qTutDl{color:var(--qAccInk,#fff)}
 .qTutDl[hidden]{display:none}
-.qhRegPick{margin-left:8px;font-size:12px;opacity:.9}.qhRegPick select{margin-left:2px;padding:2px 6px;border:1px solid var(--themeBd-color);border-radius:99px;background:transparent;color:inherit;font:inherit;font-size:12px;cursor:pointer}
+.qhRegSel{padding:2px 6px;border:1px solid var(--themeBd-color);border-radius:99px;background:transparent;color:var(--themeLink);font:inherit;font-size:13px;font-weight:600;cursor:pointer}
 
 .leftF{justify-content:flex-start!important}
 .leftF label{min-width:56px!important;justify-content:flex-start!important;padding-inline:var(--contentPadding,16px)!important}
