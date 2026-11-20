@@ -889,6 +889,23 @@ html[data-qn="1"] .qTutDl{color:var(--qAccInk,#fff)}
 .qTutDl[hidden]{display:none}
 .qhRegSel{padding:2px 6px;border:1px solid var(--themeBd-color);border-radius:99px;background:transparent;color:var(--themeLink);font:inherit;font-size:13px;font-weight:600;cursor:pointer}
 
+/* ===== v70: Tombol Menu + pil nav pojok kanan bawah senada tombol YouTube & tema =====
+   Pola tombol YouTube (#qytFab): lingkaran gelap kaca + satu warna aksen terang
+   yang menonjol untuk ikonnya. Di sini aksennya warna tema --qAcc (mengikuti
+   musim; bawaan = ungu/biru tema), supaya klaster kanan bawah satu keluarga.
+   - #qnvFab (Menu/✕): kini terisi penuh warna tema seperti tombol aksi lain
+     (.qfSend/.qhBtn), ikon + label memakai --qAccInk.
+   - #qnvBar: latar kaca yang sama persis dengan #qytFab/#qfxFab (baris 780-782),
+     ikon tiap item berwarna tema, item aktif terisi penuh warna tema.
+   Avatar Mochi di dalam pil TIDAK disentuh (aturan .qmQnvAv & svg Mochi tetap). */
+html body #qnvFab{background:var(--qAcc,var(--themeLink));border-color:transparent;color:var(--qAccInk,#fff);box-shadow:0 4px 16px rgba(0,0,0,.35)}
+html[data-qn="1"] body #qnvBar{background:rgba(15,19,34,.58);-webkit-backdrop-filter:blur(16px) saturate(160%);backdrop-filter:blur(16px) saturate(160%)}
+html[data-qn="0"] body #qnvBar{background:rgba(255,255,255,.55);-webkit-backdrop-filter:blur(16px) saturate(160%);backdrop-filter:blur(16px) saturate(160%)}
+html body #qnvBar>*>svg.line{color:var(--qAcc,var(--themeLink))}
+html body #qnvBar>*:hover{background:color-mix(in srgb,var(--qAcc,var(--themeLink)) 16%,transparent)}
+html body #qnvBar>.on{background:var(--qAcc,var(--themeLink));color:var(--qAccInk,#fff)}
+html body #qnvBar>.on>svg.line{color:var(--qAccInk,#fff)}
+
 .leftF{justify-content:flex-start!important}
 .leftF label{min-width:56px!important;justify-content:flex-start!important;padding-inline:var(--contentPadding,16px)!important}
 .leftF label::before{content:''!important;display:block;width:24px;height:24px;background:currentColor;-webkit-mask:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%221.5%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22M15%2019.9201L8.47997%2013.4001C7.70997%2012.6301%207.70997%2011.3701%208.47997%2010.6001L15%204.08008%22/%3E%3C/svg%3E") center/contain no-repeat;mask:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%221.5%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22M15%2019.9201L8.47997%2013.4001C7.70997%2012.6301%207.70997%2011.3701%208.47997%2010.6001L15%204.08008%22/%3E%3C/svg%3E") center/contain no-repeat}
