@@ -916,6 +916,12 @@ if (Object.values(firebaseConfig).some(v => String(v).startsWith('GANTI'))) {
   <button class="tab" role="tab" data-go="10">Bab 10</button>
   <button class="tab" role="tab" data-go="11">Bab 11</button>
   <button class="tab" role="tab" data-go="12">Bab 12</button>
+  <button class="tab" role="tab" data-go="13">Bab 13</button>
+  <button class="tab" role="tab" data-go="14">Bab 14</button>
+  <button class="tab" role="tab" data-go="15">Bab 15</button>
+  <button class="tab" role="tab" data-go="16">Bab 16</button>
+  <button class="tab" role="tab" data-go="17">Bab 17</button>
+  <button class="tab" role="tab" data-go="18">Bab 18</button>
 </div>
 
 <!-- ===================== BAB 1 ===================== -->
@@ -954,6 +960,24 @@ if (Object.values(firebaseConfig).some(v => String(v).startsWith('GANTI'))) {
 <!-- ===================== BAB 12 ===================== -->
 <div class="chapter" id="ml-ch12"></div>
 
+<!-- ===================== BAB 13 ===================== -->
+<div class="chapter" id="ml-ch13"></div>
+
+<!-- ===================== BAB 14 ===================== -->
+<div class="chapter" id="ml-ch14"></div>
+
+<!-- ===================== BAB 15 ===================== -->
+<div class="chapter" id="ml-ch15"></div>
+
+<!-- ===================== BAB 16 ===================== -->
+<div class="chapter" id="ml-ch16"></div>
+
+<!-- ===================== BAB 17 ===================== -->
+<div class="chapter" id="ml-ch17"></div>
+
+<!-- ===================== BAB 18 ===================== -->
+<div class="chapter" id="ml-ch18"></div>
+
 <div class="nav-btm">
   <button class="ghost" id="ml-prev">&#8592; Bab sebelumnya</button>
   <button class="ghost" id="ml-next">Bab berikutnya &#8594;</button>
@@ -980,7 +1004,7 @@ import { getFirestore, doc, getDoc }
   });
   var tabs = root.querySelectorAll('.tab');
   var links = root.querySelectorAll('.toc a');
-  var n = 12;
+  var n = 11;
 
 
   /* ---------------- Akses anggota (sama seperti kuis) ---------------- */
@@ -1271,7 +1295,7 @@ import { getFirestore, doc, getDoc }
     loadChapter(i);
     if (!skipScroll) { try { root.scrollIntoView({behavior:'smooth', block:'start'}); } catch(e){} }
   }
-  function initContent(){
+  function initContent(){ tabs.forEach(function(t){ if (+t.dataset.go > n) t.style.display = 'none'; });
     tabs.forEach(function(t){ t.addEventListener('click', function(){ show(+t.dataset.go); }); });
     links.forEach(function(a){ a.addEventListener('click', function(e){ e.preventDefault(); show(+a.dataset.go); }); });
     root.querySelector('#ml-prev').addEventListener('click', function(){ show((+root.dataset.chapter || 1) - 1); });
@@ -1483,7 +1507,7 @@ function applyRomaji(){ root.classList.toggle('no-ro', !S.romaji); root.classLis
 /* ---------------- Tampilan dasar ---------------- */
 function paintTop(){
   const u = S.user;
-  $top.innerHTML = `<span class="brand" lang="ja">\u756a\u7523\u8fb2\u696d \u7df4\u7fd2\u554f\u984c</span>` + (u
+  $top.innerHTML = `<span class="brand" lang="ja">\u755c\u7523\u8fb2\u696d \u7df4\u7fd2\u554f\u984c</span>` + (u
     ? `<div class="who"><span>${esc(u.displayName || u.email)}</span><button class="ghost small" data-action="logout">Keluar</button></div>` : '');
 }
 const viewLoading = (msg='Memuat\u2026') => view(`<div class="card center"><div class="spin"></div><p class="sub">${esc(msg)}</p></div>`);
@@ -1499,8 +1523,8 @@ function viewSetupNeeded(){
 }
 function viewLogin(msg=''){
   view(`<section class="card center">
-    <h2 class="kd-title" lang="ja">\u756a\u7523\u8fb2\u696d\u533a\u5206 \u7df4\u7fd2\u554f\u984c 100\u554f</h2>
-    <p class="sub">Chikusan n\u014dgy\u014d-kubun renshuu mondai \u00b7 latihan ujian \u756a\u7523\u8fb2\u696d\u533a\u5206 (Chikusan \u2014 Peternakan / Livestock Farming)</p>
+    <h2 class="kd-title" lang="ja">\u755c\u7523\u8fb2\u696d\u533a\u5206 \u7df4\u7fd2\u554f\u984c 100\u554f</h2>
+    <p class="sub">Chikusan n\u014dgy\u014d-kubun renshuu mondai \u00b7 latihan ujian \u755c\u7523\u8fb2\u696d\u533a\u5206 (Chikusan \u2014 Peternakan / Livestock Farming)</p>
     <p>Masuk untuk membeli akses Paket 1 (±100 soal) dan seterusnya. Paket Uji Coba gratis tanpa login.</p>
     ${loginMode === 'choice' ? `
     <button class="btn" data-action="login">Masuk dengan Google</button>
@@ -2169,6 +2193,12 @@ if (Object.values(firebaseConfig).some(v => String(v).startsWith('GANTI'))) {
   <button class="tab" role="tab" data-go="10">Bab 10</button>
   <button class="tab" role="tab" data-go="11">Bab 11</button>
   <button class="tab" role="tab" data-go="12">Bab 12</button>
+  <button class="tab" role="tab" data-go="13">Bab 13</button>
+  <button class="tab" role="tab" data-go="14">Bab 14</button>
+  <button class="tab" role="tab" data-go="15">Bab 15</button>
+  <button class="tab" role="tab" data-go="16">Bab 16</button>
+  <button class="tab" role="tab" data-go="17">Bab 17</button>
+  <button class="tab" role="tab" data-go="18">Bab 18</button>
 </div>
 
 <!-- ===================== BAB 1 ===================== -->
@@ -2207,6 +2237,24 @@ if (Object.values(firebaseConfig).some(v => String(v).startsWith('GANTI'))) {
 <!-- ===================== BAB 12 ===================== -->
 <div class="chapter" id="ml-ch12"></div>
 
+<!-- ===================== BAB 13 ===================== -->
+<div class="chapter" id="ml-ch13"></div>
+
+<!-- ===================== BAB 14 ===================== -->
+<div class="chapter" id="ml-ch14"></div>
+
+<!-- ===================== BAB 15 ===================== -->
+<div class="chapter" id="ml-ch15"></div>
+
+<!-- ===================== BAB 16 ===================== -->
+<div class="chapter" id="ml-ch16"></div>
+
+<!-- ===================== BAB 17 ===================== -->
+<div class="chapter" id="ml-ch17"></div>
+
+<!-- ===================== BAB 18 ===================== -->
+<div class="chapter" id="ml-ch18"></div>
+
 <div class="nav-btm">
   <button class="ghost" id="ml-prev">&#8592; Bab sebelumnya</button>
   <button class="ghost" id="ml-next">Bab berikutnya &#8594;</button>
@@ -2233,7 +2281,7 @@ import { getFirestore, doc, getDoc }
   });
   var tabs = root.querySelectorAll('.tab');
   var links = root.querySelectorAll('.toc a');
-  var n = 12;
+  var n = 5;
 
 
   /* ---------------- Akses anggota (sama seperti kuis) ---------------- */
@@ -2524,7 +2572,7 @@ import { getFirestore, doc, getDoc }
     loadChapter(i);
     if (!skipScroll) { try { root.scrollIntoView({behavior:'smooth', block:'start'}); } catch(e){} }
   }
-  function initContent(){
+  function initContent(){ tabs.forEach(function(t){ if (+t.dataset.go > n) t.style.display = 'none'; });
     tabs.forEach(function(t){ t.addEventListener('click', function(){ show(+t.dataset.go); }); });
     links.forEach(function(a){ a.addEventListener('click', function(e){ e.preventDefault(); show(+a.dataset.go); }); });
     root.querySelector('#ml-prev').addEventListener('click', function(){ show((+root.dataset.chapter || 1) - 1); });
