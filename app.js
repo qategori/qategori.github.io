@@ -219,7 +219,7 @@ function mount(paneId,key){
       var c=document.importNode(n,true);host.appendChild(c);
       if(c.nodeType===1)Array.prototype.slice.call(c.querySelectorAll('script')).forEach(function(sc){scripts.push(sc);sc.parentNode.removeChild(sc)});
     });
-    return runScripts(host,scripts).then(function(){var f=panes[paneId].__after;if(f){panes[paneId].__after=null;setTimeout(f,60)}});
+    return runScripts(host,scripts).then(function(){try{qhTocPane(host)}catch(e){}var f=panes[paneId].__after;if(f){panes[paneId].__after=null;setTimeout(f,60)}});
   }).catch(function(err){
     if(my!==token[paneId])return;mounted[paneId]=null;
     host.innerHTML='<div class="qhErr"><p>Materi belum bisa dimuat ('+esc(err&&err.message)+').</p><p style="font-size:.75rem;opacity:.7;word-break:break-all">'+esc(location.origin+(URL_OF[key]||''))+' · '+(navigator.onLine?'online':'offline')+'</p><button type="button" class="qhBtn" data-retry="'+key+'">Coba lagi</button> <a class="qhBtn alt" href="'+URL_OF[key]+'">Buka halaman</a></div>';
@@ -968,6 +968,54 @@ function qhToc(body){
     e.preventDefault();e.stopPropagation();pan.hidden=true;
     var t=document.getElementById(a.getAttribute('href').slice(1));if(t)window.scrollTo({top:t.getBoundingClientRect().top+window.pageYOffset-84,behavior:'smooth'})});
   readEl.appendChild(btn);readEl.appendChild(pan);
+}
+/* Daftar isi melayang untuk laman Belajar yang dimuat lewat rute hash (#):
+   perilaku & kelas sama persis dengan qhToc di pembaca berita, tetapi tombol
+   ditempel ke host pane dan daftar tautannya dibangun ulang setiap kali panel
+   dibuka, jadi isinya mengikuti bab yang sedang tampil (materi TG2 dirender
+   belakangan oleh skrip halamannya sendiri dan bab berganti tanpa muat ulang). */
+function qhTocPane(host){
+  Array.prototype.forEach.call(host.querySelectorAll('.qhTocB,.qhTocP'),function(n){n.parentNode.removeChild(n)});
+  var btn=document.createElement('button');btn.type='button';btn.className='qhTocB';btn.setAttribute('aria-label','Buka daftar isi');
+  btn.innerHTML='<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h10"/></svg>';
+  var pan=document.createElement('div');pan.className='qhTocP';pan.hidden=true;
+  pan.innerHTML='<button type="button" class="qhTocX">&lsaquo; Konten</button><div class="qhTocC"></div>';
+  var box=pan.querySelector('.qhTocC');
+  function visH(h){
+    var n=h;
+    while(n&&n!==host){
+      if(n.hidden)return false;
+      if(n.style&&n.style.display==='none')return false;
+      if(/^ml-ch/.test(n.id||'')&&!n.classList.contains('on'))return false;
+      if(n.classList&&n.classList.contains('ar-pane')&&!n.classList.contains('on'))return false;
+      n=n.parentNode;
+    }
+    return true;
+  }
+  function build(){
+    var hs=Array.prototype.slice.call(host.querySelectorAll('h1,h2,h3,h4,h5,h6')).filter(visH);
+    if(hs.length<2){box.innerHTML='';return false}
+    var min=6;hs.forEach(function(h){min=Math.min(min,parseInt(h.tagName.charAt(1),10))});
+    var links='';
+    hs.forEach(function(h,i){
+      var slug=(h.textContent||'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'').slice(0,40);
+      h.id='qkp'+(i+1)+(slug?'-'+slug:'');h.style.scrollMarginTop='84px';
+      links+='<a href="#'+h.id+'" style="padding-left:'+((parseInt(h.tagName.charAt(1),10)-min)*14)+'px">'+esc((h.textContent||'').trim())+'</a>'});
+    box.innerHTML=links;return true;
+  }
+  btn.addEventListener('click',function(){
+    if(pan.hidden&&!build()){
+      if(btn.parentNode)btn.parentNode.removeChild(btn);
+      if(pan.parentNode)pan.parentNode.removeChild(pan);
+      return;
+    }
+    pan.hidden=!pan.hidden});
+  pan.addEventListener('click',function(e){
+    if(e.target.closest('.qhTocX')){pan.hidden=true;return}
+    var a=e.target.closest('a[href^="#"]');if(!a)return;
+    e.preventDefault();e.stopPropagation();pan.hidden=true;
+    var t=document.getElementById(a.getAttribute('href').slice(1));if(t)window.scrollTo({top:t.getBoundingClientRect().top+window.pageYOffset-84,behavior:'smooth'})});
+  host.appendChild(btn);host.appendChild(pan);
 }
 function showBerita(qs){
   var q=new URLSearchParams(qs),u=q.get('u'),l=q.get('l'),more=document.getElementById('qMore');
