@@ -981,6 +981,7 @@ function qhTocPane(host){
   var pan=document.createElement('div');pan.className='qhTocP';pan.hidden=true;
   pan.innerHTML='<button type="button" class="qhTocX">&lsaquo; Konten</button><div class="qhTocC"></div>';
   var box=pan.querySelector('.qhTocC');
+  var csCache=null;
   function visH(h){
     var n=h;
     while(n&&n!==host){
@@ -988,12 +989,22 @@ function qhTocPane(host){
       if(n.style&&n.style.display==='none')return false;
       if(/^ml-ch/.test(n.id||'')&&!n.classList.contains('on'))return false;
       if(n.classList&&n.classList.contains('ar-pane')&&!n.classList.contains('on'))return false;
+      var k=csCache?csCache.get(n):undefined;
+      if(k===undefined){
+        try{var cs=window.getComputedStyle?getComputedStyle(n):null;
+          k=!cs||(cs.display!=='none'&&cs.visibility!=='hidden');
+        }catch(e){k=true}
+        if(csCache)csCache.set(n,k);
+      }
+      if(!k)return false;
       n=n.parentNode;
     }
     return true;
   }
   function build(){
+    csCache=new Map();
     var hs=Array.prototype.slice.call(host.querySelectorAll('h1,h2,h3,h4,h5,h6')).filter(visH);
+    csCache=null;
     if(hs.length<2){box.innerHTML='';return false}
     var min=6;hs.forEach(function(h){min=Math.min(min,parseInt(h.tagName.charAt(1),10))});
     var links='';
@@ -1622,7 +1633,21 @@ show();
     if(document.querySelector('.qhTocB'))return;
     var art=document.querySelector('article.qPost .postBody')||document.querySelector('.postBody')||document.querySelector('main article')||document.querySelector('article');
     if(!art)return;
-    var hs=Array.prototype.slice.call(art.querySelectorAll('h1,h2,h3,h4,h5,h6'));
+    function visOk(h){
+      var n=h;
+      while(n&&n!==art){
+        if(n.hidden)return false;
+        if(n.style&&n.style.display==='none')return false;
+        if(/^ml-ch/.test(n.id||'')&&!n.classList.contains('on'))return false;
+        if(n.classList&&n.classList.contains('ar-pane')&&!n.classList.contains('on'))return false;
+        try{var cs=window.getComputedStyle?getComputedStyle(n):null;
+          if(cs&&(cs.display==='none'||cs.visibility==='hidden'))return false;
+        }catch(e){}
+        n=n.parentNode;
+      }
+      return true;
+    }
+    var hs=Array.prototype.slice.call(art.querySelectorAll('h1,h2,h3,h4,h5,h6')).filter(visOk);
     if(hs.length<2)return;
     var min=6,links='';
     hs.forEach(function(h){min=Math.min(min,parseInt(h.tagName.charAt(1),10))});
